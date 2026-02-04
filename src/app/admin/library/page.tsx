@@ -26,6 +26,7 @@ export default function LibraryPage() {
     const [newPreviewFile, setNewPreviewFile] = useState<File | null>(null);
     const [newMasterFile, setNewMasterFile] = useState<File | null>(null);
     const [isUpdating, setIsUpdating] = useState(false);
+    const [settings, setSettings] = useState({ defaultPrice: 0, currency: 'TL' });
 
     const fetchTracks = async () => {
         setLoading(true);
@@ -47,6 +48,12 @@ export default function LibraryPage() {
             `)
             .order('created_at', { ascending: false });
 
+        const { data: settingsData } = await supabase
+            .from('settings')
+            .select('default_price, currency')
+            .eq('id', 1)
+            .maybeSingle();
+
         if (error) {
             console.error('Error fetching tracks:', error);
         } else if (data) {
@@ -57,6 +64,13 @@ export default function LibraryPage() {
                 genres: Array.isArray(track.genres) ? track.genres[0] : track.genres
             }));
             setTracks(formattedTracks);
+        }
+
+        if (settingsData) {
+            setSettings({
+                defaultPrice: Number(settingsData.default_price),
+                currency: settingsData.currency || 'TL'
+            });
         }
         setLoading(false);
     };
@@ -97,7 +111,7 @@ export default function LibraryPage() {
                 bpm: editingTrack.bpm,
                 mode: editingTrack.mode,
                 status: editingTrack.status,
-                price: editingTrack.price
+                price: (editingTrack.price === null || isNaN(Number(editingTrack.price))) ? settings.defaultPrice : Number(editingTrack.price)
             };
 
             // 1. Upload New Preview if selected
@@ -193,7 +207,7 @@ export default function LibraryPage() {
                                             {track.bpm || '-'}
                                         </td>
                                         <td className="px-8 py-6 font-bold text-[#ede066]">
-                                            {track.price ? `${track.price} ₺` : '-'}
+                                            {track.price ? `${track.price} ${settings.currency === 'USD' ? '$' : settings.currency === 'EUR' ? '€' : '₺'}` : '-'}
                                         </td>
                                         <td className="px-8 py-6">
                                             <span className={`px-2 py-1 rounded-md text-[10px] font-bold uppercase tracking-wider ${track.status === 'published'
@@ -290,7 +304,9 @@ export default function LibraryPage() {
                                             className="w-full bg-[#0b1121] border border-[#2A3B55] rounded-xl px-4 py-3 text-white focus:outline-none focus:border-[#ede066]/50 transition-all font-medium"
                                             placeholder="0.00"
                                         />
-                                        <span className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-500 font-bold text-sm">₺</span>
+                                        <span className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-500 font-bold text-sm">
+                                            {settings.currency === 'USD' ? '$' : settings.currency === 'EUR' ? '€' : '₺'}
+                                        </span>
                                     </div>
                                 </div>
                                 <div className="space-y-2">

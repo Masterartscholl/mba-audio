@@ -22,6 +22,7 @@ export default function AdminDashboard() {
     const [genres, setGenres] = useState<Genre[]>([]);
     const [loading, setLoading] = useState(true);
     const [recentTracks, setRecentTracks] = useState<any[]>([]);
+    const [settings, setSettings] = useState({ defaultPrice: 0, currency: 'TL' });
 
     // Form State
     const [formData, setFormData] = useState({
@@ -55,9 +56,21 @@ export default function AdminDashboard() {
                 .order('created_at', { ascending: false })
                 .limit(5);
 
+            const { data: settingsData } = await supabase
+                .from('settings')
+                .select('default_price, currency')
+                .eq('id', 1)
+                .maybeSingle();
+
             if (catData) setCategories(catData);
             if (genData) setGenres(genData);
             if (trackData) setRecentTracks(trackData);
+            if (settingsData) {
+                setSettings({
+                    defaultPrice: Number(settingsData.default_price),
+                    currency: settingsData.currency || 'TL'
+                });
+            }
         } catch (error) {
             console.error("Error fetching data:", error);
         } finally {
@@ -144,7 +157,7 @@ export default function AdminDashboard() {
                     genre_id: formData.genreId ? Number(formData.genreId) : null,
                     bpm: formData.bpm ? Number(formData.bpm) : null,
                     mode: formData.mode,
-                    price: formData.price ? Number(formData.price) : null,
+                    price: formData.price ? Number(formData.price) : settings.defaultPrice,
                     preview_url: previewUrl,
                     master_url: masterPath,
                     status: status
@@ -304,7 +317,9 @@ export default function AdminDashboard() {
                                             placeholder="0.00"
                                             className="w-full bg-[#0b1121] border border-[#2A3B55] rounded-xl px-4 py-3.5 text-white placeholder-slate-600 focus:outline-none focus:border-[#ede066]/50 focus:ring-1 focus:ring-[#ede066]/50 transition-all font-medium"
                                         />
-                                        <span className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-500 font-bold">₺</span>
+                                        <span className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-500 font-bold">
+                                            {settings.currency === 'USD' ? '$' : settings.currency === 'EUR' ? '€' : '₺'}
+                                        </span>
                                     </div>
                                 </div>
                             </div>
@@ -443,7 +458,7 @@ export default function AdminDashboard() {
                                     </td>
                                     <td className="px-8 py-5 text-slate-300">{track.bpm || '-'}</td>
                                     <td className="px-8 py-5 font-bold text-[#ede066]">
-                                        {track.price ? `${track.price} ₺` : '-'}
+                                        {track.price ? `${track.price} ${settings.currency === 'USD' ? '$' : settings.currency === 'EUR' ? '€' : '₺'}` : '-'}
                                     </td>
                                     <td className="px-8 py-5">
                                         <span className={`px-2 py-1 rounded-md text-[10px] font-bold uppercase tracking-wider ${track.status === 'published'

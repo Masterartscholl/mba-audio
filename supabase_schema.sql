@@ -159,3 +159,44 @@ $$ language plpgsql security definer;
 create trigger on_auth_user_created
   after insert on auth.users
   for each row execute procedure public.handle_new_user();
+
+-- Create Settings Table
+create table public.settings (
+  id integer primary key default 1,
+  site_title text default 'MusicBank',
+  contact_email text,
+  whatsapp_no text,
+  default_price decimal(10,2) default 0.00,
+  currency text default 'TL',
+  is_watermark_active boolean default true,
+  is_maintenance_mode boolean default false,
+  active_theme text default 'dark',
+  default_lang text default 'tr',
+  updated_at timestamp with time zone default timezone('utc'::text, now()) not null,
+  constraint singular_row check (id = 1)
+);
+
+-- Enable RLS for settings
+alter table public.settings enable row level security;
+
+-- Policies for settings (Only authenticated admins can read and update)
+create policy "Admins can read settings"
+  on public.settings for select
+  to authenticated
+  using (true);
+
+create policy "Admins can insert settings"
+  on public.settings for insert
+  to authenticated
+  with check (id = 1);
+
+create policy "Admins can update settings"
+  on public.settings for update
+  to authenticated
+  using (true)
+  with check (id = 1);
+
+-- Initial Seed Data for Settings
+insert into public.settings (id, site_title, contact_email, whatsapp_no, default_price, currency, is_watermark_active)
+values (1, 'MusicBank MBA', 'info@musicbank.com', '+905000000000', 500.00, 'TL', true)
+on conflict (id) do nothing;
