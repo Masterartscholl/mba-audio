@@ -15,6 +15,7 @@ type Track = {
     categories: { name: string } | null;
     genres: { name: string } | null;
     status: string;
+    price: number | null;
 };
 
 export default function LibraryPage() {
@@ -40,6 +41,7 @@ export default function LibraryPage() {
                 genre_id,
                 created_at,
                 status,
+                price,
                 categories ( name ),
                 genres ( name )
             `)
@@ -94,7 +96,8 @@ export default function LibraryPage() {
                 title: editingTrack.title,
                 bpm: editingTrack.bpm,
                 mode: editingTrack.mode,
-                status: editingTrack.status
+                status: editingTrack.status,
+                price: editingTrack.price
             };
 
             // 1. Upload New Preview if selected
@@ -168,6 +171,7 @@ export default function LibraryPage() {
                                     <th className="px-8 py-5">KATEGORİ</th>
                                     <th className="px-8 py-5">TÜR</th>
                                     <th className="px-8 py-5">BPM</th>
+                                    <th className="px-8 py-5">FİYAT</th>
                                     <th className="px-8 py-5">DURUM</th>
                                     <th className="px-8 py-5">TARİH</th>
                                     <th className="px-8 py-5 text-right">İŞLEMLER</th>
@@ -187,6 +191,9 @@ export default function LibraryPage() {
                                         </td>
                                         <td className="px-8 py-6 text-slate-300">
                                             {track.bpm || '-'}
+                                        </td>
+                                        <td className="px-8 py-6 font-bold text-[#ede066]">
+                                            {track.price ? `${track.price} ₺` : '-'}
                                         </td>
                                         <td className="px-8 py-6">
                                             <span className={`px-2 py-1 rounded-md text-[10px] font-bold uppercase tracking-wider ${track.status === 'published'
@@ -274,6 +281,19 @@ export default function LibraryPage() {
                                     </div>
                                 </div>
                                 <div className="space-y-2">
+                                    <label className="text-xs uppercase font-bold text-slate-500 tracking-wider">Fiyat (₺)</label>
+                                    <div className="relative">
+                                        <input
+                                            type="number"
+                                            value={editingTrack.price || ''}
+                                            onChange={(e) => setEditingTrack({ ...editingTrack, price: e.target.value ? Number(e.target.value) : null })}
+                                            className="w-full bg-[#0b1121] border border-[#2A3B55] rounded-xl px-4 py-3 text-white focus:outline-none focus:border-[#ede066]/50 transition-all font-medium"
+                                            placeholder="0.00"
+                                        />
+                                        <span className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-500 font-bold text-sm">₺</span>
+                                    </div>
+                                </div>
+                                <div className="space-y-2">
                                     <label className="text-xs uppercase font-bold text-slate-500 tracking-wider">Yayın Durumu</label>
                                     <div className="flex gap-4">
                                         <button
@@ -311,8 +331,8 @@ export default function LibraryPage() {
                                             <label
                                                 htmlFor="edit-preview"
                                                 className={`flex items-center gap-2 px-4 py-3 rounded-xl border border-dashed cursor-pointer transition-all text-xs font-medium truncate ${newPreviewFile
-                                                        ? 'bg-[#ede066]/10 border-[#ede066] text-[#ede066]'
-                                                        : 'bg-[#0b1121] border-[#2A3B55] text-slate-400 hover:border-[#ede066]/50'
+                                                    ? 'bg-[#ede066]/10 border-[#ede066] text-[#ede066]'
+                                                    : 'bg-[#0b1121] border-[#2A3B55] text-slate-400 hover:border-[#ede066]/50'
                                                     }`}
                                             >
                                                 <svg className="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12-3c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zM9 10l12-3" /></svg>
@@ -332,8 +352,8 @@ export default function LibraryPage() {
                                             <label
                                                 htmlFor="edit-master"
                                                 className={`flex items-center gap-2 px-4 py-3 rounded-xl border border-dashed cursor-pointer transition-all text-xs font-medium truncate ${newMasterFile
-                                                        ? 'bg-[#ede066]/10 border-[#ede066] text-[#ede066]'
-                                                        : 'bg-[#0b1121] border-[#2A3B55] text-slate-400 hover:border-[#ede066]/50'
+                                                    ? 'bg-[#ede066]/10 border-[#ede066] text-[#ede066]'
+                                                    : 'bg-[#0b1121] border-[#2A3B55] text-slate-400 hover:border-[#ede066]/50'
                                                     }`}
                                             >
                                                 <svg className="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>

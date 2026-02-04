@@ -103,6 +103,7 @@ create table public.tracks (
   preview_url text, -- For watermarked preview
   master_url text,  -- For master file
   status text default 'published', -- 'published' or 'draft'
+  price decimal(10,2),
   created_at timestamp with time zone default timezone('utc'::text, now()) not null
 );
 

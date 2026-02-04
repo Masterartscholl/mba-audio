@@ -29,7 +29,8 @@ export default function AdminDashboard() {
         categoryId: "",
         genreId: "",
         bpm: "",
-        mode: ""
+        mode: "",
+        price: ""
     });
 
     const [previewFile, setPreviewFile] = useState<File | null>(null);
@@ -143,6 +144,7 @@ export default function AdminDashboard() {
                     genre_id: formData.genreId ? Number(formData.genreId) : null,
                     bpm: formData.bpm ? Number(formData.bpm) : null,
                     mode: formData.mode,
+                    price: formData.price ? Number(formData.price) : null,
                     preview_url: previewUrl,
                     master_url: masterPath,
                     status: status
@@ -153,7 +155,7 @@ export default function AdminDashboard() {
             alert(status === 'published' ? "Eser başarıyla yayınlandı!" : "Taslak başarıyla kaydedildi!");
 
             // Clear Form
-            setFormData({ title: "", categoryId: "", genreId: "", bpm: "", mode: "" });
+            setFormData({ title: "", categoryId: "", genreId: "", bpm: "", mode: "", price: "" });
             setPreviewFile(null);
             setMasterFile(null);
             setUploadProgress({ preview: 0, master: 0 });
@@ -290,6 +292,21 @@ export default function AdminDashboard() {
                                         />
                                     </div>
                                 </div>
+
+                                <div className="space-y-2">
+                                    <label className="text-xs uppercase font-bold text-slate-500 tracking-wider">Fiyat (₺)</label>
+                                    <div className="relative">
+                                        <input
+                                            name="price"
+                                            value={formData.price}
+                                            onChange={handleChange}
+                                            type="number"
+                                            placeholder="0.00"
+                                            className="w-full bg-[#0b1121] border border-[#2A3B55] rounded-xl px-4 py-3.5 text-white placeholder-slate-600 focus:outline-none focus:border-[#ede066]/50 focus:ring-1 focus:ring-[#ede066]/50 transition-all font-medium"
+                                        />
+                                        <span className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-500 font-bold">₺</span>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -408,6 +425,7 @@ export default function AdminDashboard() {
                                 <th className="px-8 py-4">ESER</th>
                                 <th className="px-8 py-4">KATEGORİ / TÜR</th>
                                 <th className="px-8 py-4">BPM</th>
+                                <th className="px-8 py-4">FİYAT</th>
                                 <th className="px-8 py-4">DURUM</th>
                                 <th className="px-8 py-4">TARİH</th>
                             </tr>
@@ -424,6 +442,9 @@ export default function AdminDashboard() {
                                         <span className="text-slate-400 text-sm">{track.genres?.name}</span>
                                     </td>
                                     <td className="px-8 py-5 text-slate-300">{track.bpm || '-'}</td>
+                                    <td className="px-8 py-5 font-bold text-[#ede066]">
+                                        {track.price ? `${track.price} ₺` : '-'}
+                                    </td>
                                     <td className="px-8 py-5">
                                         <span className={`px-2 py-1 rounded-md text-[10px] font-bold uppercase tracking-wider ${track.status === 'published'
                                             ? 'bg-green-500/10 text-green-500 border border-green-500/20'
