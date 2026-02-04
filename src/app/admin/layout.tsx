@@ -7,7 +7,7 @@ export default function AdminLayout({
     children: React.ReactNode;
 }) {
     return (
-        <div className="min-h-screen bg-[#0b1121] text-white font-sans flex antialiased">
+        <div className="min-h-screen bg-admin-bg text-admin-text font-sans flex antialiased transition-colors duration-300">
             <Sidebar />
             <main className="flex-1 p-6 md:p-10 lg:p-12 overflow-y-auto w-full">
                 <div className="max-w-6xl mx-auto space-y-10">

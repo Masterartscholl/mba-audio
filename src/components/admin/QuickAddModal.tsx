@@ -56,24 +56,24 @@ export const QuickAddModal = ({
     const placeholderText = type === 'category' ? t('placeholder') : t('genrePlaceholder');
 
     return (
-        <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-4 backdrop-blur-sm">
-            <div className="bg-[#151e32] border border-[#2A3B55] w-full max-w-sm rounded-2xl shadow-2xl p-6">
-                <h3 className="text-white font-bold text-lg mb-4">{titleText}</h3>
+        <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4 backdrop-blur-md">
+            <div className="bg-admin-card border border-admin-border w-full max-w-sm rounded-2xl shadow-2xl p-6">
+                <h3 className="text-admin-text font-bold text-lg mb-4">{titleText}</h3>
                 <input
                     autoFocus
                     value={name}
                     onChange={(e) => setName(e.target.value)}
-                    className="w-full bg-[#0b1121] border border-[#2A3B55] rounded-xl px-4 py-3 text-white focus:border-[#ede066] mb-4 outline-none"
+                    className="w-full bg-admin-bg border border-admin-border rounded-xl px-4 py-3 text-admin-text focus:border-admin-primary mb-4 outline-none font-medium"
                     placeholder={placeholderText}
                 />
                 <div className="flex gap-3">
-                    <button onClick={onClose} className="flex-1 py-3 text-slate-400 hover:text-white bg-[#0b1121] rounded-xl font-medium transition-colors">
+                    <button onClick={onClose} className="flex-1 py-3 text-admin-text-muted hover:text-admin-text bg-admin-bg rounded-xl font-medium transition-colors border border-admin-border">
                         {tc('cancel')}
                     </button>
                     <button
                         onClick={handleSave}
                         disabled={loading || !name}
-                        className="flex-1 py-3 bg-[#ede066] text-black font-bold rounded-xl hover:bg-[#d4c95b] transition-all disabled:opacity-50"
+                        className="flex-1 py-3 bg-admin-primary text-admin-bg font-bold rounded-xl hover:bg-admin-primary/90 transition-all disabled:opacity-50"
                     >
                         {loading ? "..." : tc('save')}
                     </button>

@@ -145,17 +145,17 @@ export default function SettingsPage() {
             {/* Header */}
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
                 <div>
-                    <h1 className="text-3xl font-bold text-white tracking-tight">{t('title')}</h1>
-                    <p className="text-slate-400 mt-1">{t('description')}</p>
+                    <h1 className="text-3xl font-bold text-admin-text tracking-tight">{t('title')}</h1>
+                    <p className="text-admin-text-muted mt-1">{t('description')}</p>
                 </div>
                 {activeTab !== 'account' && (
                     <button
                         onClick={handleSave}
                         disabled={saving}
-                        className="px-8 py-3 rounded-xl bg-[#ede066] text-[#0b1121] font-bold hover:bg-[#d4c95b] transition-all shadow-[0_4px_20px_rgba(237,224,102,0.2)] disabled:opacity-50 flex items-center gap-2"
+                        className="px-8 py-3 rounded-xl bg-admin-primary text-admin-bg font-bold hover:bg-admin-primary/90 transition-all shadow-lg disabled:opacity-50 flex items-center gap-2"
                     >
                         {saving ? (
-                            <div className="w-5 h-5 border-2 border-[#0b1121]/20 border-t-[#0b1121] rounded-full animate-spin"></div>
+                            <div className="w-5 h-5 border-2 border-admin-bg/20 border-t-admin-bg rounded-full animate-spin"></div>
                         ) : (
                             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" /></svg>
                         )}
@@ -180,14 +180,14 @@ export default function SettingsPage() {
             )}
 
             {/* Tabs Navigation */}
-            <div className="flex p-1.5 bg-[#151e32] rounded-2xl border border-[#1e293b] w-fit">
+            <div className="flex p-1.5 bg-admin-card rounded-2xl border border-admin-border w-fit">
                 {tabs.map((tab) => (
                     <button
                         key={tab.id}
                         onClick={() => setActiveTab(tab.id as any)}
                         className={`flex items-center gap-2 px-6 py-2.5 rounded-xl text-sm font-bold transition-all ${activeTab === tab.id
-                            ? 'bg-[#ede066] text-[#0b1121] shadow-lg'
-                            : 'text-slate-400 hover:text-white hover:bg-[#1e293b]'
+                            ? 'bg-admin-primary text-admin-bg shadow-lg'
+                            : 'text-admin-text-muted hover:text-admin-text hover:bg-admin-border/50'
                             }`}
                     >
                         {tab.icon}
@@ -201,63 +201,63 @@ export default function SettingsPage() {
                 {activeTab === 'general' && (
                     <div className="grid md:grid-cols-2 gap-8">
                         {/* Site Bilgileri */}
-                        <div className="bg-[#151e32] rounded-3xl p-8 border border-[#1e293b] space-y-6 shadow-xl leading-relaxed">
+                        <div className="bg-admin-card rounded-3xl p-8 border border-admin-border space-y-6 shadow-xl leading-relaxed">
                             <div className="flex items-center gap-3 mb-2">
-                                <div className="p-2.5 rounded-xl bg-[#0b1121] text-[#ede066] border border-[#2A3B55]">
+                                <div className="p-2.5 rounded-xl bg-admin-bg text-admin-primary border border-admin-border">
                                     <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" /></svg>
                                 </div>
-                                <h3 className="text-xl font-bold text-white">{t('siteInfo')}</h3>
+                                <h3 className="text-xl font-bold text-admin-text">{t('siteInfo')}</h3>
                             </div>
 
                             <div className="space-y-4">
                                 <div className="space-y-2">
-                                    <label className="text-xs uppercase font-bold text-slate-500 tracking-wider">{t('siteTitle')}</label>
+                                    <label className="text-xs uppercase font-bold text-admin-text-muted tracking-wider">{t('siteTitle')}</label>
                                     <input
                                         type="text"
                                         value={settings.site_title}
                                         onChange={(e) => setSettings({ ...settings, site_title: e.target.value })}
-                                        className="w-full bg-[#0b1121] border border-[#2A3B55] rounded-xl px-4 py-3.5 text-white focus:outline-none focus:border-[#ede066]/50 transition-all"
+                                        className="w-full bg-admin-bg border border-admin-border rounded-xl px-4 py-3.5 text-admin-text focus:outline-none focus:border-admin-primary/50 transition-all font-medium"
                                     />
                                 </div>
                                 <div className="space-y-2">
-                                    <label className="text-xs uppercase font-bold text-slate-500 tracking-wider">{t('contactEmail')}</label>
+                                    <label className="text-xs uppercase font-bold text-admin-text-muted tracking-wider">{t('contactEmail')}</label>
                                     <input
                                         type="email"
                                         value={settings.contact_email}
                                         onChange={(e) => setSettings({ ...settings, contact_email: e.target.value })}
-                                        className="w-full bg-[#0b1121] border border-[#2A3B55] rounded-xl px-4 py-3.5 text-white focus:outline-none focus:border-[#ede066]/50 transition-all"
+                                        className="w-full bg-admin-bg border border-admin-border rounded-xl px-4 py-3.5 text-admin-text focus:outline-none focus:border-admin-primary/50 transition-all font-medium"
                                     />
                                 </div>
                                 <div className="space-y-2">
-                                    <label className="text-xs uppercase font-bold text-slate-500 tracking-wider">{t('whatsappNo')}</label>
+                                    <label className="text-xs uppercase font-bold text-admin-text-muted tracking-wider">{t('whatsappNo')}</label>
                                     <input
                                         type="text"
                                         value={settings.whatsapp_no}
                                         onChange={(e) => setSettings({ ...settings, whatsapp_no: e.target.value })}
-                                        className="w-full bg-[#0b1121] border border-[#2A3B55] rounded-xl px-4 py-3.5 text-white focus:outline-none focus:border-[#ede066]/50 transition-all"
+                                        className="w-full bg-admin-bg border border-admin-border rounded-xl px-4 py-3.5 text-admin-text focus:outline-none focus:border-admin-primary/50 transition-all font-medium"
                                     />
                                 </div>
                             </div>
                         </div>
 
                         {/* Sistem Durumu */}
-                        <div className="bg-[#151e32] rounded-3xl p-8 border border-[#1e293b] space-y-6 shadow-xl leading-relaxed">
+                        <div className="bg-admin-card rounded-3xl p-8 border border-admin-border space-y-6 shadow-xl leading-relaxed">
                             <div className="flex items-center gap-3 mb-2">
-                                <div className="p-2.5 rounded-xl bg-[#0b1121] text-[#ede066] border border-[#2A3B55]">
+                                <div className="p-2.5 rounded-xl bg-admin-bg text-admin-primary border border-admin-border">
                                     <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 10V3L4 14h7v7l9-11h-7z" /></svg>
                                 </div>
-                                <h3 className="text-xl font-bold text-white">{t('systemStatus')}</h3>
+                                <h3 className="text-xl font-bold text-admin-text">{t('systemStatus')}</h3>
                             </div>
 
                             <div className="space-y-5">
-                                <div className="flex items-center justify-between p-4 bg-[#0b1121] rounded-2xl border border-[#2A3B55]">
+                                <div className="flex items-center justify-between p-4 bg-admin-bg rounded-2xl border border-admin-border">
                                     <div>
-                                        <p className="font-bold text-white">{t('maintenanceMode')}</p>
-                                        <p className="text-xs text-slate-500">{t('maintenanceDesc')}</p>
+                                        <p className="font-bold text-admin-text">{t('maintenanceMode')}</p>
+                                        <p className="text-xs text-admin-text-muted">{t('maintenanceDesc')}</p>
                                     </div>
                                     <button
                                         onClick={() => setSettings({ ...settings, is_maintenance_mode: !settings.is_maintenance_mode })}
-                                        className={`w-12 h-6 rounded-full transition-colors relative ${settings.is_maintenance_mode ? 'bg-[#ede066]' : 'bg-slate-700'}`}
+                                        className={`w-12 h-6 rounded-full transition-colors relative ${settings.is_maintenance_mode ? 'bg-admin-primary' : 'bg-admin-border'}`}
                                     >
                                         <div className={`absolute top-1 w-4 h-4 rounded-full bg-white transition-all ${settings.is_maintenance_mode ? 'left-7' : 'left-1'}`}></div>
                                     </button>
@@ -265,24 +265,24 @@ export default function SettingsPage() {
 
                                 <div className="grid grid-cols-2 gap-4">
                                     <div className="space-y-2">
-                                        <label className="text-xs uppercase font-bold text-slate-500 tracking-wider text-[10px]">{t('defaultLang')}</label>
+                                        <label className="text-xs uppercase font-bold text-admin-text-muted tracking-wider text-[10px]">{t('defaultLang')}</label>
                                         <select
                                             value={settings.default_lang}
                                             onChange={(e) => setSettings({ ...settings, default_lang: e.target.value })}
-                                            className="w-full bg-[#0b1121] border border-[#2A3B55] rounded-xl px-4 py-3.5 text-white appearance-none focus:outline-none focus:border-[#ede066]/50 cursor-pointer"
+                                            className="w-full bg-admin-bg border border-admin-border rounded-xl px-4 py-3.5 text-admin-text appearance-none focus:outline-none focus:border-admin-primary/50 cursor-pointer font-medium"
                                         >
                                             <option value="tr">Türkçe (TR)</option>
                                             <option value="en">English (EN)</option>
                                         </select>
                                     </div>
                                     <div className="space-y-2 opacity-50 cursor-not-allowed">
-                                        <label className="text-xs uppercase font-bold text-slate-500 tracking-wider text-[10px]">{t('theme')}</label>
-                                        <select disabled className="w-full bg-[#0b1121] border border-[#2A3B55] rounded-xl px-4 py-3.5 text-white appearance-none">
+                                        <label className="text-xs uppercase font-bold text-admin-text-muted tracking-wider text-[10px]">{t('theme')}</label>
+                                        <select disabled className="w-full bg-admin-bg border border-admin-border rounded-xl px-4 py-3.5 text-admin-text appearance-none font-medium">
                                             <option>Karanlık (Moon)</option>
                                         </select>
                                     </div>
                                 </div>
-                                <p className="text-[10px] text-slate-500 italic text-center">{t('themeDesc')}</p>
+                                <p className="text-[10px] text-admin-text-muted italic text-center">{t('themeDesc')}</p>
                             </div>
                         </div>
                     </div>
@@ -290,31 +290,31 @@ export default function SettingsPage() {
 
                 {activeTab === 'music' && (
                     <div className="grid md:grid-cols-2 gap-8">
-                        <div className="bg-[#151e32] rounded-3xl p-8 border border-[#1e293b] space-y-8 shadow-xl">
+                        <div className="bg-admin-card rounded-3xl p-8 border border-admin-border space-y-8 shadow-xl">
                             <div className="flex items-center gap-3">
-                                <div className="p-2.5 rounded-xl bg-[#0b1121] text-[#ede066] border border-[#2A3B55]">
+                                <div className="p-2.5 rounded-xl bg-admin-bg text-admin-primary border border-admin-border">
                                     <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
                                 </div>
-                                <h3 className="text-xl font-bold text-white">{t('pricing')}</h3>
+                                <h3 className="text-xl font-bold text-admin-text">{t('pricing')}</h3>
                             </div>
 
                             <div className="grid grid-cols-2 gap-4">
                                 <div className="space-y-2">
-                                    <label className="text-xs uppercase font-bold text-slate-500 tracking-wider">{t('defaultPrice')}</label>
+                                    <label className="text-xs uppercase font-bold text-admin-text-muted tracking-wider">{t('defaultPrice')}</label>
                                     <input
                                         type="number"
                                         value={settings.default_price}
                                         onChange={(e) => setSettings({ ...settings, default_price: e.target.value === '' ? '' : Number(e.target.value) })}
-                                        className="w-full bg-[#0b1121] border border-[#2A3B55] rounded-xl px-4 py-3.5 text-white focus:outline-none focus:border-[#ede066]/50 transition-all"
+                                        className="w-full bg-admin-bg border border-admin-border rounded-xl px-4 py-3.5 text-admin-text focus:outline-none focus:border-admin-primary/50 transition-all font-medium"
                                         placeholder="0.00"
                                     />
                                 </div>
                                 <div className="space-y-2">
-                                    <label className="text-xs uppercase font-bold text-slate-500 tracking-wider">{t('currency')}</label>
+                                    <label className="text-xs uppercase font-bold text-admin-text-muted tracking-wider">{t('currency')}</label>
                                     <select
                                         value={settings.currency}
                                         onChange={(e) => setSettings({ ...settings, currency: e.target.value })}
-                                        className="w-full bg-[#0b1121] border border-[#2A3B55] rounded-xl px-4 py-3.5 text-white focus:outline-none focus:border-[#ede066]/50 appearance-none cursor-pointer"
+                                        className="w-full bg-admin-bg border border-admin-border rounded-xl px-4 py-3.5 text-admin-text focus:outline-none focus:border-admin-primary/50 appearance-none cursor-pointer font-medium"
                                     >
                                         <option value="TL">{t('currencies.TL')}</option>
                                         <option value="USD">{t('currencies.USD')}</option>
@@ -324,23 +324,23 @@ export default function SettingsPage() {
                             </div>
                         </div>
 
-                        <div className="bg-[#151e32] rounded-3xl p-8 border border-[#1e293b] space-y-8 shadow-xl">
+                        <div className="bg-admin-card rounded-3xl p-8 border border-admin-border space-y-8 shadow-xl">
                             <div className="flex items-center gap-3">
-                                <div className="p-2.5 rounded-xl bg-[#0b1121] text-[#ede066] border border-[#2A3B55]">
+                                <div className="p-2.5 rounded-xl bg-admin-bg text-admin-primary border border-admin-border">
                                     <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" /></svg>
                                 </div>
-                                <h3 className="text-xl font-bold text-white">{t('security')}</h3>
+                                <h3 className="text-xl font-bold text-admin-text">{t('security')}</h3>
                             </div>
 
-                            <div className="bg-[#0b1121] rounded-2xl p-6 border border-[#2A3B55] space-y-4">
+                            <div className="bg-admin-bg rounded-2xl p-6 border border-admin-border space-y-4">
                                 <div className="flex items-center justify-between">
                                     <div>
-                                        <p className="font-bold text-white leading-tight">{t('watermarkStatus')}</p>
-                                        <p className="text-xs text-slate-500 mt-1 max-w-[240px]">{t('watermarkDesc')}</p>
+                                        <p className="font-bold text-admin-text leading-tight">{t('watermarkStatus')}</p>
+                                        <p className="text-xs text-admin-text-muted mt-1 max-w-[240px]">{t('watermarkDesc')}</p>
                                     </div>
                                     <button
                                         onClick={() => setSettings({ ...settings, is_watermark_active: !settings.is_watermark_active })}
-                                        className={`w-12 h-6 rounded-full transition-colors relative shrink-0 ${settings.is_watermark_active ? 'bg-green-500' : 'bg-slate-700'}`}
+                                        className={`w-12 h-6 rounded-full transition-colors relative shrink-0 ${settings.is_watermark_active ? 'bg-green-500' : 'bg-admin-border'}`}
                                     >
                                         <div className={`absolute top-1 w-4 h-4 rounded-full bg-white transition-all ${settings.is_watermark_active ? 'left-7' : 'left-1'}`}></div>
                                     </button>
@@ -352,44 +352,44 @@ export default function SettingsPage() {
 
                 {activeTab === 'account' && (
                     <div className="max-w-2xl mx-auto w-full">
-                        <form onSubmit={handlePasswordUpdate} className="bg-[#151e32] rounded-3xl p-8 border border-[#1e293b] space-y-8 shadow-xl">
+                        <form onSubmit={handlePasswordUpdate} className="bg-admin-card rounded-3xl p-8 border border-admin-border space-y-8 shadow-xl">
                             <div className="flex items-center gap-3">
-                                <div className="p-2.5 rounded-xl bg-[#0b1121] text-[#ede066] border border-[#2A3B55]">
+                                <div className="p-2.5 rounded-xl bg-admin-bg text-admin-primary border border-admin-border">
                                     <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" /></svg>
                                 </div>
-                                <h3 className="text-xl font-bold text-white">{t('passwordTitle')}</h3>
+                                <h3 className="text-xl font-bold text-admin-text">{t('passwordTitle')}</h3>
                             </div>
 
                             <div className="space-y-4">
                                 <div className="space-y-2">
-                                    <label className="text-xs uppercase font-bold text-slate-500 tracking-wider">{t('currentPassword')}</label>
+                                    <label className="text-xs uppercase font-bold text-admin-text-muted tracking-wider">{t('currentPassword')}</label>
                                     <input
                                         type="password"
                                         required
                                         value={passwordData.currentPassword}
                                         onChange={(e) => setPasswordData({ ...passwordData, currentPassword: e.target.value })}
-                                        className="w-full bg-[#0b1121] border border-[#2A3B55] rounded-xl px-4 py-3.5 text-white focus:outline-none focus:border-[#ede066]/50 transition-all"
+                                        className="w-full bg-admin-bg border border-admin-border rounded-xl px-4 py-3.5 text-admin-text focus:outline-none focus:border-admin-primary/50 transition-all font-medium"
                                     />
                                 </div>
                                 <div className="grid md:grid-cols-2 gap-4">
                                     <div className="space-y-2">
-                                        <label className="text-xs uppercase font-bold text-slate-500 tracking-wider">{t('newPassword')}</label>
+                                        <label className="text-xs uppercase font-bold text-admin-text-muted tracking-wider">{t('newPassword')}</label>
                                         <input
                                             type="password"
                                             required
                                             value={passwordData.newPassword}
                                             onChange={(e) => setPasswordData({ ...passwordData, newPassword: e.target.value })}
-                                            className="w-full bg-[#0b1121] border border-[#2A3B55] rounded-xl px-4 py-3.5 text-white focus:outline-none focus:border-[#ede066]/50 transition-all"
+                                            className="w-full bg-admin-bg border border-admin-border rounded-xl px-4 py-3.5 text-admin-text focus:outline-none focus:border-admin-primary/50 transition-all font-medium"
                                         />
                                     </div>
                                     <div className="space-y-2">
-                                        <label className="text-xs uppercase font-bold text-slate-500 tracking-wider">{t('confirmPassword')}</label>
+                                        <label className="text-xs uppercase font-bold text-admin-text-muted tracking-wider">{t('confirmPassword')}</label>
                                         <input
                                             type="password"
                                             required
                                             value={passwordData.confirmPassword}
                                             onChange={(e) => setPasswordData({ ...passwordData, confirmPassword: e.target.value })}
-                                            className="w-full bg-[#0b1121] border border-[#2A3B55] rounded-xl px-4 py-3.5 text-white focus:outline-none focus:border-[#ede066]/50 transition-all"
+                                            className="w-full bg-admin-bg border border-admin-border rounded-xl px-4 py-3.5 text-admin-text focus:outline-none focus:border-admin-primary/50 transition-all font-medium"
                                         />
                                     </div>
                                 </div>
@@ -398,7 +398,7 @@ export default function SettingsPage() {
                             <button
                                 type="submit"
                                 disabled={saving}
-                                className="w-full py-4 rounded-xl bg-[#ede066] text-[#0b1121] font-bold hover:bg-[#d4c95b] transition-all shadow-[0_4px_20px_rgba(237,224,102,0.2)] disabled:opacity-50"
+                                className="w-full py-4 rounded-xl bg-admin-primary text-admin-bg font-bold hover:bg-admin-primary/90 transition-all shadow-lg disabled:opacity-50"
                             >
                                 {saving ? t('passwordUpdating') : t('passwordUpdate')}
                             </button>

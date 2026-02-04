@@ -4,10 +4,18 @@ import React from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useTranslations } from 'next-intl';
+import { useTheme } from 'next-themes';
 
 export const Sidebar = () => {
     const pathname = usePathname();
     const t = useTranslations('Sidebar');
+    const { theme, setTheme } = useTheme();
+    const [mounted, setMounted] = React.useState(false);
+
+    // useEffect only runs on the client, so now we can safely show the UI
+    React.useEffect(() => {
+        setMounted(true);
+    }, []);
 
     const menuItems = [
         {
@@ -50,15 +58,15 @@ export const Sidebar = () => {
     ];
 
     return (
-        <aside className="w-64 bg-[#0f172a] border-r border-[#1e293b] flex-col hidden md:flex sticky top-0 h-screen shrink-0">
+        <aside className="w-64 bg-admin-sidebar border-r border-admin-border flex-col hidden md:flex sticky top-0 h-screen shrink-0 transition-colors duration-300">
             <div className="p-8">
-                <div className="flex items-center gap-3 text-[#ede066]">
-                    <div className="w-8 h-8 rounded-full bg-[#ede066] flex items-center justify-center shadow-[0_0_15px_rgba(237,224,102,0.4)]">
-                        <svg className="w-5 h-5 text-[#0b1121]" fill="currentColor" viewBox="0 0 24 24">
+                <div className="flex items-center gap-3 text-admin-primary">
+                    <div className="w-8 h-8 rounded-full bg-admin-primary flex items-center justify-center shadow-[0_0_15px_rgba(237,224,102,0.4)] transition-all">
+                        <svg className="w-5 h-5 text-admin-bg" fill="currentColor" viewBox="0 0 24 24">
                             <path d="M12 2L2 7l10 5 10-5-10-5zm0 9l2.5-1.25L12 8.5l-2.5 1.25L12 11zm0 2.5l-5-2.5-5 2.5L12 22l10-8.5-5-2.5-5 2.5z" />
                         </svg>
                     </div>
-                    <span className="font-bold text-lg tracking-wide">MBA AUDIO</span>
+                    <span className="font-bold text-lg tracking-wide text-admin-text">MBA AUDIO</span>
                 </div>
             </div>
 
@@ -70,8 +78,8 @@ export const Sidebar = () => {
                             key={item.path}
                             href={item.path}
                             className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-all text-left ${isActive
-                                ? 'bg-[#ede066]/10 text-[#ede066] border border-[#ede066]/20'
-                                : 'text-gray-400 hover:text-white hover:bg-[#1e293b]'
+                                ? 'bg-admin-primary/10 text-admin-primary border border-admin-primary/20'
+                                : 'text-admin-text-muted hover:text-admin-text hover:bg-admin-border/50'
                                 }`}
                         >
                             {item.icon}
@@ -81,12 +89,35 @@ export const Sidebar = () => {
                 })}
             </nav>
 
-            <div className="p-6 border-t border-[#1e293b]">
-                <div className="flex items-center gap-3 p-3 bg-[#0b1121]/50 rounded-xl border border-[#2A3B55]">
-                    <div className="w-10 h-10 rounded-full bg-[#1e293b] flex items-center justify-center text-[#ede066] font-bold border border-[#2A3B55]">A</div>
+            <div className="p-6 border-t border-admin-border space-y-4">
+                {mounted && (
+                    <button
+                        onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
+                        className="w-full flex items-center justify-between p-3 bg-admin-card rounded-xl border border-admin-border hover:border-admin-primary/50 transition-all group"
+                    >
+                        <div className="flex items-center gap-3">
+                            <div className="w-8 h-8 rounded-lg bg-admin-bg border border-admin-border flex items-center justify-center text-admin-text-muted group-hover:text-admin-primary transition-colors">
+                                {theme === 'dark' ? (
+                                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" /></svg>
+                                ) : (
+                                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" /></svg>
+                                )}
+                            </div>
+                            <span className="text-sm font-medium text-admin-text">
+                                {theme === 'dark' ? 'Açık Mod' : 'Koyu Mod'}
+                            </span>
+                        </div>
+                        <div className={`w-10 h-5 rounded-full relative transition-colors ${theme === 'dark' ? 'bg-admin-primary' : 'bg-admin-border'}`}>
+                            <div className={`absolute top-1 w-3 h-3 rounded-full bg-white transition-all ${theme === 'dark' ? 'left-6' : 'left-1'}`}></div>
+                        </div>
+                    </button>
+                )}
+
+                <div className="flex items-center gap-3 p-3 bg-admin-card rounded-xl border border-admin-border">
+                    <div className="w-10 h-10 rounded-full bg-admin-bg flex items-center justify-center text-admin-primary font-bold border border-admin-border">A</div>
                     <div>
-                        <h4 className="text-sm font-semibold text-white">{t('admin')}</h4>
-                        <p className="text-xs text-gray-500">{t('superAdmin')}</p>
+                        <h4 className="text-sm font-semibold text-admin-text">{t('admin')}</h4>
+                        <p className="text-xs text-admin-text-muted">{t('superAdmin')}</p>
                     </div>
                 </div>
             </div>
