@@ -1,0 +1,129 @@
+{
+    "Settings": {
+        "title": "Ayarlar",
+        "description": "Platform genel yapılandırmasını buradan yönetin.",
+        "save": "Ayarları Kaydet",
+        "general": "Genel",
+        "music": "Müzik Ayarları",
+        "account": "Hesap",
+        "siteInfo": "Site Bilgileri",
+        "siteTitle": "Site Başlığı",
+        "contactEmail": "İletişim E-postası",
+        "whatsappNo": "WhatsApp Numarası",
+        "systemStatus": "Sistem & Görünüm",
+        "maintenanceMode": "Bakım Modu",
+        "maintenanceDesc": "Aktif olduğunda site ziyaretçilere kapatılır.",
+        "defaultLang": "Varsayılan Dil",
+        "theme": "Tema",
+        "themeDesc": "* Dil ve tema seçenekleri bir sonraki güncellemede aktif edilecektir.",
+        "pricing": "Global Fiyatlandırma",
+        "defaultPrice": "Varsayılan Fiyat",
+        "currency": "Para Birimi",
+        "currencies": {
+            "TL": "Türk Lirası (₺)",
+            "USD": "Amerikan Doları ($)",
+            "EUR": "Euro (€)"
+        },
+        "security": "Güvenlik & Filigran",
+        "watermarkStatus": "Filigran (Watermark) Durumu",
+        "watermarkDesc": "Aktif edildiğinde tüm ön izleme dosyalarına ses damgası eklenmiş sayılır.",
+        "passwordTitle": "Şifre Değiştir",
+        "currentPassword": "Mevcut Şifre",
+        "newPassword": "Yeni Şifre",
+        "confirmPassword": "Yeni Şifre (Tekrar)",
+        "passwordUpdate": "Şifreyi Güncelle",
+        "passwordUpdating": "Şifre Güncelleniyor...",
+        "success": "Ayarlar başarıyla güncellendi.",
+        "error": "Ayarlar güncellenirken hata oluştu",
+        "passwordMatchError": "Yeni şifreler eşleşmiyor!"
+    },
+    "Sidebar": {
+        "dashboard": "Panel",
+        "library": "Kütüphane",
+        "categories": "Kategori & Tür",
+        "settings": "Ayarlar",
+        "admin": "Yönetici",
+        "superAdmin": "Süper Yönetici"
+    },
+    "Dashboard": {
+        "title": "Hızlı Müzik Yükle",
+        "description": "Yeni bir eseri kütüphaneye ekleyin.",
+        "trackTitle": "Eser Adı",
+        "category": "Kategori",
+        "genre": "Tür",
+        "bpm": "BPM",
+        "mode": "Mod / Ton",
+        "price": "Fiyat",
+        "previewFile": "Ön İzleme Dosyası (MP3)",
+        "masterFile": "Master Dosyası (Yüksek Kalite)",
+        "selectFile": "Dosya Seç",
+        "quickUpload": "Hızlı Yükle",
+        "publish": "Yayınla",
+        "updating": "Güncelleniyor...",
+        "empty": "Henüz eser bulunmuyor.",
+        "recentUploads": "Son Yüklenenler",
+        "table": {
+            "title": "Eser Adı",
+            "category": "Kategori",
+            "genre": "Tür",
+            "date": "Tarih",
+            "status": "Durum",
+            "published": "YAYINDA",
+            "draft": "TASLAK"
+        },
+        "messages": {
+            "success": "Eser başarıyla yüklendi!",
+            "error": "Hata oluştu",
+            "fileRequired": "Lütfen gerekli dosyaları yükleyin."
+        }
+    },
+    "Library": {
+        "title": "Kütüphane",
+        "description": "Yüklediğiniz tüm eserleri buradan yönetebilirsiniz.",
+        "table": {
+            "name": "ESER ADI",
+            "category": "KATEGORİ",
+            "genre": "TÜR",
+            "bpm": "BPM",
+            "mode": "MOD / TON",
+            "price": "FİYAT",
+            "status": "DURUM",
+            "date": "TARİH",
+            "actions": "İŞLEMLER",
+            "published": "YAYINDA",
+            "draft": "TASLAK"
+        },
+        "empty": "Henüz yüklü bir eser bulunamadı.",
+        "updateError": "Güncelleme hatası",
+        "edit": "Eseri Düzenle",
+        "deleteConfirm": "Bu eseri silmek istediğinize emin misiniz?",
+        "update": "Güncelle",
+        "updating": "Güncelleniyor...",
+        "cancel": "İptal",
+        "changePreview": "Ön İzleme (Değiştir)",
+        "changeMaster": "Master (Değiştir)"
+    },
+    "Categories": {
+        "title": "Kategori & Tür Yönetimi",
+        "categories": "Kategoriler",
+        "genres": "Müzik Türleri",
+        "addCategory": "Yeni Kategori Ekle",
+        "addGenre": "Yeni Tür Ekle",
+        "table": {
+            "name": "AD",
+            "count": "ESER SAYISI",
+            "actions": "İŞLEMLER"
+        },
+        "placeholder": "Yeni kategori adı...",
+        "genrePlaceholder": "Yeni tür adı...",
+        "emptyGenres": "Henüz bağlı tür yok.",
+        "add": "Ekle",
+        "deleteConfirm": "Bu öğeyi silmek istediğinize emin misiniz?"
+    },
+    "Common": {
+        "save": "Kaydet",
+        "cancel": "İptal",
+        "error": "Hata",
+        "success": "Başarılı"
+    }
+}

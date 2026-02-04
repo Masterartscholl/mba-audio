@@ -1,0 +1,129 @@
+{
+    "Settings": {
+        "title": "Settings",
+        "description": "Manage platform-wide configurations here.",
+        "save": "Save Settings",
+        "general": "General",
+        "music": "Music Settings",
+        "account": "Account",
+        "siteInfo": "Site Information",
+        "siteTitle": "Site Title",
+        "contactEmail": "Contact Email",
+        "whatsappNo": "WhatsApp Number",
+        "systemStatus": "System & Appearance",
+        "maintenanceMode": "Maintenance Mode",
+        "maintenanceDesc": "When active, the site is closed to visitors.",
+        "defaultLang": "Default Language",
+        "theme": "Theme",
+        "themeDesc": "* Language and theme options will be activated in the next update.",
+        "pricing": "Global Pricing",
+        "defaultPrice": "Default Price",
+        "currency": "Currency",
+        "currencies": {
+            "TL": "Turkish Lira (₺)",
+            "USD": "US Dollar ($)",
+            "EUR": "Euro (€)"
+        },
+        "security": "Security & Watermark",
+        "watermarkStatus": "Watermark Status",
+        "watermarkDesc": "When active, it means audio stamps have been added to all preview files.",
+        "passwordTitle": "Change Password",
+        "currentPassword": "Current Password",
+        "newPassword": "New Password",
+        "confirmPassword": "Confirm New Password",
+        "passwordUpdate": "Update Password",
+        "passwordUpdating": "Updating Password...",
+        "success": "Settings updated successfully.",
+        "error": "Error updating settings",
+        "passwordMatchError": "New passwords do not match!"
+    },
+    "Sidebar": {
+        "dashboard": "Dashboard",
+        "library": "Library",
+        "categories": "Category & Genre",
+        "settings": "Settings",
+        "admin": "Admin User",
+        "superAdmin": "Super Admin"
+    },
+    "Dashboard": {
+        "title": "Quick Music Upload",
+        "description": "Add a new work to the library.",
+        "trackTitle": "Track Title",
+        "category": "Category",
+        "genre": "Genre",
+        "bpm": "BPM",
+        "mode": "Mode / Key",
+        "price": "Price",
+        "previewFile": "Preview File (MP3)",
+        "masterFile": "Master File (High Quality)",
+        "selectFile": "Select File",
+        "quickUpload": "Quick Upload",
+        "publish": "Publish",
+        "updating": "Updating...",
+        "empty": "No tracks found yet.",
+        "recentUploads": "Recent Uploads",
+        "table": {
+            "title": "Track Title",
+            "category": "Category",
+            "genre": "Genre",
+            "date": "Date",
+            "status": "Status",
+            "published": "PUBLISHED",
+            "draft": "DRAFT"
+        },
+        "messages": {
+            "success": "Track uploaded successfully!",
+            "error": "Error occurred",
+            "fileRequired": "Please upload the required files."
+        }
+    },
+    "Library": {
+        "title": "Library",
+        "description": "You can manage all your uploaded works here.",
+        "table": {
+            "name": "TRACK TITLE",
+            "category": "CATEGORY",
+            "genre": "GENRE",
+            "bpm": "BPM",
+            "mode": "MODE / KEY",
+            "price": "PRICE",
+            "status": "STATUS",
+            "date": "DATE",
+            "actions": "ACTIONS",
+            "published": "PUBLISHED",
+            "draft": "DRAFT"
+        },
+        "empty": "No items found in the library.",
+        "updateError": "Update error",
+        "edit": "Edit Track",
+        "deleteConfirm": "Are you sure you want to delete this track?",
+        "update": "Update",
+        "updating": "Updating...",
+        "cancel": "Cancel",
+        "changePreview": "Preview (Change)",
+        "changeMaster": "Master (Change)"
+    },
+    "Categories": {
+        "title": "Category & Genre Management",
+        "categories": "Categories",
+        "genres": "Music Genres",
+        "addCategory": "Add New Category",
+        "addGenre": "Add New Genre",
+        "table": {
+            "name": "NAME",
+            "count": "TRACK COUNT",
+            "actions": "ACTIONS"
+        },
+        "placeholder": "New category name...",
+        "genrePlaceholder": "New genre name...",
+        "emptyGenres": "No genres connected yet.",
+        "add": "Add",
+        "deleteConfirm": "Are you sure you want to delete this item?"
+    },
+    "Common": {
+        "save": "Save",
+        "cancel": "Cancel",
+        "error": "Error",
+        "success": "Success"
+    }
+}

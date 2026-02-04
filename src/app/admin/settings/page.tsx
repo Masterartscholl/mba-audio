@@ -3,6 +3,8 @@
 import React, { useState, useEffect } from 'react';
 import { supabase } from '@/lib/supabase';
 import { SkeletonLoader } from '@/components/admin/SkeletonLoader';
+import { useTranslations } from 'next-intl';
+import { setUserLocale } from '@/services/locale';
 
 type Settings = {
     site_title: string;
@@ -21,6 +23,7 @@ export default function SettingsPage() {
     const [loading, setLoading] = useState(true);
     const [saving, setSaving] = useState(false);
     const [notification, setNotification] = useState<{ type: 'success' | 'error', message: string } | null>(null);
+    const t = useTranslations('Settings');
 
     // Settings State
     const [settings, setSettings] = useState<Settings>({
@@ -70,21 +73,25 @@ export default function SettingsPage() {
 
     const handleSave = async () => {
         if (settings.default_price === '' || isNaN(Number(settings.default_price))) {
-            setNotification({ type: 'error', message: 'Varsayılan fiyat boş olamaz ve geçerli bir sayı olmalıdır.' });
+            setNotification({ type: 'error', message: t('error') });
             return;
         }
 
         setSaving(true);
         setNotification(null);
 
+        // Update database
         const { error } = await supabase
             .from('settings')
             .upsert({ id: 1, ...settings });
 
         if (error) {
-            setNotification({ type: 'error', message: 'Ayarlar güncellenirken hata oluştu: ' + error.message });
+            setNotification({ type: 'error', message: t('error') + ': ' + error.message });
         } else {
-            setNotification({ type: 'success', message: 'Ayarlar başarıyla güncellendi.' });
+            // Update locale cookie for immediate feedback
+            await setUserLocale(settings.default_lang);
+
+            setNotification({ type: 'success', message: t('success') });
             setTimeout(() => setNotification(null), 3000);
         }
         setSaving(false);
@@ -93,7 +100,7 @@ export default function SettingsPage() {
     const handlePasswordUpdate = async (e: React.FormEvent) => {
         e.preventDefault();
         if (passwordData.newPassword !== passwordData.confirmPassword) {
-            alert('Yeni şifreler eşleşmiyor!');
+            alert(t('passwordMatchError'));
             return;
         }
 
@@ -115,17 +122,17 @@ export default function SettingsPage() {
 
     const tabs = [
         {
-            id: 'general', name: 'Genel', icon: (
+            id: 'general', name: t('general'), icon: (
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
             )
         },
         {
-            id: 'music', name: 'Müzik Ayarları', icon: (
+            id: 'music', name: t('music'), icon: (
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12-3c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zM9 10l12-3" /></svg>
             )
         },
         {
-            id: 'account', name: 'Hesap', icon: (
+            id: 'account', name: t('account'), icon: (
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" /></svg>
             )
         }
@@ -138,8 +145,8 @@ export default function SettingsPage() {
             {/* Header */}
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
                 <div>
-                    <h1 className="text-3xl font-bold text-white tracking-tight">Ayarlar</h1>
-                    <p className="text-slate-400 mt-1">Platform genel yapılandırmasını buradan yönetin.</p>
+                    <h1 className="text-3xl font-bold text-white tracking-tight">{t('title')}</h1>
+                    <p className="text-slate-400 mt-1">{t('description')}</p>
                 </div>
                 {activeTab !== 'account' && (
                     <button
@@ -152,7 +159,7 @@ export default function SettingsPage() {
                         ) : (
                             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" /></svg>
                         )}
-                        Ayarları Kaydet
+                        {t('save')}
                     </button>
                 )}
             </div>
@@ -199,12 +206,12 @@ export default function SettingsPage() {
                                 <div className="p-2.5 rounded-xl bg-[#0b1121] text-[#ede066] border border-[#2A3B55]">
                                     <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" /></svg>
                                 </div>
-                                <h3 className="text-xl font-bold text-white">Site Bilgileri</h3>
+                                <h3 className="text-xl font-bold text-white">{t('siteInfo')}</h3>
                             </div>
 
                             <div className="space-y-4">
                                 <div className="space-y-2">
-                                    <label className="text-xs uppercase font-bold text-slate-500 tracking-wider">Site Başlığı</label>
+                                    <label className="text-xs uppercase font-bold text-slate-500 tracking-wider">{t('siteTitle')}</label>
                                     <input
                                         type="text"
                                         value={settings.site_title}
@@ -213,7 +220,7 @@ export default function SettingsPage() {
                                     />
                                 </div>
                                 <div className="space-y-2">
-                                    <label className="text-xs uppercase font-bold text-slate-500 tracking-wider">İletişim E-postası</label>
+                                    <label className="text-xs uppercase font-bold text-slate-500 tracking-wider">{t('contactEmail')}</label>
                                     <input
                                         type="email"
                                         value={settings.contact_email}
@@ -222,7 +229,7 @@ export default function SettingsPage() {
                                     />
                                 </div>
                                 <div className="space-y-2">
-                                    <label className="text-xs uppercase font-bold text-slate-500 tracking-wider">WhatsApp Numarası</label>
+                                    <label className="text-xs uppercase font-bold text-slate-500 tracking-wider">{t('whatsappNo')}</label>
                                     <input
                                         type="text"
                                         value={settings.whatsapp_no}
@@ -239,14 +246,14 @@ export default function SettingsPage() {
                                 <div className="p-2.5 rounded-xl bg-[#0b1121] text-[#ede066] border border-[#2A3B55]">
                                     <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 10V3L4 14h7v7l9-11h-7z" /></svg>
                                 </div>
-                                <h3 className="text-xl font-bold text-white">Sistem & Görünüm</h3>
+                                <h3 className="text-xl font-bold text-white">{t('systemStatus')}</h3>
                             </div>
 
                             <div className="space-y-5">
                                 <div className="flex items-center justify-between p-4 bg-[#0b1121] rounded-2xl border border-[#2A3B55]">
                                     <div>
-                                        <p className="font-bold text-white">Bakım Modu</p>
-                                        <p className="text-xs text-slate-500">Aktif olduğunda site ziyaretçilere kapatılır.</p>
+                                        <p className="font-bold text-white">{t('maintenanceMode')}</p>
+                                        <p className="text-xs text-slate-500">{t('maintenanceDesc')}</p>
                                     </div>
                                     <button
                                         onClick={() => setSettings({ ...settings, is_maintenance_mode: !settings.is_maintenance_mode })}
@@ -256,21 +263,26 @@ export default function SettingsPage() {
                                     </button>
                                 </div>
 
-                                <div className="grid grid-cols-2 gap-4 opacity-50 cursor-not-allowed">
+                                <div className="grid grid-cols-2 gap-4">
                                     <div className="space-y-2">
-                                        <label className="text-xs uppercase font-bold text-slate-500 tracking-wider text-[10px]">Varsayılan Dil</label>
-                                        <select disabled className="w-full bg-[#0b1121] border border-[#2A3B55] rounded-xl px-4 py-3.5 text-white appearance-none">
-                                            <option>Türkçe (TR)</option>
+                                        <label className="text-xs uppercase font-bold text-slate-500 tracking-wider text-[10px]">{t('defaultLang')}</label>
+                                        <select
+                                            value={settings.default_lang}
+                                            onChange={(e) => setSettings({ ...settings, default_lang: e.target.value })}
+                                            className="w-full bg-[#0b1121] border border-[#2A3B55] rounded-xl px-4 py-3.5 text-white appearance-none focus:outline-none focus:border-[#ede066]/50 cursor-pointer"
+                                        >
+                                            <option value="tr">Türkçe (TR)</option>
+                                            <option value="en">English (EN)</option>
                                         </select>
                                     </div>
-                                    <div className="space-y-2">
-                                        <label className="text-xs uppercase font-bold text-slate-500 tracking-wider text-[10px]">Tema</label>
+                                    <div className="space-y-2 opacity-50 cursor-not-allowed">
+                                        <label className="text-xs uppercase font-bold text-slate-500 tracking-wider text-[10px]">{t('theme')}</label>
                                         <select disabled className="w-full bg-[#0b1121] border border-[#2A3B55] rounded-xl px-4 py-3.5 text-white appearance-none">
                                             <option>Karanlık (Moon)</option>
                                         </select>
                                     </div>
                                 </div>
-                                <p className="text-[10px] text-slate-500 italic text-center">* Dil ve tema seçenekleri bir sonraki güncellemede aktif edilecektir.</p>
+                                <p className="text-[10px] text-slate-500 italic text-center">{t('themeDesc')}</p>
                             </div>
                         </div>
                     </div>
@@ -283,12 +295,12 @@ export default function SettingsPage() {
                                 <div className="p-2.5 rounded-xl bg-[#0b1121] text-[#ede066] border border-[#2A3B55]">
                                     <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
                                 </div>
-                                <h3 className="text-xl font-bold text-white">Global Fiyatlandırma</h3>
+                                <h3 className="text-xl font-bold text-white">{t('pricing')}</h3>
                             </div>
 
                             <div className="grid grid-cols-2 gap-4">
                                 <div className="space-y-2">
-                                    <label className="text-xs uppercase font-bold text-slate-500 tracking-wider">Varsayılan Fiyat</label>
+                                    <label className="text-xs uppercase font-bold text-slate-500 tracking-wider">{t('defaultPrice')}</label>
                                     <input
                                         type="number"
                                         value={settings.default_price}
@@ -298,15 +310,15 @@ export default function SettingsPage() {
                                     />
                                 </div>
                                 <div className="space-y-2">
-                                    <label className="text-xs uppercase font-bold text-slate-500 tracking-wider">Para Birimi</label>
+                                    <label className="text-xs uppercase font-bold text-slate-500 tracking-wider">{t('currency')}</label>
                                     <select
                                         value={settings.currency}
                                         onChange={(e) => setSettings({ ...settings, currency: e.target.value })}
                                         className="w-full bg-[#0b1121] border border-[#2A3B55] rounded-xl px-4 py-3.5 text-white focus:outline-none focus:border-[#ede066]/50 appearance-none cursor-pointer"
                                     >
-                                        <option value="TL">Türk Lirası (₺)</option>
-                                        <option value="USD">Amerikan Doları ($)</option>
-                                        <option value="EUR">Euro (€)</option>
+                                        <option value="TL">{t('currencies.TL')}</option>
+                                        <option value="USD">{t('currencies.USD')}</option>
+                                        <option value="EUR">{t('currencies.EUR')}</option>
                                     </select>
                                 </div>
                             </div>
@@ -317,14 +329,14 @@ export default function SettingsPage() {
                                 <div className="p-2.5 rounded-xl bg-[#0b1121] text-[#ede066] border border-[#2A3B55]">
                                     <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" /></svg>
                                 </div>
-                                <h3 className="text-xl font-bold text-white">Güvenlik & Filigran</h3>
+                                <h3 className="text-xl font-bold text-white">{t('security')}</h3>
                             </div>
 
                             <div className="bg-[#0b1121] rounded-2xl p-6 border border-[#2A3B55] space-y-4">
                                 <div className="flex items-center justify-between">
                                     <div>
-                                        <p className="font-bold text-white leading-tight">Filigran (Watermark) Durumu</p>
-                                        <p className="text-xs text-slate-500 mt-1 max-w-[240px]">Aktif edildiğinde tüm ön izleme dosyalarına ses damgası eklenmiş sayılır.</p>
+                                        <p className="font-bold text-white leading-tight">{t('watermarkStatus')}</p>
+                                        <p className="text-xs text-slate-500 mt-1 max-w-[240px]">{t('watermarkDesc')}</p>
                                     </div>
                                     <button
                                         onClick={() => setSettings({ ...settings, is_watermark_active: !settings.is_watermark_active })}
@@ -345,12 +357,12 @@ export default function SettingsPage() {
                                 <div className="p-2.5 rounded-xl bg-[#0b1121] text-[#ede066] border border-[#2A3B55]">
                                     <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" /></svg>
                                 </div>
-                                <h3 className="text-xl font-bold text-white">Şifre Değiştir</h3>
+                                <h3 className="text-xl font-bold text-white">{t('passwordTitle')}</h3>
                             </div>
 
                             <div className="space-y-4">
                                 <div className="space-y-2">
-                                    <label className="text-xs uppercase font-bold text-slate-500 tracking-wider">Mevcut Şifre</label>
+                                    <label className="text-xs uppercase font-bold text-slate-500 tracking-wider">{t('currentPassword')}</label>
                                     <input
                                         type="password"
                                         required
@@ -361,7 +373,7 @@ export default function SettingsPage() {
                                 </div>
                                 <div className="grid md:grid-cols-2 gap-4">
                                     <div className="space-y-2">
-                                        <label className="text-xs uppercase font-bold text-slate-500 tracking-wider">Yeni Şifre</label>
+                                        <label className="text-xs uppercase font-bold text-slate-500 tracking-wider">{t('newPassword')}</label>
                                         <input
                                             type="password"
                                             required
@@ -371,7 +383,7 @@ export default function SettingsPage() {
                                         />
                                     </div>
                                     <div className="space-y-2">
-                                        <label className="text-xs uppercase font-bold text-slate-500 tracking-wider">Yeni Şifre (Tekrar)</label>
+                                        <label className="text-xs uppercase font-bold text-slate-500 tracking-wider">{t('confirmPassword')}</label>
                                         <input
                                             type="password"
                                             required
@@ -388,7 +400,7 @@ export default function SettingsPage() {
                                 disabled={saving}
                                 className="w-full py-4 rounded-xl bg-[#ede066] text-[#0b1121] font-bold hover:bg-[#d4c95b] transition-all shadow-[0_4px_20px_rgba(237,224,102,0.2)] disabled:opacity-50"
                             >
-                                {saving ? 'Şifre Güncelleniyor...' : 'Şifreyi Güncelle'}
+                                {saving ? t('passwordUpdating') : t('passwordUpdate')}
                             </button>
                         </form>
                     </div>

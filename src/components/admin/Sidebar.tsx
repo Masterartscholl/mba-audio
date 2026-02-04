@@ -3,13 +3,15 @@
 import React from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+import { useTranslations } from 'next-intl';
 
 export const Sidebar = () => {
     const pathname = usePathname();
+    const t = useTranslations('Sidebar');
 
     const menuItems = [
         {
-            name: 'Dashboard',
+            name: t('dashboard'),
             path: '/admin',
             icon: (
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -18,7 +20,7 @@ export const Sidebar = () => {
             )
         },
         {
-            name: 'Kütüphane',
+            name: t('library'),
             path: '/admin/library',
             icon: (
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -27,7 +29,7 @@ export const Sidebar = () => {
             )
         },
         {
-            name: 'Kategori & Tür',
+            name: t('categories'),
             path: '/admin/categories',
             icon: (
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -36,7 +38,7 @@ export const Sidebar = () => {
             )
         },
         {
-            name: 'Ayarlar',
+            name: t('settings'),
             path: '/admin/settings',
             icon: (
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -68,8 +70,8 @@ export const Sidebar = () => {
                             key={item.path}
                             href={item.path}
                             className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-all text-left ${isActive
-                                    ? 'bg-[#ede066]/10 text-[#ede066] border border-[#ede066]/20'
-                                    : 'text-gray-400 hover:text-white hover:bg-[#1e293b]'
+                                ? 'bg-[#ede066]/10 text-[#ede066] border border-[#ede066]/20'
+                                : 'text-gray-400 hover:text-white hover:bg-[#1e293b]'
                                 }`}
                         >
                             {item.icon}
@@ -83,8 +85,8 @@ export const Sidebar = () => {
                 <div className="flex items-center gap-3 p-3 bg-[#0b1121]/50 rounded-xl border border-[#2A3B55]">
                     <div className="w-10 h-10 rounded-full bg-[#1e293b] flex items-center justify-center text-[#ede066] font-bold border border-[#2A3B55]">A</div>
                     <div>
-                        <h4 className="text-sm font-semibold text-white">Admin User</h4>
-                        <p className="text-xs text-gray-500">Super Admin</p>
+                        <h4 className="text-sm font-semibold text-white">{t('admin')}</h4>
+                        <p className="text-xs text-gray-500">{t('superAdmin')}</p>
                     </div>
                 </div>
             </div>

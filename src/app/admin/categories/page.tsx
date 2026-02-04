@@ -4,6 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { supabase } from '@/lib/supabase';
 import { QuickAddModal } from '@/components/admin/QuickAddModal';
 import { SkeletonLoader } from '@/components/admin/SkeletonLoader';
+import { useTranslations } from 'next-intl';
 
 type Category = {
     id: number;
@@ -17,6 +18,8 @@ type Genre = {
 };
 
 export default function CategoriesPage() {
+    const t = useTranslations('Categories');
+    const tc = useTranslations('Common');
     const [categories, setCategories] = useState<Category[]>([]);
     const [genres, setGenres] = useState<Genre[]>([]);
     const [loading, setLoading] = useState(true);
@@ -51,13 +54,13 @@ export default function CategoriesPage() {
     };
 
     const handleDeleteGenre = async (id: number) => {
-        if (!confirm("Bu türü silmek istediğinize emin misiniz?")) return;
+        if (!confirm(t('deleteConfirm'))) return;
         const { error } = await supabase.from('genres').delete().eq('id', id);
         if (!error) fetchData();
     };
 
     const handleDeleteCategory = async (id: number) => {
-        if (!confirm("Bu kategoriyi ve bağlı tüm türleri silmek istediğinize emin misiniz?")) return;
+        if (!confirm(t('deleteConfirm'))) return;
         const { error } = await supabase.from('categories').delete().eq('id', id);
         if (!error) fetchData();
     };
@@ -74,14 +77,14 @@ export default function CategoriesPage() {
 
             <div className="flex items-center justify-between">
                 <div>
-                    <h1 className="text-3xl font-bold text-white tracking-tight">Kategori & Tür Yönetimi</h1>
-                    <p className="text-slate-400 mt-1">Sistemdeki kategorileri ve bağlı türleri buradan yönetebilirsiniz.</p>
+                    <h1 className="text-3xl font-bold text-white tracking-tight">{t('title')}</h1>
+                    <p className="text-slate-400 mt-1">{t('categories')} & {t('genres')}</p>
                 </div>
                 <button
                     onClick={openAddCategory}
                     className="px-5 py-2.5 bg-[#ede066] hover:bg-[#d4c95b] text-[#0b1121] font-bold rounded-xl flex items-center gap-2 transform active:scale-95 transition-all shadow-lg shadow-[#ede066]/10">
                     <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" /></svg>
-                    Yeni Kategori
+                    {t('addCategory')}
                 </button>
             </div>
 
@@ -91,8 +94,8 @@ export default function CategoriesPage() {
                         <table className="w-full text-left">
                             <thead className="bg-[#0b1121] border-b border-[#1e293b] text-slate-400 text-xs uppercase font-bold tracking-wider">
                                 <tr>
-                                    <th className="px-8 py-5 w-1/4">KATEGORİ ADI</th>
-                                    <th className="px-8 py-5 w-3/4">BAĞLI TÜRLER</th>
+                                    <th className="px-8 py-5 w-1/4">{t('table.name')}</th>
+                                    <th className="px-8 py-5 w-3/4">{t('genres')}</th>
                                 </tr>
                             </thead>
                             <tbody className="divide-y divide-[#1e293b]">
@@ -104,7 +107,7 @@ export default function CategoriesPage() {
                                                 <div className="flex items-center justify-between">
                                                     <div>
                                                         <div className="font-bold text-white text-lg">{cat.name}</div>
-                                                        <div className="text-xs text-slate-500 mt-1">{catGenres.length} Tür</div>
+                                                        <div className="text-xs text-slate-500 mt-1">{catGenres.length} {t('genres')}</div>
                                                     </div>
                                                     <button
                                                         onClick={() => handleDeleteCategory(cat.id)}
@@ -125,15 +128,15 @@ export default function CategoriesPage() {
                                                             </button>
                                                         </span>
                                                     )) : (
-                                                        <span className="text-slate-600 italic text-sm py-1.5">Henüz bağlı tür yok.</span>
+                                                        <span className="text-slate-600 italic text-sm py-1.5">{t('emptyGenres')}</span>
                                                     )}
 
                                                     <button
                                                         onClick={() => openAddGenre(cat.id)}
                                                         className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg border border-dashed border-[#ede066]/50 text-sm text-[#ede066] hover:bg-[#ede066]/10 transition-all font-medium"
-                                                        title="Yeni Tür Ekle">
+                                                        title={t('addGenre')}>
                                                         <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4v16m8-8H4" /></svg>
-                                                        Ekle
+                                                        {t('add')}
                                                     </button>
                                                 </div>
                                             </td>

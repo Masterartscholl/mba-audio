@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { supabase } from '@/lib/supabase';
 import { SkeletonLoader } from '@/components/admin/SkeletonLoader';
+import { useTranslations, useLocale } from 'next-intl';
 
 type Track = {
     id: number;
@@ -19,6 +20,8 @@ type Track = {
 };
 
 export default function LibraryPage() {
+    const t = useTranslations('Library');
+    const locale = useLocale();
     const [tracks, setTracks] = useState<Track[]>([]);
     const [loading, setLoading] = useState(true);
     const [editingTrack, setEditingTrack] = useState<Track | null>(null);
@@ -80,7 +83,7 @@ export default function LibraryPage() {
     }, []);
 
     const handleDelete = async (id: number) => {
-        if (!confirm("Bu eseri silmek istediğinize emin misiniz?")) return;
+        if (!confirm(t('deleteConfirm'))) return;
 
         const { error } = await supabase
             .from('tracks')
@@ -152,14 +155,14 @@ export default function LibraryPage() {
             setIsEditModalOpen(false);
             fetchTracks();
         } catch (error: any) {
-            alert("Güncelleme hatası: " + error.message);
+            alert(t('updateError') + ": " + error.message);
         } finally {
             setIsUpdating(false);
         }
     };
 
     const formatDate = (dateString: string) => {
-        return new Date(dateString).toLocaleDateString('tr-TR', {
+        return new Date(dateString).toLocaleDateString(locale, {
             year: 'numeric',
             month: 'long',
             day: 'numeric'
@@ -170,8 +173,8 @@ export default function LibraryPage() {
         <div className="space-y-6">
             <div className="flex items-center justify-between">
                 <div>
-                    <h1 className="text-3xl font-bold text-white tracking-tight">Kütüphane</h1>
-                    <p className="text-slate-400 mt-1">Yüklediğiniz tüm eserleri buradan yönetebilirsiniz.</p>
+                    <h1 className="text-3xl font-bold text-white tracking-tight">{t('title')}</h1>
+                    <p className="text-slate-400 mt-1">{t('description')}</p>
                 </div>
             </div>
 
@@ -181,14 +184,14 @@ export default function LibraryPage() {
                         <table className="w-full text-left">
                             <thead className="bg-[#0b1121] border-b border-[#1e293b] text-slate-400 text-xs uppercase font-bold tracking-wider">
                                 <tr>
-                                    <th className="px-8 py-5">ESER ADI</th>
-                                    <th className="px-8 py-5">KATEGORİ</th>
-                                    <th className="px-8 py-5">TÜR</th>
-                                    <th className="px-8 py-5">BPM</th>
-                                    <th className="px-8 py-5">FİYAT</th>
-                                    <th className="px-8 py-5">DURUM</th>
-                                    <th className="px-8 py-5">TARİH</th>
-                                    <th className="px-8 py-5 text-right">İŞLEMLER</th>
+                                    <th className="px-8 py-5">{t('table.name')}</th>
+                                    <th className="px-8 py-5">{t('table.category')}</th>
+                                    <th className="px-8 py-5">{t('table.genre')}</th>
+                                    <th className="px-8 py-5">{t('table.bpm')}</th>
+                                    <th className="px-8 py-5">{t('table.price')}</th>
+                                    <th className="px-8 py-5">{t('table.status')}</th>
+                                    <th className="px-8 py-5">{t('table.date')}</th>
+                                    <th className="px-8 py-5 text-right">{t('table.actions')}</th>
                                 </tr>
                             </thead>
                             <tbody className="divide-y divide-[#1e293b]">
@@ -214,7 +217,7 @@ export default function LibraryPage() {
                                                 ? 'bg-green-500/10 text-green-500 border border-green-500/20'
                                                 : 'bg-amber-500/10 text-amber-500 border border-amber-500/20'
                                                 }`}>
-                                                {track.status === 'published' ? 'YAYINDA' : 'TASLAK'}
+                                                {track.status === 'published' ? t('table.published') : t('table.draft')}
                                             </span>
                                         </td>
                                         <td className="px-8 py-6 text-slate-400 text-sm">
@@ -241,8 +244,8 @@ export default function LibraryPage() {
                                     </tr>
                                 )) : (
                                     <tr>
-                                        <td colSpan={6} className="px-8 py-20 text-center text-slate-500 italic">
-                                            Henüz yüklü bir eser bulunamadı.
+                                        <td colSpan={8} className="px-8 py-20 text-center text-slate-500 italic">
+                                            {t('empty')}
                                         </td>
                                     </tr>
                                 )}
@@ -258,7 +261,7 @@ export default function LibraryPage() {
                     <div className="bg-[#151e32] border border-[#1e293b] rounded-3xl w-full max-w-lg shadow-2xl overflow-hidden animate-in fade-in zoom-in duration-200">
                         <div className="p-8 space-y-6">
                             <div className="flex items-center justify-between">
-                                <h2 className="text-2xl font-bold text-white">Eseri Düzenle</h2>
+                                <h2 className="text-2xl font-bold text-white">{t('edit')}</h2>
                                 <button onClick={() => setIsEditModalOpen(false)} className="text-slate-500 hover:text-white transition-colors">
                                     <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" /></svg>
                                 </button>
@@ -266,7 +269,7 @@ export default function LibraryPage() {
 
                             <div className="space-y-4">
                                 <div className="space-y-2">
-                                    <label className="text-xs uppercase font-bold text-slate-500 tracking-wider">Eser Adı</label>
+                                    <label className="text-xs uppercase font-bold text-slate-500 tracking-wider">{t('table.name')}</label>
                                     <input
                                         type="text"
                                         value={editingTrack.title}
@@ -276,7 +279,7 @@ export default function LibraryPage() {
                                 </div>
                                 <div className="grid grid-cols-2 gap-4">
                                     <div className="space-y-2">
-                                        <label className="text-xs uppercase font-bold text-slate-500 tracking-wider">BPM</label>
+                                        <label className="text-xs uppercase font-bold text-slate-500 tracking-wider">{t('table.bpm')}</label>
                                         <input
                                             type="number"
                                             value={editingTrack.bpm || ''}
@@ -285,7 +288,7 @@ export default function LibraryPage() {
                                         />
                                     </div>
                                     <div className="space-y-2">
-                                        <label className="text-xs uppercase font-bold text-slate-500 tracking-wider">Mod / Ton</label>
+                                        <label className="text-xs uppercase font-bold text-slate-500 tracking-wider">{t('table.mode')}</label>
                                         <input
                                             type="text"
                                             value={editingTrack.mode || ''}
@@ -295,7 +298,7 @@ export default function LibraryPage() {
                                     </div>
                                 </div>
                                 <div className="space-y-2">
-                                    <label className="text-xs uppercase font-bold text-slate-500 tracking-wider">Fiyat (₺)</label>
+                                    <label className="text-xs uppercase font-bold text-slate-500 tracking-wider">{t('table.price')} ({settings.currency === 'USD' ? '$' : settings.currency === 'EUR' ? '€' : '₺'})</label>
                                     <div className="relative">
                                         <input
                                             type="number"
@@ -310,7 +313,7 @@ export default function LibraryPage() {
                                     </div>
                                 </div>
                                 <div className="space-y-2">
-                                    <label className="text-xs uppercase font-bold text-slate-500 tracking-wider">Yayın Durumu</label>
+                                    <label className="text-xs uppercase font-bold text-slate-500 tracking-wider">{t('table.status')}</label>
                                     <div className="flex gap-4">
                                         <button
                                             onClick={() => setEditingTrack({ ...editingTrack, status: 'draft' })}
@@ -319,7 +322,7 @@ export default function LibraryPage() {
                                                 : 'bg-[#0b1121] border-[#2A3B55] text-slate-500'
                                                 }`}
                                         >
-                                            Taslak
+                                            {t('table.draft')}
                                         </button>
                                         <button
                                             onClick={() => setEditingTrack({ ...editingTrack, status: 'published' })}
@@ -328,14 +331,14 @@ export default function LibraryPage() {
                                                 : 'bg-[#0b1121] border-[#2A3B55] text-slate-500'
                                                 }`}
                                         >
-                                            Yayında
+                                            {t('table.published')}
                                         </button>
                                     </div>
                                 </div>
 
                                 <div className="grid grid-cols-2 gap-4">
                                     <div className="space-y-2">
-                                        <label className="text-xs uppercase font-bold text-slate-500 tracking-wider text-[10px]">Ön İzleme (Değiştir)</label>
+                                        <label className="text-xs uppercase font-bold text-slate-500 tracking-wider text-[10px]">{t('changePreview')}</label>
                                         <div className="relative group">
                                             <input
                                                 type="file"
@@ -357,7 +360,7 @@ export default function LibraryPage() {
                                         </div>
                                     </div>
                                     <div className="space-y-2">
-                                        <label className="text-xs uppercase font-bold text-slate-500 tracking-wider text-[10px]">Master (Değiştir)</label>
+                                        <label className="text-xs uppercase font-bold text-slate-500 tracking-wider text-[10px]">{t('changeMaster')}</label>
                                         <div className="relative group">
                                             <input
                                                 type="file"
@@ -386,14 +389,14 @@ export default function LibraryPage() {
                                     disabled={isUpdating}
                                     className="flex-1 px-5 py-3 rounded-xl bg-[#1e293b] text-slate-300 font-medium hover:bg-[#2A3B55] transition-colors disabled:opacity-50"
                                 >
-                                    İptal
+                                    {t('cancel')}
                                 </button>
                                 <button
                                     onClick={handleUpdate}
                                     disabled={isUpdating}
                                     className="flex-1 px-5 py-3 rounded-xl bg-[#ede066] text-[#0b1121] font-bold hover:bg-[#d4c95b] transition-all shadow-[0_4px_20px_rgba(237,224,102,0.2)] disabled:opacity-50"
                                 >
-                                    {isUpdating ? 'Güncelleniyor...' : 'Güncelle'}
+                                    {isUpdating ? t('updating') : t('update')}
                                 </button>
                             </div>
                         </div>
