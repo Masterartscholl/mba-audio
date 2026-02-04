@@ -38,14 +38,46 @@
         "passwordMatchError": "New passwords do not match!",
         "profileTitle": "Profile Information"
     },
+    "Analytics": {
+        "title": "Analytics & Reports",
+        "description": "Track sales performance and statistics.",
+        "stats": {
+            "totalEarnings": "Total Earnings",
+            "totalSales": "Total Sales",
+            "popularCategory": "Popular Category",
+            "activeDrafts": "Active Drafts"
+        },
+        "salesChart": "Sales Chart (Last 7 Days)",
+        "recentSales": "Recent Sale Transactions",
+        "table": {
+            "user": "Customer",
+            "track": "Track Title",
+            "category": "Category",
+            "price": "Price",
+            "date": "Date"
+        },
+        "noSales": "No sales have occurred yet.",
+        "systemSummary": "System Summary",
+        "dataFreshness": "Data Freshness",
+        "liveSync": "Live Sync Active",
+        "categoryDensity": "Sales density by category",
+        "salesCount": "sales",
+        "viewAll": "View All",
+        "anonymous": "Anonymous",
+        "popularity": "Popularity",
+        "volume": "Transaction Volume"
+    },
     "Sidebar": {
         "dashboard": "Dashboard",
         "library": "Library",
         "categories": "Category & Genre",
         "settings": "Settings",
+        "analytics": "Analytics",
         "admin": "Admin User",
         "superAdmin": "Super Admin",
-        "logout": "Logout"
+        "logout": "Logout",
+        "lightMode": "Light Mode",
+        "darkMode": "Dark Mode"
     },
     "Dashboard": {
         "title": "Quick Music Upload",

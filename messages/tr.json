@@ -38,14 +38,46 @@
         "passwordMatchError": "Yeni şifreler eşleşmiyor!",
         "profileTitle": "Profil Bilgileri"
     },
+    "Analytics": {
+        "title": "Analiz & Raporlar",
+        "description": "Satış performansını ve istatistikleri takip edin.",
+        "stats": {
+            "totalEarnings": "Toplam Kazanç",
+            "totalSales": "Toplam Satış",
+            "popularCategory": "En Popüler Kategori",
+            "activeDrafts": "Aktif Taslaklar"
+        },
+        "salesChart": "Son 7 Günlük Satış Grafiği",
+        "recentSales": "Son Satış İşlemleri",
+        "table": {
+            "user": "Müşteri",
+            "track": "Eser Adı",
+            "category": "Kategori",
+            "price": "Fiyat",
+            "date": "Tarih"
+        },
+        "noSales": "Henüz satış gerçekleşmedi.",
+        "systemSummary": "Sistem Özeti",
+        "dataFreshness": "Veri Tazeliği",
+        "liveSync": "Canlı Senkronizasyon Aktif",
+        "categoryDensity": "Kategori bazlı satış yoğunluğu",
+        "salesCount": "adet satış",
+        "viewAll": "Tümünü Gör",
+        "anonymous": "Anonim",
+        "popularity": "Popülerlik",
+        "volume": "İşlem Hacmi"
+    },
     "Sidebar": {
         "dashboard": "Panel",
         "library": "Kütüphane",
         "categories": "Kategori & Tür",
         "settings": "Ayarlar",
+        "analytics": "Analiz",
         "admin": "Yönetici",
         "superAdmin": "Süper Yönetici",
-        "logout": "Çıkış Yap"
+        "logout": "Çıkış Yap",
+        "lightMode": "Açık Mod",
+        "darkMode": "Koyu Mod"
     },
     "Dashboard": {
         "title": "Hızlı Müzik Yükle",
