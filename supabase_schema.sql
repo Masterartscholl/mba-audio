@@ -124,3 +124,36 @@ create policy "Authenticated users can update tracks."
 create policy "Authenticated users can delete tracks."
   on public.tracks for delete
   using ( auth.role() = 'authenticated' );
+-- Create Profiles Table
+create table public.profiles (
+  id uuid references auth.users(id) on delete cascade primary key,
+  email text,
+  is_admin boolean default false,
+  created_at timestamp with time zone default timezone('utc'::text, now()) not null
+);
+
+-- Enable RLS for profiles
+alter table public.profiles enable row level security;
+
+-- Policies for profiles
+create policy "Public profiles are viewable by everyone."
+  on public.profiles for select
+  using ( true );
+
+create policy "Users can update their own profile."
+  on public.profiles for update
+  using ( auth.uid() = id );
+
+-- Trigger to create profile on signup
+create or replace function public.handle_new_user()
+returns trigger as $$
+begin
+  insert into public.profiles (id, email, is_admin)
+  values (new.id, new.email, false); -- Default to false
+  return new;
+end;
+$$ language plpgsql security definer;
+
+create trigger on_auth_user_created
+  after insert on auth.users
+  for each row execute procedure public.handle_new_user();
