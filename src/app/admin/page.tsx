@@ -1,6 +1,93 @@
-import React from 'react';
+"use client";
+
+import React, { useState } from 'react';
+
+// Data Hierarchy based on user request and visual map
+const HIERARCHY: Record<string, { genre: string, modes: string[] }[]> = {
+    "Beat": [
+        { genre: "Trap", modes: ["Hard", "Dark", "Melodic", "Heavy"] },
+        { genre: "Drill", modes: ["UK Drill", "NY Drill", "Aggressive"] },
+        { genre: "Afro", modes: ["Chill", "Dance", "Summer"] }
+    ],
+    "Sosyal Medya": [
+        { genre: "Hareketli", modes: ["Neşeli", "Enerjik", "Pozitif", "Moda", "Vlog"] },
+        { genre: "Slow", modes: ["Hüzünlü", "Duygusal", "Sinematik", "Sakin"] },
+        { genre: "Marka", modes: ["Kurumsal", "Teknoloji", "Minimal", "İlham Verici"] }
+    ],
+    "Film Müzikleri": [
+        { genre: "Aksiyon", modes: ["Heyecanlı", "Epik", "Kovalama", "Savaş"] },
+        { genre: "Gerilim", modes: ["Korku", "Gizem", "Karanlık", "Gergin"] },
+        { genre: "Komedi", modes: ["Eğlenceli", "Şakacı", "Hafif", "Garip"] },
+        { genre: "Romantik", modes: ["Aşk", "Duygusal", "Umutlu", "Nostaljik"] },
+        { genre: "Belgesel", modes: ["Atmosferik", "Doğa", "Tarih", "İlham Verici"] }
+    ],
+    "Besteler": [
+        { genre: "Pop Slow", modes: ["Aşk", "Ayrılık", "Akustik"] },
+        { genre: "Pop Hareketli", modes: ["Dans", "Yaz", "Parti"] },
+        { genre: "Arabesk Slow", modes: ["Damar", "Acı", "Dertli"] },
+        { genre: "Arabesk Hareketli", modes: ["Oyun Havası", "Düğün"] },
+        { genre: "Trap Slow", modes: ["Deep", "Melankolik"] },
+        { genre: "Trap Hareketli", modes: ["Banger", "Agresif"] }
+    ]
+};
 
 export default function AdminPage() {
+    // State Management
+    const [formData, setFormData] = useState({
+        title: "",
+        category: "",
+        genre: "",
+        bpm: "",
+        mode: ""
+    });
+
+    const [availableGenres, setAvailableGenres] = useState<{ genre: string, modes: string[] }[]>([]);
+    const [availableModes, setAvailableModes] = useState<string[]>([]);
+
+    // Handlers
+    const handleCategoryChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+        const category = e.target.value;
+        // Update genres based on selected category
+        const genres = HIERARCHY[category] || [];
+
+        setAvailableGenres(genres);
+        setAvailableModes([]); // Reset modes
+
+        setFormData(prev => ({
+            ...prev,
+            category: category,
+            genre: "", // Reset selection
+            mode: ""   // Reset selection
+        }));
+    };
+
+    const handleGenreChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+        const genre = e.target.value;
+
+        // Find selected genre object to get modes
+        const genreObj = availableGenres.find(g => g.genre === genre);
+        const modes = genreObj ? genreObj.modes : [];
+
+        setAvailableModes(modes);
+
+        setFormData(prev => ({
+            ...prev,
+            genre: genre,
+            mode: "" // Reset mode
+        }));
+    };
+
+    const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+        const { name, value } = e.target;
+        setFormData(prev => ({ ...prev, [name]: value }));
+    };
+
+    const handlePublish = () => {
+        console.log("Eser Yayınlanıyor...", formData);
+        // In a real app, this would trigger a toast
+        alert(`Eser Verileri Konsola Yazıldı:\n${JSON.stringify(formData, null, 2)}`);
+    };
+
     return (
         <div className="min-h-screen bg-[#0b1121] text-white font-sans flex antialiased">
             {/* Sidebar Navigation */}
@@ -54,7 +141,9 @@ export default function AdminPage() {
                             <button className="px-5 py-2.5 rounded-xl bg-[#1e293b] hover:bg-[#2A3B55] text-slate-300 font-medium transition-colors border border-[#2A3B55]">
                                 Taslağı Kaydet
                             </button>
-                            <button className="px-6 py-2.5 rounded-xl bg-[#ede066] hover:bg-[#d4c95b] text-[#0b1121] font-bold shadow-[0_4px_20px_rgba(237,224,102,0.2)] hover:shadow-[0_4px_30px_rgba(237,224,102,0.4)] transition-all flex items-center gap-2 transform active:scale-95">
+                            <button
+                                onClick={handlePublish}
+                                className="px-6 py-2.5 rounded-xl bg-[#ede066] hover:bg-[#d4c95b] text-[#0b1121] font-bold shadow-[0_4px_20px_rgba(237,224,102,0.2)] hover:shadow-[0_4px_30px_rgba(237,224,102,0.4)] transition-all flex items-center gap-2 transform active:scale-95">
                                 <span>Eseri Yayınla</span>
                                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M14 5l7 7m0 0l-7 7m7-7H3" /></svg>
                             </button>
@@ -77,17 +166,28 @@ export default function AdminPage() {
                                 <div className="space-y-5">
                                     <div className="space-y-2">
                                         <label className="text-xs uppercase font-bold text-slate-500 tracking-wider">Eser Adı</label>
-                                        <input type="text" placeholder="Örn: Midnight City" className="w-full bg-[#0b1121] border border-[#2A3B55] rounded-xl px-4 py-3.5 text-white placeholder-slate-600 focus:outline-none focus:border-[#ede066]/50 focus:ring-1 focus:ring-[#ede066]/50 transition-all" />
+                                        <input
+                                            name="title"
+                                            value={formData.title}
+                                            onChange={handleChange}
+                                            type="text"
+                                            placeholder="Örn: Midnight City"
+                                            className="w-full bg-[#0b1121] border border-[#2A3B55] rounded-xl px-4 py-3.5 text-white placeholder-slate-600 focus:outline-none focus:border-[#ede066]/50 focus:ring-1 focus:ring-[#ede066]/50 transition-all"
+                                        />
                                     </div>
 
                                     <div className="space-y-2">
                                         <label className="text-xs uppercase font-bold text-slate-500 tracking-wider">Kategori</label>
                                         <div className="relative">
-                                            <select className="w-full bg-[#0b1121] border border-[#2A3B55] rounded-xl px-4 py-3.5 text-white appearance-none focus:outline-none focus:border-[#ede066]/50 focus:ring-1 focus:ring-[#ede066]/50 cursor-pointer">
-                                                <option>Beat</option>
-                                                <option>Sosyal Medya</option>
-                                                <option>Film Müzikleri</option>
-                                                <option>Besteler</option>
+                                            <select
+                                                name="category"
+                                                value={formData.category}
+                                                onChange={handleCategoryChange}
+                                                className="w-full bg-[#0b1121] border border-[#2A3B55] rounded-xl px-4 py-3.5 text-white appearance-none focus:outline-none focus:border-[#ede066]/50 focus:ring-1 focus:ring-[#ede066]/50 cursor-pointer">
+                                                <option value="">Seçiniz</option>
+                                                {Object.keys(HIERARCHY).map(cat => (
+                                                    <option key={cat} value={cat}>{cat}</option>
+                                                ))}
                                             </select>
                                             <svg className="w-4 h-4 text-slate-500 absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" /></svg>
                                         </div>
@@ -97,28 +197,46 @@ export default function AdminPage() {
                                         <div className="space-y-2">
                                             <label className="text-xs uppercase font-bold text-slate-500 tracking-wider">Tür</label>
                                             <div className="relative">
-                                                <select className="w-full bg-[#0b1121] border border-[#2A3B55] rounded-xl px-4 py-3.5 text-white appearance-none focus:outline-none focus:border-[#ede066]/50 focus:ring-1 focus:ring-[#ede066]/50 cursor-pointer">
-                                                    <option>Electronic</option>
-                                                    <option>Hip Hop</option>
-                                                    <option>Cinematic</option>
+                                                <select
+                                                    name="genre"
+                                                    value={formData.genre}
+                                                    onChange={handleGenreChange}
+                                                    disabled={!formData.category}
+                                                    className="w-full bg-[#0b1121] border border-[#2A3B55] rounded-xl px-4 py-3.5 text-white appearance-none focus:outline-none focus:border-[#ede066]/50 focus:ring-1 focus:ring-[#ede066]/50 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed">
+                                                    <option value="">Seçiniz</option>
+                                                    {availableGenres.map(g => (
+                                                        <option key={g.genre} value={g.genre}>{g.genre}</option>
+                                                    ))}
                                                 </select>
                                                 <svg className="w-4 h-4 text-slate-500 absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" /></svg>
                                             </div>
                                         </div>
                                         <div className="space-y-2">
                                             <label className="text-xs uppercase font-bold text-slate-500 tracking-wider">BPM</label>
-                                            <input type="number" placeholder="120" className="w-full bg-[#0b1121] border border-[#2A3B55] rounded-xl px-4 py-3.5 text-white placeholder-slate-600 focus:outline-none focus:border-[#ede066]/50 focus:ring-1 focus:ring-[#ede066]/50 transition-all" />
+                                            <input
+                                                name="bpm"
+                                                value={formData.bpm}
+                                                onChange={handleChange}
+                                                type="number"
+                                                placeholder="120"
+                                                className="w-full bg-[#0b1121] border border-[#2A3B55] rounded-xl px-4 py-3.5 text-white placeholder-slate-600 focus:outline-none focus:border-[#ede066]/50 focus:ring-1 focus:ring-[#ede066]/50 transition-all"
+                                            />
                                         </div>
                                     </div>
 
                                     <div className="space-y-2">
                                         <label className="text-xs uppercase font-bold text-slate-500 tracking-wider">Mod (Opsiyonel)</label>
                                         <div className="relative">
-                                            <select className="w-full bg-[#0b1121] border border-[#2A3B55] rounded-xl px-4 py-3.5 text-white appearance-none focus:outline-none focus:border-[#ede066]/50 focus:ring-1 focus:ring-[#ede066]/50 cursor-pointer">
-                                                <option>Seçiniz...</option>
-                                                <option>Neşeli</option>
-                                                <option>Gerilim</option>
-                                                <option>Duygusal</option>
+                                            <select
+                                                name="mode"
+                                                value={formData.mode}
+                                                onChange={handleChange}
+                                                disabled={!formData.genre}
+                                                className="w-full bg-[#0b1121] border border-[#2A3B55] rounded-xl px-4 py-3.5 text-white appearance-none focus:outline-none focus:border-[#ede066]/50 focus:ring-1 focus:ring-[#ede066]/50 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed">
+                                                <option value="">Seçiniz...</option>
+                                                {availableModes.map(m => (
+                                                    <option key={m} value={m}>{m}</option>
+                                                ))}
                                             </select>
                                             <svg className="w-4 h-4 text-slate-500 absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" /></svg>
                                         </div>
