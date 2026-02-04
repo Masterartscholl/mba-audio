@@ -1,95 +1,202 @@
 "use client";
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { supabase } from '@/lib/supabase';
 
-// Data Hierarchy based on user request and visual map
-const HIERARCHY: Record<string, { genre: string, modes: string[] }[]> = {
-    "Beat": [
-        { genre: "Trap", modes: ["Hard", "Dark", "Melodic", "Heavy"] },
-        { genre: "Drill", modes: ["UK Drill", "NY Drill", "Aggressive"] },
-        { genre: "Afro", modes: ["Chill", "Dance", "Summer"] }
-    ],
-    "Sosyal Medya": [
-        { genre: "Hareketli", modes: ["Neşeli", "Enerjik", "Pozitif", "Moda", "Vlog"] },
-        { genre: "Slow", modes: ["Hüzünlü", "Duygusal", "Sinematik", "Sakin"] },
-        { genre: "Marka", modes: ["Kurumsal", "Teknoloji", "Minimal", "İlham Verici"] }
-    ],
-    "Film Müzikleri": [
-        { genre: "Aksiyon", modes: ["Heyecanlı", "Epik", "Kovalama", "Savaş"] },
-        { genre: "Gerilim", modes: ["Korku", "Gizem", "Karanlık", "Gergin"] },
-        { genre: "Komedi", modes: ["Eğlenceli", "Şakacı", "Hafif", "Garip"] },
-        { genre: "Romantik", modes: ["Aşk", "Duygusal", "Umutlu", "Nostaljik"] },
-        { genre: "Belgesel", modes: ["Atmosferik", "Doğa", "Tarih", "İlham Verici"] }
-    ],
-    "Besteler": [
-        { genre: "Pop Slow", modes: ["Aşk", "Ayrılık", "Akustik"] },
-        { genre: "Pop Hareketli", modes: ["Dans", "Yaz", "Parti"] },
-        { genre: "Arabesk Slow", modes: ["Damar", "Acı", "Dertli"] },
-        { genre: "Arabesk Hareketli", modes: ["Oyun Havası", "Düğün"] },
-        { genre: "Trap Slow", modes: ["Deep", "Melankolik"] },
-        { genre: "Trap Hareketli", modes: ["Banger", "Agresif"] }
-    ]
+// Types
+type Category = {
+    id: number;
+    name: string;
 };
 
+type Genre = {
+    id: number;
+    name: string;
+    category_id: number;
+};
+
+// --- Modal Component ---
+const ManagementModal = ({
+    isOpen,
+    onClose,
+    categories,
+    refreshData
+}: {
+    isOpen: boolean;
+    onClose: () => void;
+    categories: Category[];
+    refreshData: () => void;
+}) => {
+    const [activeTab, setActiveTab] = useState<'category' | 'genre'>('category');
+    const [newItemName, setNewItemName] = useState("");
+    const [selectedCatId, setSelectedCatId] = useState<number | "">("");
+    const [loading, setLoading] = useState(false);
+
+    if (!isOpen) return null;
+
+    const handleAdd = async () => {
+        if (!newItemName) return;
+        setLoading(true);
+
+        try {
+            if (activeTab === 'category') {
+                const { error } = await supabase.from('categories').insert([{ name: newItemName }]);
+                if (error) throw error;
+            } else {
+                if (!selectedCatId) {
+                    alert("Lütfen bir kategori seçin");
+                    setLoading(false);
+                    return;
+                }
+                const { error } = await supabase.from('genres').insert([{ name: newItemName, category_id: selectedCatId }]);
+                if (error) throw error;
+            }
+            setNewItemName("");
+            refreshData(); // Refresh parent data
+            alert("Başarıyla eklendi!");
+        } catch (error: any) {
+            alert("Hata: " + error.message);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    return (
+        <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-4 backdrop-blur-sm">
+            <div className="bg-[#151e32] border border-[#2A3B55] w-full max-w-md rounded-2xl shadow-2xl overflow-hidden">
+                <div className="flex border-b border-[#2A3B55]">
+                    <button
+                        onClick={() => setActiveTab('category')}
+                        className={`flex-1 py-4 text-center text-sm font-bold transition-colors ${activeTab === 'category' ? 'bg-[#ede066] text-black' : 'text-slate-400 hover:text-white'}`}>
+                        Kategori Yönetimi
+                    </button>
+                    <button
+                        onClick={() => setActiveTab('genre')}
+                        className={`flex-1 py-4 text-center text-sm font-bold transition-colors ${activeTab === 'genre' ? 'bg-[#ede066] text-black' : 'text-slate-400 hover:text-white'}`}>
+                        Tür Yönetimi
+                    </button>
+                </div>
+
+                <div className="p-6 space-y-6">
+                    <div className="space-y-4">
+                        <h3 className="text-white font-semibold text-lg">
+                            {activeTab === 'category' ? 'Yeni Kategori Ekle' : 'Yeni Tür Ekle'}
+                        </h3>
+
+                        {activeTab === 'genre' && (
+                            <div className="space-y-2">
+                                <label className="text-xs uppercase font-bold text-slate-500">Bağlı Olduğu Kategori</label>
+                                <select
+                                    value={selectedCatId}
+                                    onChange={(e) => setSelectedCatId(Number(e.target.value))}
+                                    className="w-full bg-[#0b1121] border border-[#2A3B55] rounded-xl px-4 py-3 text-white focus:border-[#ede066]">
+                                    <option value="">Kategori Seçiniz</option>
+                                    {categories.map(c => (
+                                        <option key={c.id} value={c.id}>{c.name}</option>
+                                    ))}
+                                </select>
+                            </div>
+                        )}
+
+                        <div className="space-y-2">
+                            <label className="text-xs uppercase font-bold text-slate-500">Ad</label>
+                            <input
+                                value={newItemName}
+                                onChange={(e) => setNewItemName(e.target.value)}
+                                type="text"
+                                placeholder={activeTab === 'category' ? "Örn: Klasik" : "Örn: Barok"}
+                                className="w-full bg-[#0b1121] border border-[#2A3B55] rounded-xl px-4 py-3 text-white focus:border-[#ede066]"
+                            />
+                        </div>
+
+                        <button
+                            onClick={handleAdd}
+                            disabled={loading}
+                            className="w-full py-3 bg-[#ede066] text-black font-bold rounded-xl hover:bg-[#d4c95b] transition-all disabled:opacity-50">
+                            {loading ? 'Ekleniyor...' : 'Ekle'}
+                        </button>
+                    </div>
+
+                    <div className="pt-4 border-t border-[#2A3B55]">
+                        <button onClick={onClose} className="w-full text-slate-400 hover:text-white text-sm">Pencereyi Kapat</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    );
+};
+
+
 export default function AdminPage() {
-    // State Management
+    const [categories, setCategories] = useState<Category[]>([]);
+    const [genres, setGenres] = useState<Genre[]>([]);
+
+    // UI State
+    const [isManagementOpen, setIsManagementOpen] = useState(false);
+    const [loading, setLoading] = useState(true);
+
+    // Form State
     const [formData, setFormData] = useState({
         title: "",
-        category: "",
-        genre: "",
+        categoryId: "",
+        genreId: "",
         bpm: "",
         mode: ""
     });
 
-    const [availableGenres, setAvailableGenres] = useState<{ genre: string, modes: string[] }[]>([]);
-    const [availableModes, setAvailableModes] = useState<string[]>([]);
+    // Filtered Genres based on selected category
+    const [availableGenres, setAvailableGenres] = useState<Genre[]>([]);
 
-    // Handlers
-    const handleCategoryChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-        const category = e.target.value;
-        // Update genres based on selected category
-        const genres = HIERARCHY[category] || [];
+    // Fetch Data on Load
+    const fetchData = async () => {
+        setLoading(true);
+        const { data: catData } = await supabase.from('categories').select('*').order('name');
+        const { data: genData } = await supabase.from('genres').select('*').order('name');
 
-        setAvailableGenres(genres);
-        setAvailableModes([]); // Reset modes
-
-        setFormData(prev => ({
-            ...prev,
-            category: category,
-            genre: "", // Reset selection
-            mode: ""   // Reset selection
-        }));
+        if (catData) setCategories(catData);
+        if (genData) setGenres(genData);
+        setLoading(false);
     };
 
-    const handleGenreChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-        const genre = e.target.value;
+    useEffect(() => {
+        fetchData();
+    }, []);
 
-        // Find selected genre object to get modes
-        const genreObj = availableGenres.find(g => g.genre === genre);
-        const modes = genreObj ? genreObj.modes : [];
-
-        setAvailableModes(modes);
-
-        setFormData(prev => ({
-            ...prev,
-            genre: genre,
-            mode: "" // Reset mode
-        }));
-    };
+    // Update available genres when category changes
+    useEffect(() => {
+        if (formData.categoryId) {
+            const filtered = genres.filter(g => g.category_id === Number(formData.categoryId));
+            setAvailableGenres(filtered);
+        } else {
+            setAvailableGenres([]);
+        }
+    }, [formData.categoryId, genres]);
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
         const { name, value } = e.target;
-        setFormData(prev => ({ ...prev, [name]: value }));
+
+        // If category changes, reset genre
+        if (name === 'categoryId') {
+            setFormData(prev => ({ ...prev, [name]: value, genreId: "" }));
+        } else {
+            setFormData(prev => ({ ...prev, [name]: value }));
+        }
     };
 
-    const handlePublish = () => {
-        console.log("Eser Yayınlanıyor...", formData);
-        // In a real app, this would trigger a toast
-        alert(`Eser Verileri Konsola Yazıldı:\n${JSON.stringify(formData, null, 2)}`);
+    const handlePublish = async () => {
+        console.log("Form Data:", formData);
+        alert("Form verileri konsola yazıldı.");
     };
 
     return (
         <div className="min-h-screen bg-[#0b1121] text-white font-sans flex antialiased">
+            <ManagementModal
+                isOpen={isManagementOpen}
+                onClose={() => setIsManagementOpen(false)}
+                categories={categories}
+                refreshData={fetchData}
+            />
+
             {/* Sidebar Navigation */}
             <aside className="w-64 bg-[#0f172a] border-r border-[#1e293b] flex-col hidden md:flex sticky top-0 h-screen">
                 <div className="p-8">
@@ -106,14 +213,13 @@ export default function AdminPage() {
                         <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" /></svg>
                         <span className="font-medium">Dashboard</span>
                     </a>
-                    <a href="#" className="flex items-center gap-3 px-4 py-3 text-gray-400 hover:text-white hover:bg-[#1e293b] rounded-xl transition-all">
-                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12-3c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zM9 10l12-3" /></svg>
-                        <span className="font-medium">Kütüphane</span>
-                    </a>
-                    <a href="#" className="flex items-center gap-3 px-4 py-3 text-gray-400 hover:text-white hover:bg-[#1e293b] rounded-xl transition-all">
-                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
-                        <span className="font-medium">Ayarlar</span>
-                    </a>
+                    {/* Management Link (Trigger Modal) */}
+                    <button
+                        onClick={() => setIsManagementOpen(true)}
+                        className="w-full flex items-center gap-3 px-4 py-3 text-gray-400 hover:text-white hover:bg-[#1e293b] rounded-xl transition-all text-left">
+                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4" /></svg>
+                        <span className="font-medium">Kategori & Tür</span>
+                    </button>
                 </nav>
 
                 <div className="p-6 border-t border-[#1e293b]">
@@ -180,13 +286,13 @@ export default function AdminPage() {
                                         <label className="text-xs uppercase font-bold text-slate-500 tracking-wider">Kategori</label>
                                         <div className="relative">
                                             <select
-                                                name="category"
-                                                value={formData.category}
-                                                onChange={handleCategoryChange}
+                                                name="categoryId"
+                                                value={formData.categoryId}
+                                                onChange={handleChange}
                                                 className="w-full bg-[#0b1121] border border-[#2A3B55] rounded-xl px-4 py-3.5 text-white appearance-none focus:outline-none focus:border-[#ede066]/50 focus:ring-1 focus:ring-[#ede066]/50 cursor-pointer">
                                                 <option value="">Seçiniz</option>
-                                                {Object.keys(HIERARCHY).map(cat => (
-                                                    <option key={cat} value={cat}>{cat}</option>
+                                                {categories.map(cat => (
+                                                    <option key={cat.id} value={cat.id}>{cat.name}</option>
                                                 ))}
                                             </select>
                                             <svg className="w-4 h-4 text-slate-500 absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" /></svg>
@@ -198,14 +304,14 @@ export default function AdminPage() {
                                             <label className="text-xs uppercase font-bold text-slate-500 tracking-wider">Tür</label>
                                             <div className="relative">
                                                 <select
-                                                    name="genre"
-                                                    value={formData.genre}
-                                                    onChange={handleGenreChange}
-                                                    disabled={!formData.category}
+                                                    name="genreId"
+                                                    value={formData.genreId}
+                                                    onChange={handleChange}
+                                                    disabled={!formData.categoryId}
                                                     className="w-full bg-[#0b1121] border border-[#2A3B55] rounded-xl px-4 py-3.5 text-white appearance-none focus:outline-none focus:border-[#ede066]/50 focus:ring-1 focus:ring-[#ede066]/50 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed">
                                                     <option value="">Seçiniz</option>
                                                     {availableGenres.map(g => (
-                                                        <option key={g.genre} value={g.genre}>{g.genre}</option>
+                                                        <option key={g.id} value={g.id}>{g.name}</option>
                                                     ))}
                                                 </select>
                                                 <svg className="w-4 h-4 text-slate-500 absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" /></svg>
@@ -224,23 +330,8 @@ export default function AdminPage() {
                                         </div>
                                     </div>
 
-                                    <div className="space-y-2">
-                                        <label className="text-xs uppercase font-bold text-slate-500 tracking-wider">Mod (Opsiyonel)</label>
-                                        <div className="relative">
-                                            <select
-                                                name="mode"
-                                                value={formData.mode}
-                                                onChange={handleChange}
-                                                disabled={!formData.genre}
-                                                className="w-full bg-[#0b1121] border border-[#2A3B55] rounded-xl px-4 py-3.5 text-white appearance-none focus:outline-none focus:border-[#ede066]/50 focus:ring-1 focus:ring-[#ede066]/50 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed">
-                                                <option value="">Seçiniz...</option>
-                                                {availableModes.map(m => (
-                                                    <option key={m} value={m}>{m}</option>
-                                                ))}
-                                            </select>
-                                            <svg className="w-4 h-4 text-slate-500 absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" /></svg>
-                                        </div>
-                                    </div>
+                                    {/* Mod Removed for now as it's not in the new table structure request yet, keeping simple */}
+
                                 </div>
                             </div>
                         </div>
