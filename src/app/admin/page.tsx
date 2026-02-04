@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { supabase } from '@/lib/supabase';
 import { SkeletonLoader } from '@/components/admin/SkeletonLoader';
 import { useTranslations, useLocale } from 'next-intl';
+import { formatPrice } from '@/utils/format';
 
 type Category = {
     id: number;
@@ -461,7 +462,7 @@ export default function AdminDashboard() {
                                     </td>
                                     <td className="px-8 py-5 text-admin-text-muted">{track.bpm || '-'}</td>
                                     <td className="px-8 py-5 font-bold text-admin-primary">
-                                        {track.price ? `${track.price} ${settings.currency === 'USD' ? '$' : settings.currency === 'EUR' ? '€' : '₺'}` : '-'}
+                                        {track.price ? formatPrice(track.price, settings.currency) : '-'}
                                     </td>
                                     <td className="px-8 py-5">
                                         <span className={`px-2 py-1 rounded-md text-[10px] font-bold uppercase tracking-wider ${track.status === 'published'

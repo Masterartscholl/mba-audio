@@ -2,15 +2,22 @@
 
 import React from 'react';
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import { useTheme } from 'next-themes';
+import { supabase } from '@/lib/supabase';
 
 export const Sidebar = () => {
     const pathname = usePathname();
+    const router = useRouter();
     const t = useTranslations('Sidebar');
     const { theme, setTheme } = useTheme();
     const [mounted, setMounted] = React.useState(false);
+
+    const handleLogout = async () => {
+        await supabase.auth.signOut();
+        router.push('/login');
+    };
 
     // useEffect only runs on the client, so now we can safely show the UI
     React.useEffect(() => {
@@ -113,12 +120,23 @@ export const Sidebar = () => {
                     </button>
                 )}
 
-                <div className="flex items-center gap-3 p-3 bg-admin-card rounded-xl border border-admin-border">
-                    <div className="w-10 h-10 rounded-full bg-admin-bg flex items-center justify-center text-admin-primary font-bold border border-admin-border">A</div>
-                    <div>
-                        <h4 className="text-sm font-semibold text-admin-text">{t('admin')}</h4>
-                        <p className="text-xs text-admin-text-muted">{t('superAdmin')}</p>
+                <div className="flex items-center justify-between p-3 bg-admin-card rounded-xl border border-admin-border">
+                    <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 rounded-full bg-admin-bg flex items-center justify-center text-admin-primary font-bold border border-admin-border">A</div>
+                        <div>
+                            <h4 className="text-sm font-semibold text-admin-text">{t('admin')}</h4>
+                            <p className="text-xs text-admin-text-muted">{t('superAdmin')}</p>
+                        </div>
                     </div>
+                    <button
+                        onClick={handleLogout}
+                        className="p-2 text-admin-text-muted hover:text-red-500 hover:bg-red-500/10 rounded-lg transition-all"
+                        title={t('logout')}
+                    >
+                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+                        </svg>
+                    </button>
                 </div>
             </div>
         </aside>

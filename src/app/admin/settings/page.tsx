@@ -5,6 +5,8 @@ import { supabase } from '@/lib/supabase';
 import { SkeletonLoader } from '@/components/admin/SkeletonLoader';
 import { useTranslations } from 'next-intl';
 import { setUserLocale } from '@/services/locale';
+import { toast } from 'sonner';
+import { useTheme } from 'next-themes';
 
 type Settings = {
     site_title: string;
@@ -22,20 +24,27 @@ export default function SettingsPage() {
     const [activeTab, setActiveTab] = useState<'general' | 'music' | 'account'>('general');
     const [loading, setLoading] = useState(true);
     const [saving, setSaving] = useState(false);
-    const [notification, setNotification] = useState<{ type: 'success' | 'error', message: string } | null>(null);
     const t = useTranslations('Settings');
+    const { setTheme } = useTheme();
+    const [user, setUser] = useState<any>(null);
 
     // Settings State
     const [settings, setSettings] = useState<Settings>({
         site_title: '',
         contact_email: '',
         whatsapp_no: '',
-        default_price: '',
+        default_price: 0,
         currency: 'TL',
         is_watermark_active: true,
         is_maintenance_mode: false,
         active_theme: 'dark',
         default_lang: 'tr'
+    });
+
+    // Profile State
+    const [profile, setProfile] = useState({
+        full_name: '',
+        avatar_url: ''
     });
 
     // Password State
@@ -46,8 +55,31 @@ export default function SettingsPage() {
     });
 
     useEffect(() => {
-        fetchSettings();
+        const init = async () => {
+            const { data: { user } } = await supabase.auth.getUser();
+            if (user) {
+                setUser(user);
+                fetchProfile(user.id);
+            }
+            fetchSettings();
+        };
+        init();
     }, []);
+
+    const fetchProfile = async (userId: string) => {
+        const { data, error } = await supabase
+            .from('profiles')
+            .select('full_name, avatar_url')
+            .eq('id', userId)
+            .maybeSingle();
+
+        if (data) {
+            setProfile({
+                full_name: data.full_name || '',
+                avatar_url: data.avatar_url || ''
+            });
+        }
+    };
 
     const fetchSettings = async () => {
         try {
@@ -60,7 +92,7 @@ export default function SettingsPage() {
 
             if (error) {
                 console.error('Supabase fetch error:', error);
-                setNotification({ type: 'error', message: 'Ayarlar yüklenirken bir hata oluştu: ' + error.message });
+                toast.error('Ayarlar yüklenirken bir hata oluştu');
             } else if (data) {
                 setSettings(data);
             }
@@ -73,26 +105,21 @@ export default function SettingsPage() {
 
     const handleSave = async () => {
         if (settings.default_price === '' || isNaN(Number(settings.default_price))) {
-            setNotification({ type: 'error', message: t('error') });
+            toast.error(t('error'));
             return;
         }
 
         setSaving(true);
-        setNotification(null);
 
         // Update database
         const { error } = await supabase
             .from('settings')
-            .upsert({ id: 1, ...settings });
+            .upsert({ id: 1, ...settings, updated_at: new Date().toISOString() });
 
         if (error) {
-            setNotification({ type: 'error', message: t('error') + ': ' + error.message });
+            toast.error(t('error') + ': ' + error.message);
         } else {
-            // Update locale cookie for immediate feedback
-            await setUserLocale(settings.default_lang);
-
-            setNotification({ type: 'success', message: t('success') });
-            setTimeout(() => setNotification(null), 3000);
+            toast.success(t('success'));
         }
         setSaving(false);
     };
@@ -100,24 +127,71 @@ export default function SettingsPage() {
     const handlePasswordUpdate = async (e: React.FormEvent) => {
         e.preventDefault();
         if (passwordData.newPassword !== passwordData.confirmPassword) {
-            alert(t('passwordMatchError'));
+            toast.error(t('passwordMatchError'));
             return;
         }
 
         setSaving(true);
-        // Note: Supabase user update works specifically on the authenticated session
-        const { error } = await supabase.auth.updateUser({
-            password: passwordData.newPassword
-        });
+        try {
+            // 1. Verify Current Password
+            const { error: signInError } = await supabase.auth.signInWithPassword({
+                email: user.email,
+                password: passwordData.currentPassword
+            });
+
+            if (signInError) {
+                toast.error("Mevcut şifre yanlış.");
+                setSaving(false);
+                return;
+            }
+
+            // 2. Update to New Password
+            const { error } = await supabase.auth.updateUser({
+                password: passwordData.newPassword
+            });
+
+            if (error) {
+                toast.error('Şifre güncellenirken hata oluştu: ' + error.message);
+            } else {
+                toast.success('Şifre başarıyla güncellendi.');
+                setPasswordData({ currentPassword: '', newPassword: '', confirmPassword: '' });
+            }
+        } catch (err: any) {
+            toast.error("Bir hata oluştu.");
+        } finally {
+            setSaving(false);
+        }
+    };
+
+    const handleProfileUpdate = async (e: React.FormEvent) => {
+        e.preventDefault();
+        if (!user) return;
+
+        setSaving(true);
+        const { error } = await supabase
+            .from('profiles')
+            .update({
+                full_name: profile.full_name,
+                avatar_url: profile.avatar_url
+            })
+            .eq('id', user.id);
 
         if (error) {
-            setNotification({ type: 'error', message: 'Şifre güncellenirken hata oluştu: ' + error.message });
+            toast.error('Profil güncellenirken hata oluştu: ' + error.message);
         } else {
-            setNotification({ type: 'success', message: 'Şifre başarıyla güncellendi.' });
-            setPasswordData({ currentPassword: '', newPassword: '', confirmPassword: '' });
-            setTimeout(() => setNotification(null), 3000);
+            toast.success('Profil başarıyla güncellendi.');
         }
         setSaving(false);
+    };
+
+    const handleThemeChange = (theme: string) => {
+        setSettings({ ...settings, active_theme: theme });
+        setTheme(theme);
+    };
+
+    const handleLangChange = async (lang: string) => {
+        setSettings({ ...settings, default_lang: lang });
+        await setUserLocale(lang);
     };
 
     const tabs = [
@@ -155,29 +229,19 @@ export default function SettingsPage() {
                         className="px-8 py-3 rounded-xl bg-admin-primary text-admin-bg font-bold hover:bg-admin-primary/90 transition-all shadow-lg disabled:opacity-50 flex items-center gap-2"
                     >
                         {saving ? (
-                            <div className="w-5 h-5 border-2 border-admin-bg/20 border-t-admin-bg rounded-full animate-spin"></div>
+                            <>
+                                <div className="w-5 h-5 border-2 border-admin-bg/20 border-t-admin-bg rounded-full animate-spin"></div>
+                                <span>Kaydediliyor...</span>
+                            </>
                         ) : (
-                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" /></svg>
+                            <>
+                                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" /></svg>
+                                {t('save')}
+                            </>
                         )}
-                        {t('save')}
                     </button>
                 )}
             </div>
-
-            {/* Notification */}
-            {notification && (
-                <div className={`p-4 rounded-2xl border ${notification.type === 'success'
-                    ? 'bg-green-500/10 border-green-500/20 text-green-500'
-                    : 'bg-red-500/10 border-red-500/20 text-red-500'
-                    } flex items-center gap-3 animate-in slide-in-from-top-4 duration-300`}>
-                    {notification.type === 'success' ? (
-                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
-                    ) : (
-                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
-                    )}
-                    <span className="font-medium text-sm">{notification.message}</span>
-                </div>
-            )}
 
             {/* Tabs Navigation */}
             <div className="flex p-1.5 bg-admin-card rounded-2xl border border-admin-border w-fit">
@@ -268,17 +332,22 @@ export default function SettingsPage() {
                                         <label className="text-xs uppercase font-bold text-admin-text-muted tracking-wider text-[10px]">{t('defaultLang')}</label>
                                         <select
                                             value={settings.default_lang}
-                                            onChange={(e) => setSettings({ ...settings, default_lang: e.target.value })}
+                                            onChange={(e) => handleLangChange(e.target.value)}
                                             className="w-full bg-admin-bg border border-admin-border rounded-xl px-4 py-3.5 text-admin-text appearance-none focus:outline-none focus:border-admin-primary/50 cursor-pointer font-medium"
                                         >
                                             <option value="tr">Türkçe (TR)</option>
                                             <option value="en">English (EN)</option>
                                         </select>
                                     </div>
-                                    <div className="space-y-2 opacity-50 cursor-not-allowed">
+                                    <div className="space-y-2">
                                         <label className="text-xs uppercase font-bold text-admin-text-muted tracking-wider text-[10px]">{t('theme')}</label>
-                                        <select disabled className="w-full bg-admin-bg border border-admin-border rounded-xl px-4 py-3.5 text-admin-text appearance-none font-medium">
-                                            <option>Karanlık (Moon)</option>
+                                        <select
+                                            value={settings.active_theme}
+                                            onChange={(e) => handleThemeChange(e.target.value)}
+                                            className="w-full bg-admin-bg border border-admin-border rounded-xl px-4 py-3.5 text-admin-text appearance-none focus:outline-none focus:border-admin-primary/50 cursor-pointer font-medium"
+                                        >
+                                            <option value="dark">Karanlık (Moon)</option>
+                                            <option value="light">Aydınlık (Sun)</option>
                                         </select>
                                     </div>
                                 </div>
@@ -351,7 +420,50 @@ export default function SettingsPage() {
                 )}
 
                 {activeTab === 'account' && (
-                    <div className="max-w-2xl mx-auto w-full">
+                    <div className="max-w-4xl mx-auto w-full space-y-8">
+                        {/* Profile Info */}
+                        <form onSubmit={handleProfileUpdate} className="bg-admin-card rounded-3xl p-8 border border-admin-border space-y-8 shadow-xl">
+                            <div className="flex items-center justify-between">
+                                <div className="flex items-center gap-3">
+                                    <div className="p-2.5 rounded-xl bg-admin-bg text-admin-primary border border-admin-border">
+                                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" /></svg>
+                                    </div>
+                                    <h3 className="text-xl font-bold text-admin-text">{t('profileTitle') || 'Profil Bilgileri'}</h3>
+                                </div>
+                                <button
+                                    type="submit"
+                                    disabled={saving}
+                                    className="px-6 py-2.5 rounded-xl bg-admin-primary text-admin-bg font-bold hover:bg-admin-primary/90 transition-all shadow-lg disabled:opacity-50"
+                                >
+                                    {saving ? '...' : t('save')}
+                                </button>
+                            </div>
+
+                            <div className="grid md:grid-cols-2 gap-6">
+                                <div className="space-y-2">
+                                    <label className="text-xs uppercase font-bold text-admin-text-muted tracking-wider">Admin İsim/Soyisim</label>
+                                    <input
+                                        type="text"
+                                        value={profile.full_name}
+                                        onChange={(e) => setProfile({ ...profile, full_name: e.target.value })}
+                                        className="w-full bg-admin-bg border border-admin-border rounded-xl px-4 py-3.5 text-admin-text focus:outline-none focus:border-admin-primary/50 transition-all font-medium"
+                                        placeholder="Ad Soyad"
+                                    />
+                                </div>
+                                <div className="space-y-2">
+                                    <label className="text-xs uppercase font-bold text-admin-text-muted tracking-wider">Profil Fotoğrafı URL</label>
+                                    <input
+                                        type="text"
+                                        value={profile.avatar_url}
+                                        onChange={(e) => setProfile({ ...profile, avatar_url: e.target.value })}
+                                        className="w-full bg-admin-bg border border-admin-border rounded-xl px-4 py-3.5 text-admin-text focus:outline-none focus:border-admin-primary/50 transition-all font-medium"
+                                        placeholder="https://example.com/photo.jpg"
+                                    />
+                                </div>
+                            </div>
+                        </form>
+
+                        {/* Password Change */}
                         <form onSubmit={handlePasswordUpdate} className="bg-admin-card rounded-3xl p-8 border border-admin-border space-y-8 shadow-xl">
                             <div className="flex items-center gap-3">
                                 <div className="p-2.5 rounded-xl bg-admin-bg text-admin-primary border border-admin-border">

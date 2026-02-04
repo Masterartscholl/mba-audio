@@ -21,6 +21,8 @@ export const metadata: Metadata = {
 
 import { ThemeProvider } from "@/components/ThemeProvider";
 
+import { Toaster } from 'sonner';
+
 export default async function RootLayout({
   children,
 }: Readonly<{
@@ -42,6 +44,7 @@ export default async function RootLayout({
             disableTransitionOnChange
           >
             {children}
+            <Toaster position="top-right" richColors theme="dark" />
           </ThemeProvider>
         </NextIntlClientProvider>
       </body>

@@ -35,7 +35,8 @@
         "passwordUpdating": "Şifre Güncelleniyor...",
         "success": "Ayarlar başarıyla güncellendi.",
         "error": "Ayarlar güncellenirken hata oluştu",
-        "passwordMatchError": "Yeni şifreler eşleşmiyor!"
+        "passwordMatchError": "Yeni şifreler eşleşmiyor!",
+        "profileTitle": "Profil Bilgileri"
     },
     "Sidebar": {
         "dashboard": "Panel",
@@ -43,7 +44,8 @@
         "categories": "Kategori & Tür",
         "settings": "Ayarlar",
         "admin": "Yönetici",
-        "superAdmin": "Süper Yönetici"
+        "superAdmin": "Süper Yönetici",
+        "logout": "Çıkış Yap"
     },
     "Dashboard": {
         "title": "Hızlı Müzik Yükle",

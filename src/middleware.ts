@@ -35,35 +35,53 @@ export async function middleware(request: NextRequest) {
         data: { user },
     } = await supabase.auth.getUser()
 
-    // Guard: Protect /admin routes
-    if (request.nextUrl.pathname.startsWith('/admin')) {
-        if (!user) {
-            return NextResponse.redirect(new URL('/login', request.url))
-        }
+    // 1. Fetch Maintenance Mode Status
+    const { data: settings } = await supabase
+        .from('settings')
+        .select('is_maintenance_mode')
+        .eq('id', 1)
+        .maybeSingle()
 
-        // Check if user is admin
+    const isMaintenanceMode = settings?.is_maintenance_mode || false
+
+    // 2. Check Admin Status if logged in
+    let isAdmin = false
+    if (user) {
         const { data: profile } = await supabase
             .from('profiles')
             .select('is_admin')
             .eq('id', user.id)
-            .single()
+            .maybeSingle()
+        isAdmin = profile?.is_admin || false
+    }
 
-        if (!profile?.is_admin) {
-            // If logged in but not admin, redirect to home page
+    const { pathname } = request.nextUrl
+
+    // 3. Maintenance Mode Redirect (Exceptions: /admin, /login, /maintenance, and static assets)
+    const isPublicRoute = !pathname.startsWith('/admin') &&
+        !pathname.startsWith('/login') &&
+        !pathname.startsWith('/maintenance') &&
+        !pathname.startsWith('/api') &&
+        !pathname.includes('.')
+
+    if (isMaintenanceMode && !isAdmin && isPublicRoute) {
+        return NextResponse.redirect(new URL('/maintenance', request.url))
+    }
+
+    // Guard: Protect /admin routes
+    if (pathname.startsWith('/admin')) {
+        if (!user) {
+            return NextResponse.redirect(new URL('/login', request.url))
+        }
+
+        if (!isAdmin) {
             return NextResponse.redirect(new URL('/', request.url))
         }
     }
 
     // Guard: Redirect logged in users away from /login
-    if (user && request.nextUrl.pathname.startsWith('/login')) {
-        // We can also check admin status here to decide where to redirect
-        const { data: profile } = await supabase
-            .from('profiles')
-            .select('is_admin')
-            .eq('id', user.id)
-            .single()
-
-        if (profile?.is_admin) {
+    if (user && pathname.startsWith('/login')) {
+        if (isAdmin) {
             return NextResponse.redirect(new URL('/admin', request.url))
         } else {
             return NextResponse.redirect(new URL('/', request.url))
@@ -74,5 +92,13 @@ export async function middleware(request: NextRequest) {
 }
 
 export const config = {
-    matcher: ['/admin/:path*', '/login'],
+    matcher: [
+        /*
+         * Match all request paths except for the ones starting with:
+         * - _next/static (static files)
+         * - _next/image (image optimization files)
+         * - favicon.ico (favicon file)
+         */
+        '/((?!_next/static|_next/image|favicon.ico).*)',
+    ],
 }

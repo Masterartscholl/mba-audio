@@ -4,6 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { supabase } from '@/lib/supabase';
 import { SkeletonLoader } from '@/components/admin/SkeletonLoader';
 import { useTranslations, useLocale } from 'next-intl';
+import { formatPrice } from '@/utils/format';
 
 type Track = {
     id: number;
@@ -210,7 +211,7 @@ export default function LibraryPage() {
                                             {track.bpm || '-'}
                                         </td>
                                         <td className="px-8 py-6 font-bold text-admin-primary">
-                                            {track.price ? `${track.price} ${settings.currency === 'USD' ? '$' : settings.currency === 'EUR' ? '€' : '₺'}` : '-'}
+                                            {track.price ? formatPrice(track.price, settings.currency) : '-'}
                                         </td>
                                         <td className="px-8 py-6">
                                             <span className={`px-2 py-1 rounded-md text-[10px] font-bold uppercase tracking-wider ${track.status === 'published'

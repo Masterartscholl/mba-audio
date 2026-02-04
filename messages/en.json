@@ -35,7 +35,8 @@
         "passwordUpdating": "Updating Password...",
         "success": "Settings updated successfully.",
         "error": "Error updating settings",
-        "passwordMatchError": "New passwords do not match!"
+        "passwordMatchError": "New passwords do not match!",
+        "profileTitle": "Profile Information"
     },
     "Sidebar": {
         "dashboard": "Dashboard",
@@ -43,7 +44,8 @@
         "categories": "Category & Genre",
         "settings": "Settings",
         "admin": "Admin User",
-        "superAdmin": "Super Admin"
+        "superAdmin": "Super Admin",
+        "logout": "Logout"
     },
     "Dashboard": {
         "title": "Quick Music Upload",

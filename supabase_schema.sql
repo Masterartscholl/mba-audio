@@ -130,6 +130,8 @@ create policy "Authenticated users can delete tracks."
 create table public.profiles (
   id uuid references auth.users(id) on delete cascade primary key,
   email text,
+  full_name text,
+  avatar_url text,
   is_admin boolean default false,
   created_at timestamp with time zone default timezone('utc'::text, now()) not null
 );
