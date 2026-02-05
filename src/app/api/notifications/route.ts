@@ -4,14 +4,22 @@ import { createClient } from '@supabase/supabase-js';
 
 const resend = process.env.RESEND_API_KEY ? new Resend(process.env.RESEND_API_KEY) : null;
 
-const supabase = createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-);
+// Build sırasında hata vermemesi için güvenli başlatma
+const getSupabase = () => {
+    const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
+    const key = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+    if (!url || !key) return null;
+    return createClient(url, key);
+};
 
 export async function POST(request: Request) {
     try {
         const { trackId, userId, amount, currency } = await request.json();
+
+        const supabase = getSupabase();
+        if (!supabase) {
+            return NextResponse.json({ error: 'Supabase configuration is missing' }, { status: 500 });
+        }
 
         // 1. Fetch Track Details
         const { data: track } = await supabase
