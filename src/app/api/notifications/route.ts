@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server';
 import { Resend } from 'resend';
 import { createClient } from '@supabase/supabase-js';
 
-const resend = new Resend(process.env.RESEND_API_KEY);
+const resend = process.env.RESEND_API_KEY ? new Resend(process.env.RESEND_API_KEY) : null;
 
 const supabase = createClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -29,6 +29,10 @@ export async function POST(request: Request) {
 
         if (!settings?.contact_email) {
             return NextResponse.json({ error: 'Admin email not found' }, { status: 400 });
+        }
+
+        if (!resend) {
+            return NextResponse.json({ error: 'Resend API key is missing' }, { status: 500 });
         }
 
         // 3. Send Email via Resend
