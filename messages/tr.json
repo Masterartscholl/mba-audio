@@ -100,6 +100,8 @@
         "title": "Hızlı Müzik Yükle",
         "description": "Yeni bir eseri kütüphaneye ekleyin.",
         "trackTitle": "Eser Adı",
+        "artist": "Sanatçı Adı",
+        "imageUrl": "Kapak Görseli",
         "category": "Kategori",
         "genre": "Tür",
         "bpm": "BPM",
@@ -181,5 +183,9 @@
         "cancel": "İptal",
         "error": "Hata",
         "success": "Başarılı"
+    },
+    "Home": {
+        "title": "Müzik Keşfet",
+        "description": "Binlerce eser arasından projenize en uygun olanı bulun."
     }
 }

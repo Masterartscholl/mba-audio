@@ -100,6 +100,8 @@
         "title": "Quick Music Upload",
         "description": "Add a new work to the library.",
         "trackTitle": "Track Title",
+        "artist": "Artist Name",
+        "imageUrl": "Cover Image",
         "category": "Category",
         "genre": "Genre",
         "bpm": "BPM",
@@ -181,5 +183,9 @@
         "cancel": "Cancel",
         "error": "Error",
         "success": "Success"
+    },
+    "Home": {
+        "title": "Discover Music",
+        "description": "Find the perfect track for your project from thousands of items."
     }
 }

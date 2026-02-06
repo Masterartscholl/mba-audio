@@ -37,6 +37,7 @@ export default function AdminDashboard() {
     // Form State
     const [formData, setFormData] = useState({
         title: "",
+        artistName: "",
         categoryId: "",
         genreId: "",
         bpm: "",
@@ -46,14 +47,16 @@ export default function AdminDashboard() {
 
     const [previewFile, setPreviewFile] = useState<File | null>(null);
     const [masterFile, setMasterFile] = useState<File | null>(null);
-    const [uploadProgress, setUploadProgress] = useState({ preview: 0, master: 0 });
+    const [coverFile, setCoverFile] = useState<File | null>(null);
+    const [uploadProgress, setUploadProgress] = useState({ preview: 0, master: 0, cover: 0 });
 
     const [availableGenres, setAvailableGenres] = useState<Genre[]>([]);
     const [availableModes, setAvailableModes] = useState<Mode[]>([]);
-    const [isDragging, setIsDragging] = useState<{ preview: boolean; master: boolean }>({ preview: false, master: false });
+    const [isDragging, setIsDragging] = useState<{ preview: boolean; master: boolean; cover: boolean }>({ preview: false, master: false, cover: false });
 
     const previewInputRef = React.useRef<HTMLInputElement>(null);
     const masterInputRef = React.useRef<HTMLInputElement>(null);
+    const coverInputRef = React.useRef<HTMLInputElement>(null);
 
     // Fetch Data
     const fetchData = async () => {
@@ -132,6 +135,24 @@ export default function AdminDashboard() {
         try {
             let previewUrl = "";
             let masterPath = "";
+            let imageUrl = "";
+
+            // 0. Upload Cover Image if exists
+            if (coverFile) {
+                const coverExt = coverFile.name.split('.').pop();
+                const coverPath = `${Date.now()}_cover.${coverExt}`;
+                setUploadProgress(prev => ({ ...prev, cover: 20 }));
+                const { error: coverError } = await supabase.storage
+                    .from('covers')
+                    .upload(coverPath, coverFile);
+                if (coverError) throw coverError;
+                setUploadProgress(prev => ({ ...prev, cover: 100 }));
+
+                const { data: { publicUrl } } = supabase.storage
+                    .from('covers')
+                    .getPublicUrl(coverPath);
+                imageUrl = publicUrl;
+            }
 
             // 1. Upload Preview File if exists
             if (previewFile) {
@@ -168,6 +189,8 @@ export default function AdminDashboard() {
                 .from('tracks')
                 .insert([{
                     title: formData.title,
+                    artist_name: formData.artistName,
+                    image_url: imageUrl,
                     category_id: formData.categoryId ? Number(formData.categoryId) : null,
                     genre_id: formData.genreId ? Number(formData.genreId) : null,
                     mode_id: formData.modeId ? Number(formData.modeId) : null,
@@ -183,10 +206,11 @@ export default function AdminDashboard() {
             alert(status === 'published' ? t('messages.success') : t('messages.success'));
 
             // Clear Form
-            setFormData({ title: "", categoryId: "", genreId: "", bpm: "", modeId: "", price: "" });
+            setFormData({ title: "", artistName: "", categoryId: "", genreId: "", bpm: "", modeId: "", price: "" });
             setPreviewFile(null);
             setMasterFile(null);
-            setUploadProgress({ preview: 0, master: 0 });
+            setCoverFile(null);
+            setUploadProgress({ preview: 0, master: 0, cover: 0 });
 
             // Refresh recent tracks
             fetchData();
@@ -197,22 +221,23 @@ export default function AdminDashboard() {
         }
     };
 
-    const handleDragOver = (e: React.DragEvent, type: 'preview' | 'master') => {
+    const handleDragOver = (e: React.DragEvent, type: 'preview' | 'master' | 'cover') => {
         e.preventDefault();
         setIsDragging(prev => ({ ...prev, [type]: true }));
     };
 
-    const handleDragLeave = (type: 'preview' | 'master') => {
+    const handleDragLeave = (type: 'preview' | 'master' | 'cover') => {
         setIsDragging(prev => ({ ...prev, [type]: false }));
     };
 
-    const handleDrop = (e: React.DragEvent, type: 'preview' | 'master') => {
+    const handleDrop = (e: React.DragEvent, type: 'preview' | 'master' | 'cover') => {
         e.preventDefault();
         setIsDragging(prev => ({ ...prev, [type]: false }));
         const file = e.dataTransfer.files?.[0];
         if (file) {
             if (type === 'preview') setPreviewFile(file);
-            else setMasterFile(file);
+            else if (type === 'master') setMasterFile(file);
+            else setCoverFile(file);
         }
     };
 
@@ -262,6 +287,18 @@ export default function AdminDashboard() {
                                         onChange={handleChange}
                                         type="text"
                                         placeholder="Örn: Midnight City"
+                                        className="w-full bg-admin-bg border border-admin-border rounded-xl px-4 py-3.5 text-admin-text placeholder-admin-text-muted/50 focus:outline-none focus:border-admin-primary/50 focus:ring-1 focus:ring-admin-primary/50 transition-all font-medium"
+                                    />
+                                </div>
+
+                                <div className="space-y-2">
+                                    <label className="text-xs uppercase font-bold text-admin-text-muted tracking-wider">{t('artist')}</label>
+                                    <input
+                                        name="artistName"
+                                        value={formData.artistName}
+                                        onChange={handleChange}
+                                        type="text"
+                                        placeholder="Örn: M83"
                                         className="w-full bg-admin-bg border border-admin-border rounded-xl px-4 py-3.5 text-admin-text placeholder-admin-text-muted/50 focus:outline-none focus:border-admin-primary/50 focus:ring-1 focus:ring-admin-primary/50 transition-all font-medium"
                                     />
                                 </div>
@@ -360,7 +397,51 @@ export default function AdminDashboard() {
                                 </div>
                             </div>
 
-                            <div className="grid md:grid-cols-2 gap-6 flex-1">
+                            <div className="grid md:grid-cols-3 gap-6 flex-1">
+                                <div
+                                    onDragOver={(e) => handleDragOver(e, 'cover')}
+                                    onDragLeave={() => handleDragLeave('cover')}
+                                    onDrop={(e) => handleDrop(e, 'cover')}
+                                    onClick={() => coverInputRef.current?.click()}
+                                    className={`border-2 border-dashed rounded-2xl p-6 flex flex-col items-center justify-center text-center transition-all cursor-pointer group relative overflow-hidden min-h-[220px] ${isDragging.cover
+                                        ? 'border-admin-primary bg-admin-primary/10 scale-[1.02]'
+                                        : 'border-admin-border bg-admin-bg/50 hover:border-admin-primary hover:bg-admin-bg'
+                                        }`}>
+                                    <input
+                                        type="file"
+                                        ref={coverInputRef}
+                                        className="hidden"
+                                        accept="image/*"
+                                        onChange={(e) => setCoverFile(e.target.files?.[0] || null)}
+                                    />
+                                    {coverFile && (
+                                        <button
+                                            onClick={(e) => {
+                                                e.preventDefault();
+                                                e.stopPropagation();
+                                                setCoverFile(null);
+                                            }}
+                                            className="absolute top-4 right-4 z-20 w-8 h-8 rounded-full bg-red-500/10 text-red-500 flex items-center justify-center hover:bg-red-500 hover:text-white transition-all pointer-events-auto"
+                                            title="Dosyayı Kaldır"
+                                        >
+                                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" /></svg>
+                                        </button>
+                                    )}
+                                    {coverFile ? (
+                                        <div className="w-24 h-24 rounded-2xl overflow-hidden mb-4 border border-admin-border shadow-xl">
+                                            <img src={URL.createObjectURL(coverFile)} alt="Cover" className="w-full h-full object-cover" />
+                                        </div>
+                                    ) : (
+                                        <div className="w-16 h-16 rounded-full bg-admin-card flex items-center justify-center text-admin-text-muted group-hover:text-admin-primary group-hover:scale-110 transition-all mb-4 z-10 border border-admin-border">
+                                            <svg className="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
+                                        </div>
+                                    )}
+                                    <h3 className="font-semibold text-admin-text z-10 text-xs">{coverFile ? coverFile.name : t('imageUrl')}</h3>
+                                    {uploadProgress.cover > 0 && (
+                                        <div className="absolute bottom-0 left-0 h-1 bg-admin-primary transition-all duration-300" style={{ width: `${uploadProgress.cover}%` }}></div>
+                                    )}
+                                </div>
+
                                 <div
                                     onDragOver={(e) => handleDragOver(e, 'preview')}
                                     onDragLeave={() => handleDragLeave('preview')}
@@ -393,10 +474,7 @@ export default function AdminDashboard() {
                                     <div className="w-16 h-16 rounded-full bg-admin-card flex items-center justify-center text-admin-text-muted group-hover:text-admin-primary group-hover:scale-110 transition-all mb-4 z-10 border border-admin-border">
                                         <svg className="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" /></svg>
                                     </div>
-                                    <h3 className="font-semibold text-admin-text z-10">{previewFile ? previewFile.name : t('previewFile')}</h3>
-                                    <p className="text-xs text-admin-text-muted mt-2 z-10 max-w-[200px] leading-relaxed">
-                                        {previewFile ? `${(previewFile.size / (1024 * 1024)).toFixed(2)} MB` : t('selectFile') + ' (MP3 - Max 10MB).'}
-                                    </p>
+                                    <h3 className="font-semibold text-admin-text z-10 text-xs">{previewFile ? previewFile.name : t('previewFile')}</h3>
                                     {uploadProgress.preview > 0 && (
                                         <div className="absolute bottom-0 left-0 h-1 bg-admin-primary transition-all duration-300" style={{ width: `${uploadProgress.preview}%` }}></div>
                                     )}
@@ -433,10 +511,7 @@ export default function AdminDashboard() {
                                     <div className="w-16 h-16 rounded-full bg-admin-card flex items-center justify-center text-admin-text-muted group-hover:text-admin-primary group-hover:scale-110 transition-all mb-4 z-10 border border-admin-border">
                                         <svg className="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>
                                     </div>
-                                    <h3 className="font-semibold text-admin-text z-10">{masterFile ? masterFile.name : t('masterFile')}</h3>
-                                    <p className="text-xs text-admin-text-muted mt-2 z-10 max-w-[200px] leading-relaxed">
-                                        {masterFile ? `${(masterFile.size / (1024 * 1024)).toFixed(2)} MB` : t('selectFile') + ' (WAV/MP3).'}
-                                    </p>
+                                    <h3 className="font-semibold text-admin-text z-10 text-xs">{masterFile ? masterFile.name : t('masterFile')}</h3>
                                     {uploadProgress.master > 0 && (
                                         <div className="absolute bottom-0 left-0 h-1 bg-admin-primary transition-all duration-300" style={{ width: `${uploadProgress.master}%` }}></div>
                                     )}
@@ -472,6 +547,7 @@ export default function AdminDashboard() {
                                 <tr key={track.id} className="hover:bg-admin-bg/30 transition-colors">
                                     <td className="px-8 py-5">
                                         <div className="font-bold text-admin-text">{track.title}</div>
+                                        <div className="text-[10px] text-admin-text-muted font-bold uppercase tracking-widest">{track.artist_name || '-'}</div>
                                     </td>
                                     <td className="px-8 py-5">
                                         <span className="text-admin-text-muted">{track.categories?.name}</span>
