@@ -91,7 +91,7 @@
         "previewFile": "Ön İzleme Dosyası (MP3)",
         "masterFile": "Master Dosyası (Yüksek Kalite)",
         "selectFile": "Dosya Seç",
-        "quickUpload": "Hızlı Yükle",
+        "quickUpload": "Taslak Olarak Kaydet",
         "publish": "Yayınla",
         "updating": "Güncelleniyor...",
         "empty": "Henüz eser bulunmuyor.",
@@ -105,6 +105,7 @@
             "published": "YAYINDA",
             "draft": "TASLAK"
         },
+        "viewAll": "Tümünü Gör",
         "messages": {
             "success": "Eser başarıyla yüklendi!",
             "error": "Hata oluştu",
@@ -138,11 +139,13 @@
         "changeMaster": "Master (Değiştir)"
     },
     "Categories": {
-        "title": "Kategori & Tür Yönetimi",
+        "title": "Kategori, Tür & Mod Yönetimi",
         "categories": "Kategoriler",
         "genres": "Müzik Türleri",
+        "modes": "Modlar / Ruh Hali",
         "addCategory": "Yeni Kategori Ekle",
         "addGenre": "Yeni Tür Ekle",
+        "addMode": "Yeni Mod Ekle",
         "table": {
             "name": "AD",
             "count": "ESER SAYISI",
@@ -150,7 +153,9 @@
         },
         "placeholder": "Yeni kategori adı...",
         "genrePlaceholder": "Yeni tür adı...",
-        "emptyGenres": "Henüz bağlı tür yok.",
+        "modePlaceholder": "Yeni mod adı...",
+        "emptyGenres": "Tür yok.",
+        "emptyModes": "Mod yok.",
         "add": "Ekle",
         "deleteConfirm": "Bu öğeyi silmek istediğinize emin misiniz?"
     },

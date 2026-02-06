@@ -1,7 +1,6 @@
 "use client";
 
 import React, { useState, useEffect } from 'react';
-import Link from 'next/link';
 import { supabase } from '@/lib/supabase';
 import { SkeletonLoader } from '@/components/admin/SkeletonLoader';
 import { useTranslations, useLocale } from 'next-intl';
@@ -18,12 +17,19 @@ type Genre = {
     category_id: number;
 };
 
+type Mode = {
+    id: number;
+    name: string;
+    category_id: number;
+};
+
 export default function AdminDashboard() {
     const t = useTranslations('Dashboard');
     const locale = useLocale();
     // Data State
     const [categories, setCategories] = useState<Category[]>([]);
     const [genres, setGenres] = useState<Genre[]>([]);
+    const [modes, setModes] = useState<Mode[]>([]);
     const [loading, setLoading] = useState(true);
     const [recentTracks, setRecentTracks] = useState<any[]>([]);
     const [settings, setSettings] = useState({ defaultPrice: 0, currency: 'TL' });
@@ -34,7 +40,7 @@ export default function AdminDashboard() {
         categoryId: "",
         genreId: "",
         bpm: "",
-        mode: "",
+        modeId: "",
         price: ""
     });
 
@@ -43,6 +49,7 @@ export default function AdminDashboard() {
     const [uploadProgress, setUploadProgress] = useState({ preview: 0, master: 0 });
 
     const [availableGenres, setAvailableGenres] = useState<Genre[]>([]);
+    const [availableModes, setAvailableModes] = useState<Mode[]>([]);
     const [isDragging, setIsDragging] = useState<{ preview: boolean; master: boolean }>({ preview: false, master: false });
 
     const previewInputRef = React.useRef<HTMLInputElement>(null);
@@ -54,9 +61,10 @@ export default function AdminDashboard() {
         try {
             const { data: catData } = await supabase.from('categories').select('*').order('name');
             const { data: genData } = await supabase.from('genres').select('*').order('name');
+            const { data: modeData } = await supabase.from('modes').select('*').order('name');
             const { data: trackData } = await supabase
                 .from('tracks')
-                .select('*, categories(name), genres(name)')
+                .select('*, categories(name), genres(name), modes(name)')
                 .order('created_at', { ascending: false })
                 .limit(5);
 
@@ -68,6 +76,7 @@ export default function AdminDashboard() {
 
             if (catData) setCategories(catData);
             if (genData) setGenres(genData);
+            if (modeData) setModes(modeData);
             if (trackData) setRecentTracks(trackData);
             if (settingsData) {
                 setSettings({
@@ -86,21 +95,23 @@ export default function AdminDashboard() {
         fetchData();
     }, []);
 
-    // Sync Genres based on Category Selection
+    // Sync Genres and Modes based on Category Selection
     useEffect(() => {
         if (formData.categoryId) {
-            const filtered = genres.filter((g: Genre) => g.category_id === Number(formData.categoryId));
-            setAvailableGenres(filtered);
+            const catId = Number(formData.categoryId);
+            setAvailableGenres(genres.filter((g: Genre) => g.category_id === catId));
+            setAvailableModes(modes.filter((m: Mode) => m.category_id === catId));
         } else {
             setAvailableGenres([]);
+            setAvailableModes([]);
         }
-    }, [formData.categoryId, genres]);
+    }, [formData.categoryId, genres, modes]);
 
     // Handlers
     const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
         const { name, value } = e.target;
         if (name === 'categoryId') {
-            setFormData(prev => ({ ...prev, [name]: value, genreId: "" }));
+            setFormData(prev => ({ ...prev, [name]: value, genreId: "", modeId: "" }));
         } else {
             setFormData(prev => ({ ...prev, [name]: value }));
         }
@@ -108,7 +119,7 @@ export default function AdminDashboard() {
 
     const handleAction = async (status: 'published' | 'draft') => {
         if (!formData.title) {
-            alert(t('trackTitle') + " " + "zorunludur."); // Simple localized alert for now
+            alert(t('trackTitle') + " " + "zorunludur.");
             return;
         }
 
@@ -159,8 +170,8 @@ export default function AdminDashboard() {
                     title: formData.title,
                     category_id: formData.categoryId ? Number(formData.categoryId) : null,
                     genre_id: formData.genreId ? Number(formData.genreId) : null,
+                    mode_id: formData.modeId ? Number(formData.modeId) : null,
                     bpm: formData.bpm ? Number(formData.bpm) : null,
-                    mode: formData.mode,
                     price: formData.price ? Number(formData.price) : settings.defaultPrice,
                     preview_url: previewUrl,
                     master_url: masterPath,
@@ -172,7 +183,7 @@ export default function AdminDashboard() {
             alert(status === 'published' ? t('messages.success') : t('messages.success'));
 
             // Clear Form
-            setFormData({ title: "", categoryId: "", genreId: "", bpm: "", mode: "", price: "" });
+            setFormData({ title: "", categoryId: "", genreId: "", bpm: "", modeId: "", price: "" });
             setPreviewFile(null);
             setMasterFile(null);
             setUploadProgress({ preview: 0, master: 0 });
@@ -185,6 +196,7 @@ export default function AdminDashboard() {
             setLoading(false);
         }
     };
+
     const handleDragOver = (e: React.DragEvent, type: 'preview' | 'master') => {
         e.preventDefault();
         setIsDragging(prev => ({ ...prev, [type]: true }));
@@ -269,19 +281,36 @@ export default function AdminDashboard() {
                                     </div>
                                 </div>
 
-                                <div className="space-y-2">
-                                    <label className="text-xs uppercase font-bold text-admin-text-muted tracking-wider">{t('genre')}</label>
-                                    <div className="relative">
-                                        <select
-                                            name="genreId"
-                                            value={formData.genreId}
-                                            onChange={handleChange}
-                                            disabled={!formData.categoryId}
-                                            className="w-full bg-admin-bg border border-admin-border rounded-xl px-4 py-3.5 text-admin-text appearance-none focus:outline-none focus:border-admin-primary/50 focus:ring-1 focus:ring-admin-primary/50 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed font-medium">
-                                            <option value="">{t('selectFile')}</option>
-                                            {availableGenres.map(g => <option key={g.id} value={g.id}>{g.name}</option>)}
-                                        </select>
-                                        <svg className="w-4 h-4 text-admin-text-muted absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" /></svg>
+                                <div className="grid grid-cols-2 gap-4">
+                                    <div className="space-y-2">
+                                        <label className="text-xs uppercase font-bold text-admin-text-muted tracking-wider">{t('genre')}</label>
+                                        <div className="relative">
+                                            <select
+                                                name="genreId"
+                                                value={formData.genreId}
+                                                onChange={handleChange}
+                                                disabled={!formData.categoryId}
+                                                className="w-full bg-admin-bg border border-admin-border rounded-xl px-4 py-3.5 text-admin-text appearance-none focus:outline-none focus:border-admin-primary/50 focus:ring-1 focus:ring-admin-primary/50 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed font-medium">
+                                                <option value="">{t('selectFile')}</option>
+                                                {availableGenres.map(g => <option key={g.id} value={g.id}>{g.name}</option>)}
+                                            </select>
+                                            <svg className="w-4 h-4 text-admin-text-muted absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" /></svg>
+                                        </div>
+                                    </div>
+                                    <div className="space-y-2">
+                                        <label className="text-xs uppercase font-bold text-admin-text-muted tracking-wider">{t('mode')}</label>
+                                        <div className="relative">
+                                            <select
+                                                name="modeId"
+                                                value={formData.modeId}
+                                                onChange={handleChange}
+                                                disabled={!formData.categoryId}
+                                                className="w-full bg-admin-bg border border-admin-border rounded-xl px-4 py-3.5 text-admin-text appearance-none focus:outline-none focus:border-admin-primary/50 focus:ring-1 focus:ring-admin-primary/50 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed font-medium">
+                                                <option value="">{t('selectFile')}</option>
+                                                {availableModes.map(m => <option key={m.id} value={m.id}>{m.name}</option>)}
+                                            </select>
+                                            <svg className="w-4 h-4 text-admin-text-muted absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" /></svg>
+                                        </div>
                                     </div>
                                 </div>
 
@@ -298,32 +327,20 @@ export default function AdminDashboard() {
                                         />
                                     </div>
                                     <div className="space-y-2">
-                                        <label className="text-xs uppercase font-bold text-admin-text-muted tracking-wider">{t('mode')}</label>
-                                        <input
-                                            name="mode"
-                                            value={formData.mode}
-                                            onChange={handleChange}
-                                            type="text"
-                                            placeholder="Örn: C Minor"
-                                            className="w-full bg-admin-bg border border-admin-border rounded-xl px-4 py-3.5 text-admin-text placeholder-admin-text-muted/50 focus:outline-none focus:border-admin-primary/50 focus:ring-1 focus:ring-admin-primary/50 transition-all font-medium"
-                                        />
-                                    </div>
-                                </div>
-
-                                <div className="space-y-2">
-                                    <label className="text-xs uppercase font-bold text-admin-text-muted tracking-wider">{t('price')} ({settings.currency === 'USD' ? '$' : settings.currency === 'EUR' ? '€' : '₺'})</label>
-                                    <div className="relative">
-                                        <input
-                                            name="price"
-                                            value={formData.price}
-                                            onChange={handleChange}
-                                            type="number"
-                                            placeholder="0.00"
-                                            className="w-full bg-admin-bg border border-admin-border rounded-xl px-4 py-3.5 text-admin-text placeholder-admin-text-muted/50 focus:outline-none focus:border-admin-primary/50 focus:ring-1 focus:ring-admin-primary/50 transition-all font-medium"
-                                        />
-                                        <span className="absolute right-4 top-1/2 -translate-y-1/2 text-admin-text-muted font-bold">
-                                            {settings.currency === 'USD' ? '$' : settings.currency === 'EUR' ? '€' : '₺'}
-                                        </span>
+                                        <label className="text-xs uppercase font-bold text-admin-text-muted tracking-wider">{t('price')} ({settings.currency === 'USD' ? '$' : settings.currency === 'EUR' ? '€' : '₺'})</label>
+                                        <div className="relative">
+                                            <input
+                                                name="price"
+                                                value={formData.price}
+                                                onChange={handleChange}
+                                                type="number"
+                                                placeholder="0.00"
+                                                className="w-full bg-admin-bg border border-admin-border rounded-xl px-4 py-3.5 text-admin-text placeholder-admin-text-muted/50 focus:outline-none focus:border-admin-primary/50 focus:ring-1 focus:ring-admin-primary/50 transition-all font-medium"
+                                            />
+                                            <span className="absolute right-4 top-1/2 -translate-y-1/2 text-admin-text-muted font-bold text-sm">
+                                                {settings.currency === 'USD' ? '$' : settings.currency === 'EUR' ? '€' : '₺'}
+                                            </span>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
@@ -434,7 +451,7 @@ export default function AdminDashboard() {
             <div className="space-y-6">
                 <div className="flex items-center justify-between">
                     <h2 className="text-2xl font-bold text-admin-text tracking-tight">{t('recentUploads')}</h2>
-                    <button onClick={() => window.location.href = '/admin/library'} className="text-admin-primary text-sm font-bold hover:underline cursor-pointer">{t('recentUploads')}</button>
+                    <button onClick={() => window.location.href = '/admin/library'} className="text-admin-primary text-sm font-bold hover:underline cursor-pointer">{t('viewAll') || 'Tümünü Gör'}</button>
                 </div>
 
                 <div className="bg-admin-card rounded-3xl border border-admin-border overflow-hidden shadow-xl">
@@ -443,6 +460,7 @@ export default function AdminDashboard() {
                             <tr>
                                 <th className="px-8 py-4">{t('table.title')}</th>
                                 <th className="px-8 py-4">{t('table.category')} / {t('table.genre')}</th>
+                                <th className="px-8 py-4">{t('mode')}</th>
                                 <th className="px-8 py-4">{t('bpm')}</th>
                                 <th className="px-8 py-4">{t('price')}</th>
                                 <th className="px-8 py-4">{t('table.status')}</th>
@@ -459,6 +477,9 @@ export default function AdminDashboard() {
                                         <span className="text-admin-text-muted">{track.categories?.name}</span>
                                         <span className="text-admin-text-muted/30 mx-2">/</span>
                                         <span className="text-admin-text-muted text-sm">{track.genres?.name}</span>
+                                    </td>
+                                    <td className="px-8 py-5 text-admin-text-muted">
+                                        {track.modes?.name || '-'}
                                     </td>
                                     <td className="px-8 py-5 text-admin-text-muted">{track.bpm || '-'}</td>
                                     <td className="px-8 py-5 font-bold text-admin-primary">
@@ -478,7 +499,7 @@ export default function AdminDashboard() {
                                 </tr>
                             )) : (
                                 <tr>
-                                    <td colSpan={6} className="px-8 py-10 text-center text-admin-text-muted italic">{t('empty')}</td>
+                                    <td colSpan={7} className="px-8 py-10 text-center text-admin-text-muted italic">{t('empty')}</td>
                                 </tr>
                             )}
                         </tbody>

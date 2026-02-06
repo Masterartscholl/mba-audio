@@ -10,20 +10,28 @@ type Track = {
     id: number;
     title: string;
     bpm: number;
-    mode: string;
+    mode_id: number | null;
     category_id: number;
     genre_id: number;
     created_at: string;
     categories: { name: string } | null;
     genres: { name: string } | null;
+    modes: { name: string } | null;
     status: string;
     price: number | null;
+};
+
+type Mode = {
+    id: number;
+    name: string;
+    category_id: number;
 };
 
 export default function LibraryPage() {
     const t = useTranslations('Library');
     const locale = useLocale();
     const [tracks, setTracks] = useState<Track[]>([]);
+    const [modes, setModes] = useState<Mode[]>([]);
     const [loading, setLoading] = useState(true);
     const [editingTrack, setEditingTrack] = useState<Track | null>(null);
     const [isEditModalOpen, setIsEditModalOpen] = useState(false);
@@ -34,23 +42,25 @@ export default function LibraryPage() {
 
     const fetchTracks = async () => {
         setLoading(true);
-        // Using Supabase join to get category and genre names
         const { data, error } = await supabase
             .from('tracks')
             .select(`
                 id,
                 title,
                 bpm,
-                mode,
+                mode_id,
                 category_id,
                 genre_id,
                 created_at,
                 status,
                 price,
                 categories ( name ),
-                genres ( name )
+                genres ( name ),
+                modes ( name )
             `)
             .order('created_at', { ascending: false });
+
+        const { data: modesData } = await supabase.from('modes').select('*').order('name');
 
         const { data: settingsData } = await supabase
             .from('settings')
@@ -61,14 +71,16 @@ export default function LibraryPage() {
         if (error) {
             console.error('Error fetching tracks:', error);
         } else if (data) {
-            // Transform data as Supabase sometimes returns single objects or arrays depending on schema inference
             const formattedTracks = (data as any[]).map(track => ({
                 ...track,
                 categories: Array.isArray(track.categories) ? track.categories[0] : track.categories,
-                genres: Array.isArray(track.genres) ? track.genres[0] : track.genres
+                genres: Array.isArray(track.genres) ? track.genres[0] : track.genres,
+                modes: Array.isArray(track.modes) ? track.modes[0] : track.modes
             }));
             setTracks(formattedTracks);
         }
+
+        if (modesData) setModes(modesData);
 
         if (settingsData) {
             setSettings({
@@ -113,12 +125,11 @@ export default function LibraryPage() {
             let updateData: any = {
                 title: editingTrack.title,
                 bpm: editingTrack.bpm,
-                mode: editingTrack.mode,
+                mode_id: editingTrack.mode_id,
                 status: editingTrack.status,
                 price: (editingTrack.price === null || isNaN(Number(editingTrack.price))) ? settings.defaultPrice : Number(editingTrack.price)
             };
 
-            // 1. Upload New Preview if selected
             if (newPreviewFile) {
                 const previewExt = newPreviewFile.name.split('.').pop();
                 const previewPath = `${Date.now()}_preview.${previewExt}`;
@@ -134,7 +145,6 @@ export default function LibraryPage() {
                 updateData.preview_url = publicUrl;
             }
 
-            // 2. Upload New Master if selected
             if (newMasterFile) {
                 const masterExt = newMasterFile.name.split('.').pop();
                 const masterPath = `${Date.now()}_master.${masterExt}`;
@@ -188,6 +198,7 @@ export default function LibraryPage() {
                                     <th className="px-8 py-5">{t('table.name')}</th>
                                     <th className="px-8 py-5">{t('table.category')}</th>
                                     <th className="px-8 py-5">{t('table.genre')}</th>
+                                    <th className="px-8 py-5 text-admin-primary">{t('table.mode')}</th>
                                     <th className="px-8 py-5">{t('table.bpm')}</th>
                                     <th className="px-8 py-5">{t('table.price')}</th>
                                     <th className="px-8 py-5">{t('table.status')}</th>
@@ -206,6 +217,9 @@ export default function LibraryPage() {
                                         </td>
                                         <td className="px-8 py-6 text-admin-text-muted">
                                             {track.genres?.name || '-'}
+                                        </td>
+                                        <td className="px-8 py-6 text-admin-primary font-medium">
+                                            {track.modes?.name || '-'}
                                         </td>
                                         <td className="px-8 py-6 text-admin-text-muted">
                                             {track.bpm || '-'}
@@ -245,7 +259,7 @@ export default function LibraryPage() {
                                     </tr>
                                 )) : (
                                     <tr>
-                                        <td colSpan={8} className="px-8 py-20 text-center text-admin-text-muted italic">
+                                        <td colSpan={9} className="px-8 py-20 text-center text-admin-text-muted italic">
                                             {t('empty')}
                                         </td>
                                     </tr>
@@ -256,7 +270,6 @@ export default function LibraryPage() {
                 </div>
             )}
 
-            {/* Edit Modal */}
             {isEditModalOpen && editingTrack && (
                 <div className="fixed inset-0 bg-black/60 backdrop-blur-md z-50 flex items-center justify-center p-4">
                     <div className="bg-admin-card border border-admin-border rounded-3xl w-full max-w-lg shadow-2xl overflow-hidden animate-in fade-in zoom-in duration-200">
@@ -290,12 +303,22 @@ export default function LibraryPage() {
                                     </div>
                                     <div className="space-y-2">
                                         <label className="text-xs uppercase font-bold text-admin-text-muted tracking-wider">{t('table.mode')}</label>
-                                        <input
-                                            type="text"
-                                            value={editingTrack.mode || ''}
-                                            onChange={(e) => setEditingTrack({ ...editingTrack, mode: e.target.value })}
-                                            className="w-full bg-admin-bg border border-admin-border rounded-xl px-4 py-3 text-admin-text focus:outline-none focus:border-admin-primary/50 transition-all font-medium"
-                                        />
+                                        <div className="relative">
+                                            <select
+                                                value={editingTrack.mode_id || ''}
+                                                onChange={(e) => setEditingTrack({ ...editingTrack, mode_id: e.target.value ? Number(e.target.value) : null })}
+                                                className="w-full bg-admin-bg border border-admin-border rounded-xl px-4 py-3 text-admin-text appearance-none focus:outline-none focus:border-admin-primary/50 transition-all font-medium"
+                                            >
+                                                <option value="">Seçiniz</option>
+                                                {modes
+                                                    .filter(m => m.category_id === editingTrack.category_id)
+                                                    .map(m => (
+                                                        <option key={m.id} value={m.id}>{m.name}</option>
+                                                    ))
+                                                }
+                                            </select>
+                                            <svg className="w-4 h-4 text-admin-text-muted absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" /></svg>
+                                        </div>
                                     </div>
                                 </div>
                                 <div className="space-y-2">

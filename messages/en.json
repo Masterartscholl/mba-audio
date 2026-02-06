@@ -91,7 +91,7 @@
         "previewFile": "Preview File (MP3)",
         "masterFile": "Master File (High Quality)",
         "selectFile": "Select File",
-        "quickUpload": "Quick Upload",
+        "quickUpload": "Save as Draft",
         "publish": "Publish",
         "updating": "Updating...",
         "empty": "No tracks found yet.",
@@ -105,6 +105,7 @@
             "published": "PUBLISHED",
             "draft": "DRAFT"
         },
+        "viewAll": "View All",
         "messages": {
             "success": "Track uploaded successfully!",
             "error": "Error occurred",
@@ -138,11 +139,13 @@
         "changeMaster": "Master (Change)"
     },
     "Categories": {
-        "title": "Category & Genre Management",
+        "title": "Category, Genre & Mood Management",
         "categories": "Categories",
         "genres": "Music Genres",
+        "modes": "Moods / Modes",
         "addCategory": "Add New Category",
         "addGenre": "Add New Genre",
+        "addMode": "Add New Mood",
         "table": {
             "name": "NAME",
             "count": "TRACK COUNT",
@@ -150,7 +153,9 @@
         },
         "placeholder": "New category name...",
         "genrePlaceholder": "New genre name...",
-        "emptyGenres": "No genres connected yet.",
+        "modePlaceholder": "New mood name...",
+        "emptyGenres": "No genres.",
+        "emptyModes": "No moods.",
         "add": "Add",
         "deleteConfirm": "Are you sure you want to delete this item?"
     },

@@ -7,7 +7,7 @@ import { useTranslations } from 'next-intl';
 interface QuickAddModalProps {
     isOpen: boolean;
     onClose: () => void;
-    type: 'category' | 'genre';
+    type: 'category' | 'genre' | 'mode';
     categoryId?: string | number;
     onSuccess: () => void;
 }
@@ -28,7 +28,7 @@ export const QuickAddModal = ({
 
     const handleSave = async () => {
         if (!name) return;
-        if (type === 'genre' && !categoryId) return;
+        if ((type === 'genre' || type === 'mode') && !categoryId) return;
 
         setLoading(true);
         try {
@@ -36,8 +36,11 @@ export const QuickAddModal = ({
             if (type === 'category') {
                 const res = await supabase.from('categories').insert([{ name }]);
                 error = res.error;
-            } else {
+            } else if (type === 'genre') {
                 const res = await supabase.from('genres').insert([{ name, category_id: Number(categoryId) }]);
+                error = res.error;
+            } else {
+                const res = await supabase.from('modes').insert([{ name, category_id: Number(categoryId) }]);
                 error = res.error;
             }
 
@@ -52,8 +55,8 @@ export const QuickAddModal = ({
         }
     };
 
-    const titleText = type === 'category' ? t('addCategory') : t('addGenre');
-    const placeholderText = type === 'category' ? t('placeholder') : t('genrePlaceholder');
+    const titleText = type === 'category' ? t('addCategory') : type === 'genre' ? t('addGenre') : t('addMode');
+    const placeholderText = type === 'category' ? t('placeholder') : type === 'genre' ? t('genrePlaceholder') : t('modePlaceholder');
 
     return (
         <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4 backdrop-blur-md">
