@@ -15,24 +15,29 @@ export default function LibraryPage() {
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
-        // Backend'de kullanıcının satın aldığı parça ID'leri gelecek. Şimdilik boş veya mock.
-        const purchasedIds = typeof window !== 'undefined'
-            ? JSON.parse(localStorage.getItem('mba-purchased-ids') || '[]')
-            : [];
-        if (purchasedIds.length === 0) {
-            setPurchasedTracks([]);
-            setLoading(false);
-            return;
-        }
-        supabase
-            .from('tracks')
-            .select('*, categories(name), genres(name), modes(name)')
-            .in('id', purchasedIds)
-            .eq('status', 'published')
-            .then(({ data }) => {
+        const run = async () => {
+            const purchasedIds = typeof window !== 'undefined'
+                ? JSON.parse(localStorage.getItem('mba-purchased-ids') || '[]')
+                : [];
+            if (purchasedIds.length === 0) {
+                setPurchasedTracks([]);
+                setLoading(false);
+                return;
+            }
+            try {
+                const { data } = await supabase
+                    .from('tracks')
+                    .select('*, categories(name), genres(name), modes(name)')
+                    .in('id', purchasedIds)
+                    .eq('status', 'published');
                 setPurchasedTracks(data || []);
-            })
-            .finally(() => setLoading(false));
+            } catch {
+                setPurchasedTracks([]);
+            } finally {
+                setLoading(false);
+            }
+        };
+        run();
     }, []);
 
     return (
