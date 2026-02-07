@@ -73,10 +73,20 @@ export const Sidebar: React.FC<FilterProps> = ({ onFilterChange }) => {
 
     useEffect(() => {
         handleFilterUpdate();
-    }, [selectedCategory, selectedGenres, selectedMode, bpmRange, priceRange, priceBounds]);
+    }, [
+        selectedCategory,
+        selectedGenres.join(','),
+        selectedMode,
+        bpmRange[0],
+        bpmRange[1],
+        priceRange[0],
+        priceRange[1],
+        priceBounds[0],
+        priceBounds[1]
+    ]);
 
     return (
-        <aside className="w-80 bg-[#0b1121] border-r border-white/5 flex flex-col h-screen sticky top-0 overflow-y-hidden">
+        <aside className="w-80 min-w-[18rem] max-w-[20rem] bg-[#0b1121] border-r border-white/5 flex flex-col h-screen sticky top-0 overflow-hidden shrink-0">
             {/* Logo Area */}
             <div className="h-24 flex items-center px-8 border-b border-white/5 shrink-0">
                 <div className="flex items-center gap-3">
@@ -91,7 +101,7 @@ export const Sidebar: React.FC<FilterProps> = ({ onFilterChange }) => {
             </div>
 
             {/* Scrollable Content */}
-            <div className="flex-1 overflow-y-auto custom-scrollbar p-6 space-y-8 pb-32">
+            <div className="flex-1 overflow-y-auto overflow-x-hidden custom-scrollbar p-6 space-y-8 pb-32 min-w-0">
                 {/* Navigation */}
                 <div>
                     <h3 className="text-xs font-black text-[#64748b] tracking-[0.2em] mb-4 pl-2 uppercase">{t('menu')}</h3>
@@ -120,10 +130,10 @@ export const Sidebar: React.FC<FilterProps> = ({ onFilterChange }) => {
                     </nav>
                 </div>
 
-                <div className="space-y-6">
+                <div className="space-y-6 min-w-0">
                     <h3 className="text-xs font-black text-[#64748b] tracking-[0.2em] mb-4 pl-2 uppercase">{t('filters')}</h3>
 
-                    <div className="bg-[#131b2e] rounded-2xl p-4 border border-white/5">
+                    <div className="bg-[#131b2e] rounded-2xl p-4 border border-white/5 min-w-0">
                         <p className="text-[11px] font-black text-white uppercase tracking-wider mb-3 flex items-center gap-2">
                             <span className="w-1 h-1 rounded-full bg-[#ede066]"></span>
                             {t('category')}
@@ -186,7 +196,7 @@ export const Sidebar: React.FC<FilterProps> = ({ onFilterChange }) => {
                     </div>
 
                     {/* BPM Range */}
-                    <div className="bg-[#131b2e] rounded-2xl p-4 border border-white/5">
+                    <div className="bg-[#131b2e] rounded-2xl p-4 border border-white/5 min-w-0">
                         <div className="flex justify-between items-center mb-3">
                             <p className="text-[11px] font-black text-white uppercase tracking-wider flex items-center gap-2">
                                 <span className="w-1 h-1 rounded-full bg-[#ede066]"></span>
@@ -235,7 +245,7 @@ export const Sidebar: React.FC<FilterProps> = ({ onFilterChange }) => {
                                 />
                             </label>
                         </div>
-                        <div className="flex gap-3 items-center">
+                        <div className="flex gap-3 items-center min-w-0">
                             <input
                                 type="range"
                                 min={BPM_MIN}
@@ -245,7 +255,7 @@ export const Sidebar: React.FC<FilterProps> = ({ onFilterChange }) => {
                                     const v = Number(e.target.value);
                                     setBpmRange([v, Math.max(v, bpmRange[1])]);
                                 }}
-                                className="flex-1 accent-[#ede066] h-1.5 bg-[#0b1121] rounded-full appearance-none cursor-pointer"
+                                className="flex-1 min-w-0 w-0 accent-[#ede066] h-1.5 bg-[#0b1121] rounded-full appearance-none cursor-pointer"
                             />
                             <input
                                 type="range"
@@ -256,14 +266,14 @@ export const Sidebar: React.FC<FilterProps> = ({ onFilterChange }) => {
                                     const v = Number(e.target.value);
                                     setBpmRange([Math.min(v, bpmRange[0]), v]);
                                 }}
-                                className="flex-1 accent-[#ede066] h-1.5 bg-[#0b1121] rounded-full appearance-none cursor-pointer"
+                                className="flex-1 min-w-0 w-0 accent-[#ede066] h-1.5 bg-[#0b1121] rounded-full appearance-none cursor-pointer"
                             />
                         </div>
                         <p className="text-[9px] text-[#64748b] mt-1.5">{BPM_MIN} - {BPM_MAX} {t('bpmRangeHint')}</p>
                     </div>
 
                     {/* Price Range */}
-                    <div className="bg-[#131b2e] rounded-2xl p-4 border border-white/5">
+                    <div className="bg-[#131b2e] rounded-2xl p-4 border border-white/5 min-w-0">
                         <div className="flex justify-between items-center mb-3">
                             <p className="text-[11px] font-black text-white uppercase tracking-wider flex items-center gap-2">
                                 <span className="w-1 h-1 rounded-full bg-[#ede066]"></span>
@@ -314,7 +324,7 @@ export const Sidebar: React.FC<FilterProps> = ({ onFilterChange }) => {
                                 />
                             </label>
                         </div>
-                        <div className="flex gap-3 items-center">
+                        <div className="flex gap-3 items-center min-w-0">
                             <input
                                 type="range"
                                 min={priceBounds[0]}
@@ -324,7 +334,7 @@ export const Sidebar: React.FC<FilterProps> = ({ onFilterChange }) => {
                                     const v = Number(e.target.value);
                                     setPriceRange([v, Math.max(v, priceRange[1])]);
                                 }}
-                                className="flex-1 accent-[#ede066] h-1.5 bg-[#0b1121] rounded-full appearance-none cursor-pointer"
+                                className="flex-1 min-w-0 w-0 accent-[#ede066] h-1.5 bg-[#0b1121] rounded-full appearance-none cursor-pointer"
                             />
                             <input
                                 type="range"
@@ -335,7 +345,7 @@ export const Sidebar: React.FC<FilterProps> = ({ onFilterChange }) => {
                                     const v = Number(e.target.value);
                                     setPriceRange([Math.min(v, priceRange[0]), v]);
                                 }}
-                                className="flex-1 accent-[#ede066] h-1.5 bg-[#0b1121] rounded-full appearance-none cursor-pointer"
+                                className="flex-1 min-w-0 w-0 accent-[#ede066] h-1.5 bg-[#0b1121] rounded-full appearance-none cursor-pointer"
                             />
                         </div>
                         <div className="flex justify-between text-[9px] font-bold text-[#64748b] mt-2 px-1">
