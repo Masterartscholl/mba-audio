@@ -21,6 +21,9 @@ export const metadata: Metadata = {
 
 import { ThemeProvider } from "@/components/ThemeProvider";
 import { AudioProvider } from "@/context/AudioContext";
+import { CartProvider } from "@/context/CartContext";
+import { FavoritesProvider } from "@/context/FavoritesContext";
+import { SearchProvider } from "@/context/SearchContext";
 import { Toaster } from 'sonner';
 
 export default async function RootLayout({
@@ -44,8 +47,14 @@ export default async function RootLayout({
             disableTransitionOnChange
           >
             <AudioProvider>
-              {children}
-              <Toaster position="top-right" richColors theme="dark" />
+              <CartProvider>
+                <FavoritesProvider>
+                  <SearchProvider>
+                    {children}
+                    <Toaster position="top-right" richColors theme="dark" />
+                  </SearchProvider>
+                </FavoritesProvider>
+              </CartProvider>
             </AudioProvider>
           </ThemeProvider>
         </NextIntlClientProvider>
