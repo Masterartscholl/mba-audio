@@ -6,43 +6,41 @@ import { usePathname } from 'next/navigation';
 import { supabase } from '@/lib/supabase';
 import { useTranslations } from 'next-intl';
 
+const BPM_MIN = 0;
+const BPM_MAX = 300;
+
 interface FilterProps {
-    onFilterChange: (filters: any) => void;
+    filters: any;
+    onFilterChange: (next: any | ((prev: any) => any)) => void;
 }
 
-export const Sidebar: React.FC<FilterProps> = ({ onFilterChange }) => {
+export const Sidebar: React.FC<FilterProps> = ({ filters, onFilterChange }) => {
     const t = useTranslations('App');
     const pathname = usePathname();
-    const [categories, setCategories] = useState<any[]>([]);
     const [genres, setGenres] = useState<any[]>([]);
     const [modes, setModes] = useState<any[]>([]);
 
-    const [selectedCategory, setSelectedCategory] = useState<number | null>(null);
-    const [selectedGenres, setSelectedGenres] = useState<number[]>([]);
-    const [selectedMode, setSelectedMode] = useState<number | null>(null);
-    const BPM_MIN = 0;
-    const BPM_MAX = 300;
-    const [bpmRange, setBpmRange] = useState<[number, number]>([BPM_MIN, BPM_MAX]);
-    const [priceRange, setPriceRange] = useState<[number, number]>([0, 10000]);
-    const [priceBounds, setPriceBounds] = useState<[number, number]>([0, 10000]);
+    const selectedCategory = filters.categoryId ?? null;
+    const selectedGenres = filters.genres ?? [];
+    const selectedMode = filters.modeId ?? null;
+    const bpmRange: [number, number] = filters.bpmRange?.[0] != null ? filters.bpmRange : [BPM_MIN, BPM_MAX];
+    const priceBounds: [number, number] = filters.priceBounds?.[0] != null ? filters.priceBounds : [0, 10000];
+    const priceRange: [number, number] = filters.priceRange?.[0] != null ? filters.priceRange : [priceBounds[0], priceBounds[1]];
 
     useEffect(() => {
         fetchInitialData();
     }, []);
 
     const fetchInitialData = async () => {
-        const [catRes, modeRes, minPriceRes, maxPriceRes] = await Promise.all([
-            supabase.from('categories').select('*'),
+        const [modeRes, minPriceRes, maxPriceRes] = await Promise.all([
             supabase.from('modes').select('*'),
             supabase.from('tracks').select('price').eq('status', 'published').not('price', 'is', null).order('price', { ascending: true }).limit(1).maybeSingle(),
             supabase.from('tracks').select('price').eq('status', 'published').not('price', 'is', null).order('price', { ascending: false }).limit(1).maybeSingle()
         ]);
-        setCategories(catRes.data || []);
         setModes(modeRes.data || []);
         const minP = minPriceRes.data?.price != null ? Number(minPriceRes.data.price) : 0;
         const maxP = maxPriceRes.data?.price != null ? Number(maxPriceRes.data.price) : 10000;
-        setPriceBounds([minP, maxP]);
-        setPriceRange([minP, maxP]);
+        onFilterChange((prev: any) => ({ ...prev, priceBounds: [minP, maxP], priceRange: [minP, maxP], bpmRange: prev.bpmRange ?? [BPM_MIN, BPM_MAX] }));
     };
 
     useEffect(() => {
@@ -51,8 +49,6 @@ export const Sidebar: React.FC<FilterProps> = ({ onFilterChange }) => {
         } else {
             setGenres([]);
         }
-        setSelectedGenres([]);
-        setSelectedMode(null);
     }, [selectedCategory]);
 
     const fetchGenres = async (catId: number) => {
@@ -60,30 +56,6 @@ export const Sidebar: React.FC<FilterProps> = ({ onFilterChange }) => {
         setGenres(data || []);
     };
 
-    const handleFilterUpdate = () => {
-        onFilterChange({
-            categoryId: selectedCategory,
-            genres: selectedGenres,
-            modeId: selectedMode,
-            bpmRange,
-            priceRange,
-            priceBounds
-        });
-    };
-
-    useEffect(() => {
-        handleFilterUpdate();
-    }, [
-        selectedCategory,
-        selectedGenres.join(','),
-        selectedMode,
-        bpmRange[0],
-        bpmRange[1],
-        priceRange[0],
-        priceRange[1],
-        priceBounds[0],
-        priceBounds[1]
-    ]);
 
     return (
         <aside className="w-80 min-w-[18rem] max-w-[20rem] bg-[#0b1121] border-r border-white/5 flex flex-col h-screen sticky top-0 overflow-hidden shrink-0">
@@ -133,26 +105,6 @@ export const Sidebar: React.FC<FilterProps> = ({ onFilterChange }) => {
                 <div className="space-y-6 min-w-0">
                     <h3 className="text-xs font-black text-[#64748b] tracking-[0.2em] mb-4 pl-2 uppercase">{t('filters')}</h3>
 
-                    <div className="bg-[#131b2e] rounded-2xl p-4 border border-white/5 min-w-0">
-                        <p className="text-[11px] font-black text-white uppercase tracking-wider mb-3 flex items-center gap-2">
-                            <span className="w-1 h-1 rounded-full bg-[#ede066]"></span>
-                            {t('category')}
-                        </p>
-                        <div className="flex flex-wrap gap-2">
-                            {categories.map(cat => (
-                                <button
-                                    key={cat.id}
-                                    onClick={() => setSelectedCategory(selectedCategory === cat.id ? null : cat.id)}
-                                    className={`px-3 py-1.5 rounded-lg text-[10px] font-bold uppercase tracking-wider transition-all border ${selectedCategory === cat.id
-                                        ? 'bg-[#3b82f6] text-white border-[#3b82f6] shadow-lg shadow-blue-500/20'
-                                        : 'bg-[#1e293b]/50 text-[#94a3b8] border-transparent hover:border-white/10 hover:text-white hover:bg-[#1e293b]'
-                                        }`}>
-                                    {cat.name}
-                                </button>
-                            ))}
-                        </div>
-                    </div>
-
                     {genres.length > 0 && (
                         <div className="bg-[#131b2e] rounded-2xl p-4 border border-white/5">
                             <p className="text-[11px] font-black text-white uppercase tracking-wider mb-3 flex items-center gap-2">
@@ -164,7 +116,10 @@ export const Sidebar: React.FC<FilterProps> = ({ onFilterChange }) => {
                                     <button
                                         key={genre.id}
                                         type="button"
-                                        onClick={() => setSelectedGenres(prev => prev.includes(genre.id) ? prev.filter(id => id !== genre.id) : [...prev, genre.id])}
+                                        onClick={() => {
+                                        const next = selectedGenres.includes(genre.id) ? selectedGenres.filter((id: number) => id !== genre.id) : [...selectedGenres, genre.id];
+                                        onFilterChange({ ...filters, genres: next });
+                                    }}
                                         className={`px-3 py-1.5 rounded-lg text-[10px] font-bold uppercase tracking-wider transition-all border ${selectedGenres.includes(genre.id)
                                             ? 'bg-[#ede066]/20 text-[#ede066] border-[#ede066]/40'
                                             : 'bg-[#1e293b]/50 text-[#94a3b8] border-transparent hover:border-white/10 hover:text-white hover:bg-[#1e293b]'
@@ -184,7 +139,7 @@ export const Sidebar: React.FC<FilterProps> = ({ onFilterChange }) => {
                         <div className="relative">
                             <select
                                 value={selectedMode || ''}
-                                onChange={(e) => setSelectedMode(e.target.value ? Number(e.target.value) : null)}
+                                onChange={(e) => onFilterChange({ ...filters, modeId: e.target.value ? Number(e.target.value) : null })}
                                 className="w-full bg-[#0b1121] border border-white/10 rounded-xl px-4 py-2.5 text-xs text-white font-bold appearance-none focus:outline-none focus:border-[#ede066]/50 transition-all cursor-pointer hover:bg-[#0f172a]">
                                 <option value="">{t('selectMood')}</option>
                                 {(selectedCategory ? modes.filter((m: any) => m.category_id === selectedCategory) : modes).map((mode: any) => (
@@ -207,7 +162,7 @@ export const Sidebar: React.FC<FilterProps> = ({ onFilterChange }) => {
                                 {(bpmRange[0] !== BPM_MIN || bpmRange[1] !== BPM_MAX) && (
                                     <button
                                         type="button"
-                                        onClick={() => setBpmRange([BPM_MIN, BPM_MAX])}
+                                        onClick={() => onFilterChange({ ...filters, bpmRange: [BPM_MIN, BPM_MAX] })}
                                         className="text-[9px] font-bold text-[#64748b] hover:text-[#ede066] uppercase tracking-wider transition-colors"
                                     >
                                         {t('reset')}
@@ -225,7 +180,7 @@ export const Sidebar: React.FC<FilterProps> = ({ onFilterChange }) => {
                                     value={bpmRange[0]}
                                     onChange={(e) => {
                                         const v = Math.min(BPM_MAX, Math.max(BPM_MIN, parseInt(e.target.value, 10) || BPM_MIN));
-                                        setBpmRange([v, Math.max(v, bpmRange[1])]);
+                                        onFilterChange({ ...filters, bpmRange: [v, Math.max(v, bpmRange[1])] });
                                     }}
                                     className="w-full bg-[#0b1121] border border-white/10 rounded-lg px-3 py-2 text-xs text-white font-bold focus:outline-none focus:border-[#ede066]/50"
                                 />
@@ -239,7 +194,7 @@ export const Sidebar: React.FC<FilterProps> = ({ onFilterChange }) => {
                                     value={bpmRange[1]}
                                     onChange={(e) => {
                                         const v = Math.min(BPM_MAX, Math.max(BPM_MIN, parseInt(e.target.value, 10) || BPM_MAX));
-                                        setBpmRange([Math.min(v, bpmRange[0]), v]);
+                                        onFilterChange({ ...filters, bpmRange: [Math.min(v, bpmRange[0]), v] });
                                     }}
                                     className="w-full bg-[#0b1121] border border-white/10 rounded-lg px-3 py-2 text-xs text-white font-bold focus:outline-none focus:border-[#ede066]/50"
                                 />
@@ -253,7 +208,7 @@ export const Sidebar: React.FC<FilterProps> = ({ onFilterChange }) => {
                                 value={bpmRange[0]}
                                 onChange={(e) => {
                                     const v = Number(e.target.value);
-                                    setBpmRange([v, Math.max(v, bpmRange[1])]);
+                                    onFilterChange({ ...filters, bpmRange: [v, Math.max(v, bpmRange[1])] });
                                 }}
                                 className="flex-1 min-w-0 w-0 accent-[#ede066] h-1.5 bg-[#0b1121] rounded-full appearance-none cursor-pointer"
                             />
@@ -264,7 +219,7 @@ export const Sidebar: React.FC<FilterProps> = ({ onFilterChange }) => {
                                 value={bpmRange[1]}
                                 onChange={(e) => {
                                     const v = Number(e.target.value);
-                                    setBpmRange([Math.min(v, bpmRange[0]), v]);
+                                    onFilterChange({ ...filters, bpmRange: [Math.min(v, bpmRange[0]), v] });
                                 }}
                                 className="flex-1 min-w-0 w-0 accent-[#ede066] h-1.5 bg-[#0b1121] rounded-full appearance-none cursor-pointer"
                             />
@@ -286,7 +241,7 @@ export const Sidebar: React.FC<FilterProps> = ({ onFilterChange }) => {
                                 {(priceRange[0] !== priceBounds[0] || priceRange[1] !== priceBounds[1]) && (
                                     <button
                                         type="button"
-                                        onClick={() => setPriceRange([priceBounds[0], priceBounds[1]])}
+                                        onClick={() => onFilterChange({ ...filters, priceRange: [priceBounds[0], priceBounds[1]] })}
                                         className="text-[9px] font-bold text-[#64748b] hover:text-[#ede066] uppercase tracking-wider transition-colors"
                                     >
                                         {t('reset')}
@@ -304,7 +259,7 @@ export const Sidebar: React.FC<FilterProps> = ({ onFilterChange }) => {
                                     value={priceRange[0]}
                                     onChange={(e) => {
                                         const v = Math.min(priceBounds[1], Math.max(priceBounds[0], Number(e.target.value) || priceBounds[0]));
-                                        setPriceRange([v, Math.max(v, priceRange[1])]);
+                                        onFilterChange({ ...filters, priceRange: [v, Math.max(v, priceRange[1])] });
                                     }}
                                     className="w-full bg-[#0b1121] border border-white/10 rounded-lg px-3 py-2 text-xs text-white font-bold focus:outline-none focus:border-[#ede066]/50"
                                 />
@@ -318,7 +273,7 @@ export const Sidebar: React.FC<FilterProps> = ({ onFilterChange }) => {
                                     value={priceRange[1]}
                                     onChange={(e) => {
                                         const v = Math.min(priceBounds[1], Math.max(priceBounds[0], Number(e.target.value) || priceBounds[1]));
-                                        setPriceRange([Math.min(v, priceRange[0]), v]);
+                                        onFilterChange({ ...filters, priceRange: [Math.min(v, priceRange[0]), v] });
                                     }}
                                     className="w-full bg-[#0b1121] border border-white/10 rounded-lg px-3 py-2 text-xs text-white font-bold focus:outline-none focus:border-[#ede066]/50"
                                 />
@@ -332,7 +287,7 @@ export const Sidebar: React.FC<FilterProps> = ({ onFilterChange }) => {
                                 value={priceRange[0]}
                                 onChange={(e) => {
                                     const v = Number(e.target.value);
-                                    setPriceRange([v, Math.max(v, priceRange[1])]);
+                                    onFilterChange({ ...filters, priceRange: [v, Math.max(v, priceRange[1])] });
                                 }}
                                 className="flex-1 min-w-0 w-0 accent-[#ede066] h-1.5 bg-[#0b1121] rounded-full appearance-none cursor-pointer"
                             />
@@ -343,7 +298,7 @@ export const Sidebar: React.FC<FilterProps> = ({ onFilterChange }) => {
                                 value={priceRange[1]}
                                 onChange={(e) => {
                                     const v = Number(e.target.value);
-                                    setPriceRange([Math.min(v, priceRange[0]), v]);
+                                    onFilterChange({ ...filters, priceRange: [Math.min(v, priceRange[0]), v] });
                                 }}
                                 className="flex-1 min-w-0 w-0 accent-[#ede066] h-1.5 bg-[#0b1121] rounded-full appearance-none cursor-pointer"
                             />

@@ -256,6 +256,8 @@
         "filters": "Filters",
         "audioLibrary": "Audio Library",
         "reset": "Reset",
-        "bpmRangeHint": "range"
+        "bpmRangeHint": "range",
+        "categories": "Categories",
+        "resetFiltering": "Reset filtering"
     }
 }

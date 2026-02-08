@@ -256,6 +256,8 @@
         "filters": "Filtreler",
         "audioLibrary": "Ses Kütüphanesi",
         "reset": "Sıfırla",
-        "bpmRangeHint": "aralık"
+        "bpmRangeHint": "aralık",
+        "categories": "Kategoriler",
+        "resetFiltering": "Filtrelemeyi sıfırla"
     }
 }

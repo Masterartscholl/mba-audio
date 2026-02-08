@@ -16,7 +16,7 @@ export default function FavoritesPage() {
 
     return (
         <div className="flex h-screen bg-[#0b1121] overflow-hidden selection:bg-[#3b82f6]/30">
-            <Sidebar onFilterChange={() => {}} />
+            <Sidebar filters={{}} onFilterChange={() => {}} />
             <div className="flex-1 flex flex-col min-w-0">
                 <Header />
                 <main className="flex-1 flex flex-col overflow-hidden">
