@@ -44,7 +44,7 @@ export const CategoryBar: React.FC<CategoryBarProps> = ({ filters, onFilterChang
     };
 
     return (
-        <div className="px-10 pt-6 pb-4 border-b border-white/5 bg-[#0b1121]/80 shrink-0">
+        <div className="px-10 pt-6 pb-4 border-b border-white/5 bg-[#0a0a0a]/90 shrink-0">
             <div className="flex flex-wrap items-center gap-3">
                 <span className="text-[11px] font-black text-[#64748b] uppercase tracking-wider mr-1">
                     {t('categories')}

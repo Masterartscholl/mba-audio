@@ -22,7 +22,7 @@ export default function Home() {
   };
 
   return (
-    <div className="flex h-screen bg-[#0b1121] overflow-hidden selection:bg-[#3b82f6]/30">
+    <div className="flex h-screen bg-[#0a0a0a] overflow-hidden selection:bg-[#3b82f6]/30">
       {/* Left Sidebar */}
       <Sidebar filters={filters} onFilterChange={setFilters} />
 

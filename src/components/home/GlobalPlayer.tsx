@@ -45,7 +45,7 @@ export const GlobalPlayer: React.FC = () => {
     const fav = isFavorite(currentTrack.id);
 
     return (
-        <div className="fixed bottom-0 left-0 right-0 bg-[#0b1121]/90 backdrop-blur-xl border-t border-white/5 h-24 z-[100] px-8 flex items-center justify-between animate-in slide-in-from-bottom duration-500">
+        <div className="fixed bottom-0 left-0 right-0 bg-[#0a0a0a]/95 backdrop-blur-xl border-t border-white/5 h-24 z-[100] px-8 flex items-center justify-between animate-in slide-in-from-bottom duration-500">
             {/* Track Info */}
             <div className="flex items-center gap-4 w-1/4">
                 <div className="w-14 h-14 rounded-xl bg-[#1e293b] overflow-hidden shadow-2xl flex-shrink-0">
@@ -172,8 +172,8 @@ export const GlobalPlayer: React.FC = () => {
 
             {/* Queue popover */}
             {showQueue && queue.length > 0 && (
-                <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-80 max-h-64 overflow-y-auto custom-scrollbar bg-[#131b2e] border border-white/10 rounded-xl shadow-2xl z-[101] p-2">
-                    <p className="text-[10px] font-black text-[#64748b] uppercase tracking-widest px-2 py-1 sticky top-0 bg-[#131b2e]">Kuyruk ({queue.length})</p>
+                <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-80 max-h-64 overflow-y-auto custom-scrollbar bg-[#111111] border border-white/10 rounded-xl shadow-2xl z-[101] p-2">
+                    <p className="text-[10px] font-black text-[#64748b] uppercase tracking-widest px-2 py-1 sticky top-0 bg-[#111111]">Kuyruk ({queue.length})</p>
                     {queue.map((t, i) => (
                         <div
                             key={t.id}

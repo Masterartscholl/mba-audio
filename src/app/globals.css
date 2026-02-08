@@ -32,13 +32,13 @@
 }
 
 [class~="dark"] {
-  --background: #0b1121;
+  --background: #0a0a0a;
   --foreground: #ffffff;
 
-  --admin-bg: #0b1121;
-  --admin-card: #151e32;
-  --admin-border: #2A3B55;
-  --admin-sidebar: #0b1121;
+  --admin-bg: #0a0a0a;
+  --admin-card: #141414;
+  --admin-border: #262626;
+  --admin-sidebar: #0a0a0a;
   --admin-primary: #ede066;
   --admin-text: #ffffff;
   --admin-text-muted: #94a3b8;

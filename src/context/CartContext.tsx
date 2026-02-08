@@ -36,6 +36,7 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
             if (prev.some(t => t.id === track.id)) return prev;
             return [...prev, track];
         });
+        setIsOpen(true);
     }, []);
 
     const removeItem = useCallback((trackId: string | number) => {

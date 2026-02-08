@@ -22,7 +22,7 @@ export const CartDrawer: React.FC = () => {
 
             {/* Drawer */}
             <div
-                className={`fixed top-0 right-0 h-full w-full max-w-md bg-[#0b1121] border-l border-white/10 shadow-2xl z-[120] flex flex-col transition-transform duration-300 ease-out ${isOpen ? 'translate-x-0' : 'translate-x-full'}`}
+                className={`fixed top-0 right-0 h-full w-full max-w-md bg-[#0a0a0a] border-l border-white/10 shadow-2xl z-[120] flex flex-col transition-transform duration-300 ease-out ${isOpen ? 'translate-x-0' : 'translate-x-full'}`}
                 role="dialog"
                 aria-label={t('cart')}
             >
@@ -81,7 +81,7 @@ export const CartDrawer: React.FC = () => {
 
                 {/* Footer - Ödemeye Geç (çalma barı yüksekliği kadar üstte) */}
                 {items.length > 0 && (
-                    <div className="p-6 pb-[7rem] border-t border-white/5 bg-[#131b2e]/50 shrink-0">
+                    <div className="p-6 pb-[7rem] border-t border-white/5 bg-[#111111]/80 shrink-0">
                         <div className="flex items-center justify-between mb-4">
                             <span className="text-xs font-bold text-[#64748b] uppercase tracking-widest">{totalCount} {t('items')}</span>
                             <span className="text-sm font-black text-white">
