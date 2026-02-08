@@ -191,7 +191,7 @@ export default function LibraryPage() {
 
             {loading ? <SkeletonLoader /> : (
                 <div className="bg-admin-card rounded-3xl border border-admin-border overflow-hidden shadow-xl">
-                    <div className="overflow-x-auto">
+                    <div className="overflow-x-auto custom-scrollbar">
                         <table className="w-full text-left">
                             <thead className="bg-admin-bg border-b border-admin-border text-admin-text-muted text-xs uppercase font-bold tracking-wider">
                                 <tr>

@@ -252,7 +252,7 @@ export default function AnalyticsPage() {
                         {t('totalEntries', { count: recentSales.length })}
                     </div>
                 </div>
-                <div className="overflow-x-auto">
+                <div className="overflow-x-auto custom-scrollbar">
                     {recentSales.length > 0 ? (
                         <table className="w-full text-left">
                             <thead className="bg-admin-bg/30 text-admin-text-muted text-[11px] uppercase font-black tracking-[0.25em] border-b border-admin-border">
@@ -318,7 +318,7 @@ export default function AnalyticsPage() {
                 <div className="fixed inset-0 bg-black/85 backdrop-blur-2xl z-[200] flex items-center justify-center p-4 animate-in fade-in duration-500">
                     <div className="bg-admin-card border border-white/5 rounded-[60px] w-full max-w-5xl max-h-[92vh] shadow-[0_0_120px_-30px_rgba(237,224,102,0.2)] overflow-hidden flex flex-col md:flex-row animate-in zoom-in duration-400">
                         {/* LEFT PANEL: Profile & Stats */}
-                        <div className="w-full md:w-[420px] bg-admin-bg/40 border-r border-white/5 p-12 flex flex-col items-center text-center overflow-y-auto">
+                        <div className="w-full md:w-[420px] bg-admin-bg/40 border-r border-white/5 p-12 flex flex-col items-center text-center overflow-y-auto custom-scrollbar">
                             <div className="relative mb-10">
                                 <div className="w-36 h-36 rounded-[48px] bg-admin-border p-1.5 shadow-2xl relative z-10 overflow-hidden transform group-hover:rotate-3 transition-transform">
                                     {selectedOrder.profiles?.avatar_url ? (
@@ -362,7 +362,7 @@ export default function AnalyticsPage() {
                         </div>
 
                         {/* RIGHT PANEL: History & Details */}
-                        <div className="flex-1 p-12 md:p-16 overflow-y-auto flex flex-col justify-between">
+                        <div className="flex-1 p-12 md:p-16 overflow-y-auto custom-scrollbar flex flex-col justify-between">
                             <div className="space-y-12">
                                 <div className="flex items-center justify-between">
                                     <h3 className="text-xs font-black uppercase tracking-[0.4em] text-admin-primary">{t('orderDetails')}</h3>
