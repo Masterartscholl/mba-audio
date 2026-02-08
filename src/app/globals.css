@@ -13,6 +13,16 @@
   --color-admin-primary: var(--admin-primary);
   --color-admin-text: var(--admin-text);
   --color-admin-text-muted: var(--admin-text-muted);
+
+  --color-app-bg: var(--app-bg);
+  --color-app-card: var(--app-card);
+  --color-app-border: var(--app-border);
+  --color-app-text: var(--app-text);
+  --color-app-text-muted: var(--app-text-muted);
+  --color-app-primary: var(--app-primary);
+  --color-app-primary-foreground: var(--app-primary-foreground);
+  --color-app-input-bg: var(--app-input-bg);
+  --color-app-surface: var(--app-surface);
 }
 
 :root {
@@ -26,6 +36,17 @@
   --admin-primary: #ca8a04;
   --admin-text: #0f172a;
   --admin-text-muted: #64748b;
+
+  /* Ana site (açık mod) */
+  --app-bg: #f1f5f9;
+  --app-card: #ffffff;
+  --app-input-bg: #ffffff;
+  --app-border: #e2e8f0;
+  --app-text: #0f172a;
+  --app-text-muted: #64748b;
+  --app-primary: #ca8a04;
+  --app-primary-foreground: #1e293b;
+  --app-surface: rgba(0, 0, 0, 0.04);
 
   --font-geist-sans: Geist, sans-serif;
   --font-geist-mono: GeistMono, monospace;
@@ -42,6 +63,17 @@
   --admin-primary: #ede066;
   --admin-text: #ffffff;
   --admin-text-muted: #94a3b8;
+
+  /* Ana site (koyu mod) */
+  --app-bg: #0a0a0a;
+  --app-card: #111111;
+  --app-input-bg: #0a0a0a;
+  --app-border: rgba(255, 255, 255, 0.1);
+  --app-text: #ffffff;
+  --app-text-muted: #94a3b8;
+  --app-primary: #ede066;
+  --app-primary-foreground: #0b1121;
+  --app-surface: rgba(255, 255, 255, 0.05);
 }
 
 body {

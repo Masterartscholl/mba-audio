@@ -6,6 +6,8 @@ import Image from 'next/image';
 import { useTranslations } from 'next-intl';
 import { useCart } from '@/context/CartContext';
 import { formatPrice } from '@/utils/format';
+import { ThemeSwitcher } from '@/components/home/ThemeSwitcher';
+import { LanguageSwitcher } from '@/components/home/LanguageSwitcher';
 import logoImg from '@/images/logo.jpg';
 
 const DEFAULT_LINKS = {
@@ -155,23 +157,27 @@ export default function CheckoutPage() {
     };
 
     return (
-        <div className="min-h-screen bg-[#0a0a0a] text-white selection:bg-[#3b82f6]/30">
+        <div className="min-h-screen bg-app-bg text-app-text selection:bg-[#3b82f6]/30">
             {/* Header */}
-            <header className="h-20 border-b border-white/5 px-6 lg:px-10 flex items-center justify-between sticky top-0 bg-[#0a0a0a]/90 backdrop-blur-xl z-50">
+            <header className="h-20 border-b border-app-border px-6 lg:px-10 flex items-center justify-between sticky top-0 bg-app-bg/90 backdrop-blur-xl z-50">
                 <Link href="/" className="flex items-center shrink-0">
                     <Image src={logoImg} alt="MüzikBank" width={40} height={40} className="rounded-xl object-contain" />
                 </Link>
-                <Link
-                    href="/"
-                    className="text-sm font-bold text-[#64748b] hover:text-[#ede066] uppercase tracking-widest transition-colors"
-                >
-                    ← {t('backToCart')}
-                </Link>
+                <div className="flex items-center gap-4">
+                    <ThemeSwitcher />
+                    <LanguageSwitcher />
+                    <Link
+                        href="/"
+                        className="text-sm font-bold text-app-text-muted hover:text-app-primary uppercase tracking-widest transition-colors"
+                    >
+                        ← {t('backToCart')}
+                    </Link>
+                </div>
             </header>
 
             <div className="max-w-6xl mx-auto px-6 py-12 lg:py-16">
-                <h1 className="text-3xl lg:text-4xl font-black text-white tracking-tighter uppercase mb-2">{t('paymentTitle')}</h1>
-                <p className="text-[#64748b] text-sm font-bold uppercase tracking-widest mb-10">
+                <h1 className="text-3xl lg:text-4xl font-black text-app-text tracking-tighter uppercase mb-2">{t('paymentTitle')}</h1>
+                <p className="text-app-text-muted text-sm font-bold uppercase tracking-widest mb-10">
                     {t('paymentSubtitle')}
                 </p>
 
@@ -179,57 +185,57 @@ export default function CheckoutPage() {
                     {/* Sol: Form */}
                     <div className="lg:col-span-3 space-y-8">
                         {/* Kart Bilgileri */}
-                        <div className="bg-[#111111] rounded-2xl p-6 lg:p-8 border border-white/5">
-                            <h2 className="text-xs font-black text-[#ede066] uppercase tracking-[0.2em] mb-6 flex items-center gap-2">
+                        <div className="bg-app-card rounded-2xl p-6 lg:p-8 border border-app-border">
+                            <h2 className="text-xs font-black text-app-primary uppercase tracking-[0.2em] mb-6 flex items-center gap-2">
                                 <span className="w-1 h-1 rounded-full bg-[#ede066]" />
                                 {t('cardDetails')}
                             </h2>
                             <div className="space-y-5">
                                 <div>
-                                    <label className="block text-[11px] font-black text-[#64748b] uppercase tracking-widest mb-2">{t('cardNumber')}</label>
+                                    <label className="block text-[11px] font-black text-app-text-muted uppercase tracking-widest mb-2">{t('cardNumber')}</label>
                                     <input
                                         type="text"
                                         placeholder="0000 0000 0000 0000"
                                         value={cardNumber}
                                         onChange={(e) => { setCardNumber(formatCardNumber(e.target.value)); setCardErrors(prev => ({ ...prev, cardNumber: undefined })); }}
                                         maxLength={19}
-                                        className={`w-full bg-[#0a0a0a] border rounded-xl px-4 py-3.5 text-white placeholder:text-[#64748b] focus:outline-none transition-all font-mono text-sm ${cardErrors.cardNumber ? 'border-red-500/60 focus:border-red-500/60' : 'border-white/10 focus:border-[#ede066]/50'}`}
+                                        className={`w-full bg-app-input-bg border rounded-xl px-4 py-3.5 text-white placeholder:text-app-text-muted focus:outline-none transition-all font-mono text-sm ${cardErrors.cardNumber ? 'border-red-500/60 focus:border-red-500/60' : 'border-white/10 focus:border-app-primary/50'}`}
                                     />
                                     {cardErrors.cardNumber && <p className="mt-1.5 text-[11px] text-red-400 font-medium">{cardErrors.cardNumber}</p>}
                                 </div>
                                 <div>
-                                    <label className="block text-[11px] font-black text-[#64748b] uppercase tracking-widest mb-2">{t('cardName')}</label>
+                                    <label className="block text-[11px] font-black text-app-text-muted uppercase tracking-widest mb-2">{t('cardName')}</label>
                                     <input
                                         type="text"
                                         placeholder="AD SOYAD"
                                         value={cardName}
                                         onChange={(e) => { setCardName(e.target.value.toUpperCase()); setCardErrors(prev => ({ ...prev, cardName: undefined })); }}
-                                        className={`w-full bg-[#0a0a0a] border rounded-xl px-4 py-3.5 text-white placeholder:text-[#64748b] focus:outline-none transition-all uppercase ${cardErrors.cardName ? 'border-red-500/60 focus:border-red-500/60' : 'border-white/10 focus:border-[#ede066]/50'}`}
+                                        className={`w-full bg-app-input-bg border rounded-xl px-4 py-3.5 text-white placeholder:text-app-text-muted focus:outline-none transition-all uppercase ${cardErrors.cardName ? 'border-red-500/60 focus:border-red-500/60' : 'border-white/10 focus:border-app-primary/50'}`}
                                     />
                                     {cardErrors.cardName && <p className="mt-1.5 text-[11px] text-red-400 font-medium">{cardErrors.cardName}</p>}
                                 </div>
                                 <div className="grid grid-cols-2 gap-4">
                                     <div>
-                                        <label className="block text-[11px] font-black text-[#64748b] uppercase tracking-widest mb-2">{t('expiry')}</label>
+                                        <label className="block text-[11px] font-black text-app-text-muted uppercase tracking-widest mb-2">{t('expiry')}</label>
                                         <input
                                             type="text"
                                             placeholder="MM/YY"
                                             value={expiry}
                                             onChange={(e) => { setExpiry(formatExpiry(e.target.value)); setCardErrors(prev => ({ ...prev, expiry: undefined })); }}
                                             maxLength={5}
-                                            className={`w-full bg-[#0a0a0a] border rounded-xl px-4 py-3.5 text-white placeholder:text-[#64748b] focus:outline-none transition-all font-mono ${cardErrors.expiry ? 'border-red-500/60 focus:border-red-500/60' : 'border-white/10 focus:border-[#ede066]/50'}`}
+                                            className={`w-full bg-app-input-bg border rounded-xl px-4 py-3.5 text-white placeholder:text-app-text-muted focus:outline-none transition-all font-mono ${cardErrors.expiry ? 'border-red-500/60 focus:border-red-500/60' : 'border-white/10 focus:border-app-primary/50'}`}
                                         />
                                         {cardErrors.expiry && <p className="mt-1.5 text-[11px] text-red-400 font-medium">{cardErrors.expiry}</p>}
                                     </div>
                                     <div>
-                                        <label className="block text-[11px] font-black text-[#64748b] uppercase tracking-widest mb-2">CVC</label>
+                                        <label className="block text-[11px] font-black text-app-text-muted uppercase tracking-widest mb-2">CVC</label>
                                         <input
                                             type="text"
                                             placeholder="***"
                                             value={cvc}
                                             onChange={(e) => { setCvc(e.target.value.replace(/\D/g, '').slice(0, 4)); setCardErrors(prev => ({ ...prev, cvc: undefined })); }}
                                             maxLength={4}
-                                            className={`w-full bg-[#0a0a0a] border rounded-xl px-4 py-3.5 text-white placeholder:text-[#64748b] focus:outline-none transition-all font-mono ${cardErrors.cvc ? 'border-red-500/60 focus:border-red-500/60' : 'border-white/10 focus:border-[#ede066]/50'}`}
+                                            className={`w-full bg-app-input-bg border rounded-xl px-4 py-3.5 text-white placeholder:text-app-text-muted focus:outline-none transition-all font-mono ${cardErrors.cvc ? 'border-red-500/60 focus:border-red-500/60' : 'border-white/10 focus:border-app-primary/50'}`}
                                         />
                                         {cardErrors.cvc && <p className="mt-1.5 text-[11px] text-red-400 font-medium">{cardErrors.cvc}</p>}
                                     </div>
@@ -238,24 +244,24 @@ export default function CheckoutPage() {
                         </div>
 
                         {/* Fatura Bilgileri (İyzico ödeme ve fatura oluşturma için) */}
-                        <div className="bg-[#111111] rounded-2xl p-6 lg:p-8 border border-white/5">
-                            <h2 className="text-xs font-black text-[#ede066] uppercase tracking-[0.2em] mb-6 flex items-center gap-2">
+                        <div className="bg-app-card rounded-2xl p-6 lg:p-8 border border-app-border">
+                            <h2 className="text-xs font-black text-app-primary uppercase tracking-[0.2em] mb-6 flex items-center gap-2">
                                 <span className="w-1 h-1 rounded-full bg-[#ede066]" />
                                 {t('billingDetails')}
                             </h2>
                             <div className="space-y-5">
                                 <div>
-                                    <label className="block text-[11px] font-black text-[#64748b] uppercase tracking-widest mb-2">{t('billingFullName')}</label>
+                                    <label className="block text-[11px] font-black text-app-text-muted uppercase tracking-widest mb-2">{t('billingFullName')}</label>
                                     <input
                                         type="text"
                                         placeholder={t('billingFullNamePlaceholder')}
                                         value={billingName}
                                         onChange={(e) => setBillingName(e.target.value)}
-                                        className="w-full bg-[#0a0a0a] border border-white/10 rounded-xl px-4 py-3.5 text-white placeholder:text-[#64748b] focus:outline-none focus:border-[#ede066]/50 transition-all"
+                                        className="w-full bg-app-input-bg border border-white/10 rounded-xl px-4 py-3.5 text-white placeholder:text-app-text-muted focus:outline-none focus:border-app-primary/50 transition-all"
                                     />
                                 </div>
                                 <div>
-                                    <label className="block text-[11px] font-black text-[#64748b] uppercase tracking-widest mb-2">{t('billingTcId')}</label>
+                                    <label className="block text-[11px] font-black text-app-text-muted uppercase tracking-widest mb-2">{t('billingTcId')}</label>
                                     <input
                                         type="text"
                                         inputMode="numeric"
@@ -263,18 +269,18 @@ export default function CheckoutPage() {
                                         value={billingTcId}
                                         onChange={(e) => { setBillingTcId(formatTcId(e.target.value)); setBillingErrors(prev => ({ ...prev, billingTcId: undefined })); }}
                                         maxLength={11}
-                                        className={`w-full bg-[#0a0a0a] border rounded-xl px-4 py-3.5 text-white placeholder:text-[#64748b] focus:outline-none transition-all font-mono ${billingErrors.billingTcId ? 'border-red-500/60 focus:border-red-500/60' : 'border-white/10 focus:border-[#ede066]/50'}`}
+                                        className={`w-full bg-app-input-bg border rounded-xl px-4 py-3.5 text-white placeholder:text-app-text-muted focus:outline-none transition-all font-mono ${billingErrors.billingTcId ? 'border-red-500/60 focus:border-red-500/60' : 'border-white/10 focus:border-app-primary/50'}`}
                                     />
                                     {billingErrors.billingTcId && <p className="mt-1.5 text-[11px] text-red-400 font-medium">{billingErrors.billingTcId}</p>}
                                 </div>
                                 <div>
-                                    <label className="block text-[11px] font-black text-[#64748b] uppercase tracking-widest mb-2">{t('billingAddress')}</label>
+                                    <label className="block text-[11px] font-black text-app-text-muted uppercase tracking-widest mb-2">{t('billingAddress')}</label>
                                     <textarea
                                         placeholder={t('billingAddressPlaceholder')}
                                         value={billingAddress}
                                         onChange={(e) => setBillingAddress(e.target.value)}
                                         rows={3}
-                                        className="w-full bg-[#0a0a0a] border border-white/10 rounded-xl px-4 py-3.5 text-white placeholder:text-[#64748b] focus:outline-none focus:border-[#ede066]/50 transition-all resize-none"
+                                        className="w-full bg-app-input-bg border border-white/10 rounded-xl px-4 py-3.5 text-white placeholder:text-app-text-muted focus:outline-none focus:border-app-primary/50 transition-all resize-none"
                                     />
                                 </div>
                             </div>
@@ -285,17 +291,17 @@ export default function CheckoutPage() {
                                 type="checkbox"
                                 checked={acceptTerms}
                                 onChange={(e) => setAcceptTerms(e.target.checked)}
-                                className="mt-1 w-4 h-4 rounded border-white/20 bg-[#0a0a0a] text-[#ede066] focus:ring-[#ede066]/50 shrink-0"
+                                className="mt-1 w-4 h-4 rounded border-app-border bg-app-input-bg text-app-primary focus:ring-app-primary/50 shrink-0"
                             />
-                            <span className="text-xs text-[#94a3b8] group-hover:text-white transition-colors">
+                            <span className="text-xs text-app-text-muted group-hover:text-app-text transition-colors">
                                 {t('termsAcceptBeforeTerms')}
-                                <a href={legalLinks.link_distance_selling} target="_blank" rel="noopener noreferrer" className="underline text-[#ede066] hover:text-[#f5e85c] font-bold transition-colors">{t('distanceSellingContract')}</a>
+                                <a href={legalLinks.link_distance_selling} target="_blank" rel="noopener noreferrer" className="underline text-app-primary hover:opacity-90 font-bold transition-colors">{t('distanceSellingContract')}</a>
                                 {t('termsAcceptComma')}
-                                <a href={legalLinks.link_privacy_policy} target="_blank" rel="noopener noreferrer" className="underline text-[#ede066] hover:text-[#f5e85c] font-bold transition-colors">{t('privacyPolicy')}</a>
+                                <a href={legalLinks.link_privacy_policy} target="_blank" rel="noopener noreferrer" className="underline text-app-primary hover:opacity-90 font-bold transition-colors">{t('privacyPolicy')}</a>
                                 {t('termsAcceptComma')}
-                                <a href={legalLinks.link_delivery_return} target="_blank" rel="noopener noreferrer" className="underline text-[#ede066] hover:text-[#f5e85c] font-bold transition-colors">{t('deliveryReturn')}</a>
+                                <a href={legalLinks.link_delivery_return} target="_blank" rel="noopener noreferrer" className="underline text-app-primary hover:opacity-90 font-bold transition-colors">{t('deliveryReturn')}</a>
                                 {t('termsAcceptAnd')}
-                                <a href={legalLinks.link_terms_conditions} target="_blank" rel="noopener noreferrer" className="underline text-[#ede066] hover:text-[#f5e85c] font-bold transition-colors">{t('termsAndConditions')}</a>
+                                <a href={legalLinks.link_terms_conditions} target="_blank" rel="noopener noreferrer" className="underline text-app-primary hover:opacity-90 font-bold transition-colors">{t('termsAndConditions')}</a>
                                 {t('termsAcceptAfter')}
                             </span>
                         </label>
@@ -303,7 +309,7 @@ export default function CheckoutPage() {
                         <button
                             type="submit"
                             disabled={items.length === 0}
-                            className="w-full py-4 rounded-xl bg-[#ede066] text-[#0b1121] text-sm font-black uppercase tracking-widest hover:bg-[#f5e85c] active:scale-[0.99] transition-all shadow-lg shadow-[#ede066]/20 disabled:opacity-50 disabled:cursor-not-allowed disabled:shadow-none"
+                            className="w-full py-4 rounded-xl bg-app-primary text-app-primary-foreground text-sm font-black uppercase tracking-widest hover:opacity-90 active:scale-[0.99] transition-all shadow-lg shadow-app-primary/20 disabled:opacity-50 disabled:cursor-not-allowed disabled:shadow-none"
                         >
                             {t('payButton')}
                         </button>
@@ -311,23 +317,23 @@ export default function CheckoutPage() {
 
                     {/* Sağ: Sipariş Özeti */}
                     <div className="lg:col-span-2">
-                        <div className="bg-[#111111] rounded-2xl p-6 border border-white/5 sticky top-28">
-                            <h2 className="text-xs font-black text-[#64748b] uppercase tracking-[0.2em] mb-4">{t('orderSummary')}</h2>
+                        <div className="bg-app-card rounded-2xl p-6 border border-app-border sticky top-28">
+                            <h2 className="text-xs font-black text-app-text-muted uppercase tracking-[0.2em] mb-4">{t('orderSummary')}</h2>
                             {items.length === 0 ? (
-                                <p className="text-sm text-[#64748b] font-bold">{t('cartEmptyCheckout')}</p>
+                                <p className="text-sm text-app-text-muted font-bold">{t('cartEmptyCheckout')}</p>
                             ) : (
                                 <>
                                     <ul className="space-y-3 mb-6 max-h-64 overflow-y-auto custom-scrollbar">
                                         {items.map(t => (
                                             <li key={t.id} className="flex justify-between items-center text-sm">
                                                 <span className="font-bold text-white truncate max-w-[180px]">{t.title}</span>
-                                                <span className="text-[#ede066] font-black shrink-0">{formatPrice(t.price ?? 0, currency)}</span>
+                                                <span className="text-app-primary font-black shrink-0">{formatPrice(t.price ?? 0, currency)}</span>
                                             </li>
                                         ))}
                                     </ul>
                                     <div className="border-t border-white/10 pt-4 flex justify-between items-center">
-                                        <span className="text-sm font-bold text-[#64748b] uppercase">{t('total')}</span>
-                                        <span className="text-xl font-black text-[#ede066]">{formatPrice(total, currency)}</span>
+                                        <span className="text-sm font-bold text-app-text-muted uppercase">{t('total')}</span>
+                                        <span className="text-xl font-black text-app-primary">{formatPrice(total, currency)}</span>
                                     </div>
                                 </>
                             )}

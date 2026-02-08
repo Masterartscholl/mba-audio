@@ -60,14 +60,14 @@ export const Sidebar: React.FC<FilterProps> = ({ filters, onFilterChange }) => {
 
 
     return (
-        <aside className="w-80 min-w-[18rem] max-w-[20rem] bg-[#0a0a0a] border-r border-white/5 flex flex-col h-screen sticky top-0 overflow-hidden shrink-0">
+        <aside className="w-80 min-w-[18rem] max-w-[20rem] bg-app-bg border-r border-app-border flex flex-col h-screen sticky top-0 overflow-hidden shrink-0">
             {/* Logo Area */}
-            <div className="h-24 flex items-center px-8 border-b border-white/5 shrink-0">
+            <div className="h-24 flex items-center px-8 border-b border-app-border shrink-0">
                 <Link href="/" className="flex items-center gap-3">
                     <Image src={logoImg} alt="MüzikBank" width={32} height={32} className="rounded-lg object-contain" />
                     <div>
-                        <h1 className="text-xl font-black text-white tracking-tight leading-none">MüzikBank</h1>
-                        <p className="text-[10px] font-bold text-[#64748b] tracking-widest uppercase">{t('audioLibrary')}</p>
+                        <h1 className="text-xl font-black text-app-text tracking-tight leading-none">MüzikBank</h1>
+                        <p className="text-[10px] font-bold text-app-text-muted tracking-widest uppercase">{t('audioLibrary')}</p>
                     </div>
                 </Link>
             </div>
@@ -76,25 +76,25 @@ export const Sidebar: React.FC<FilterProps> = ({ filters, onFilterChange }) => {
             <div className="flex-1 overflow-y-auto overflow-x-hidden custom-scrollbar p-6 space-y-8 pb-32 min-w-0">
                 {/* Navigation */}
                 <div>
-                    <h3 className="text-xs font-black text-[#64748b] tracking-[0.2em] mb-4 pl-2 uppercase">{t('menu')}</h3>
+                    <h3 className="text-xs font-black text-app-text-muted tracking-[0.2em] mb-4 pl-2 uppercase">{t('menu')}</h3>
                     <nav className="space-y-1">
                         <Link
                             href="/"
-                            className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl font-bold text-sm transition-all border ${pathname === '/' ? 'bg-white/5 text-[#ede066] border-white/5 shadow-inner' : 'text-[#94a3b8] hover:text-white hover:bg-white/5 border-transparent'}`}
+                            className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl font-bold text-sm transition-all border ${pathname === '/' ? 'bg-app-surface text-app-primary border-app-border shadow-inner' : 'text-app-text-muted hover:text-app-text hover:bg-app-surface border-transparent'}`}
                         >
                             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" /></svg>
                             <span>{t('home')}</span>
                         </Link>
                         <Link
                             href="/favorites"
-                            className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl font-bold text-sm transition-all border group ${pathname === '/favorites' ? 'bg-white/5 text-[#ede066] border-white/5 shadow-inner' : 'text-[#94a3b8] hover:text-white hover:bg-white/5 border-transparent'}`}
+                            className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl font-bold text-sm transition-all border group ${pathname === '/favorites' ? 'bg-app-surface text-app-primary border-app-border shadow-inner' : 'text-app-text-muted hover:text-app-text hover:bg-app-surface border-transparent'}`}
                         >
                             <svg className="w-5 h-5 group-hover:scale-110 transition-transform" fill={pathname === '/favorites' ? 'currentColor' : 'none'} stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" /></svg>
                             <span>{t('myFavorites')}</span>
                         </Link>
                         <Link
                             href="/library"
-                            className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl font-bold text-sm transition-all border group ${pathname === '/library' ? 'bg-white/5 text-[#ede066] border-white/5 shadow-inner' : 'text-[#94a3b8] hover:text-white hover:bg-white/5 border-transparent'}`}
+                            className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl font-bold text-sm transition-all border group ${pathname === '/library' ? 'bg-app-surface text-app-primary border-app-border shadow-inner' : 'text-app-text-muted hover:text-app-text hover:bg-app-surface border-transparent'}`}
                         >
                             <svg className="w-5 h-5 group-hover:scale-110 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 7v8m0 0l3-3m-3 3L5 8m0 0h8M5 8V7" /></svg>
                             <span>{t('myLibrary')}</span>
@@ -103,12 +103,12 @@ export const Sidebar: React.FC<FilterProps> = ({ filters, onFilterChange }) => {
                 </div>
 
                 <div className="space-y-6 min-w-0">
-                    <h3 className="text-xs font-black text-[#64748b] tracking-[0.2em] mb-4 pl-2 uppercase">{t('filters')}</h3>
+                    <h3 className="text-xs font-black text-app-text-muted tracking-[0.2em] mb-4 pl-2 uppercase">{t('filters')}</h3>
 
                     {genres.length > 0 && (
-                        <div className="bg-[#111111] rounded-2xl p-4 border border-white/5">
-                            <p className="text-[11px] font-black text-white uppercase tracking-wider mb-3 flex items-center gap-2">
-                                <span className="w-1 h-1 rounded-full bg-[#ede066]"></span>
+                        <div className="bg-app-card rounded-2xl p-4 border border-app-border">
+                            <p className="text-[11px] font-black text-app-text uppercase tracking-wider mb-3 flex items-center gap-2">
+                                <span className="w-1 h-1 rounded-full bg-app-primary"></span>
                                 {t('genre')}
                             </p>
                             <div className="flex flex-wrap gap-2">
@@ -121,8 +121,8 @@ export const Sidebar: React.FC<FilterProps> = ({ filters, onFilterChange }) => {
                                         onFilterChange({ ...filters, genres: next });
                                     }}
                                         className={`px-3 py-1.5 rounded-lg text-[10px] font-bold uppercase tracking-wider transition-all border ${selectedGenres.includes(genre.id)
-                                            ? 'bg-[#ede066]/20 text-[#ede066] border-[#ede066]/40'
-                                            : 'bg-[#1e293b]/50 text-[#94a3b8] border-transparent hover:border-white/10 hover:text-white hover:bg-[#1e293b]'
+                                            ? 'bg-app-primary/20 text-app-primary border-app-primary/40'
+                                            : 'bg-app-surface text-app-text-muted border-transparent hover:border-app-border hover:text-app-text hover:bg-app-card'
                                             }`}>
                                         {genre.name}
                                     </button>
@@ -131,39 +131,39 @@ export const Sidebar: React.FC<FilterProps> = ({ filters, onFilterChange }) => {
                         </div>
                     )}
 
-                    <div className="bg-[#111111] rounded-2xl p-4 border border-white/5">
-                        <p className="text-[11px] font-black text-white uppercase tracking-wider mb-3 flex items-center gap-2">
-                            <span className="w-1 h-1 rounded-full bg-[#ede066]"></span>
+                    <div className="bg-app-card rounded-2xl p-4 border border-app-border">
+                        <p className="text-[11px] font-black text-app-text uppercase tracking-wider mb-3 flex items-center gap-2">
+                            <span className="w-1 h-1 rounded-full bg-app-primary"></span>
                             {t('mood')}
                         </p>
                         <div className="relative">
                             <select
                                 value={selectedMode || ''}
                                 onChange={(e) => onFilterChange({ ...filters, modeId: e.target.value ? Number(e.target.value) : null })}
-                                className="w-full bg-[#0a0a0a] border border-white/10 rounded-xl px-4 py-2.5 text-xs text-white font-bold appearance-none focus:outline-none focus:border-[#ede066]/50 transition-all cursor-pointer hover:bg-[#141414]">
+                                className="w-full bg-app-input-bg border border-app-border rounded-xl px-4 py-2.5 text-xs text-app-text font-bold appearance-none focus:outline-none focus:border-app-primary/50 transition-all cursor-pointer hover:bg-[#141414]">
                                 <option value="">{t('selectMood')}</option>
                                 {(selectedCategory ? modes.filter((m: any) => m.category_id === selectedCategory) : modes).map((mode: any) => (
                                     <option key={mode.id} value={mode.id}>{mode.name}</option>
                                 ))}
                             </select>
-                            <svg className="w-3.5 h-3.5 text-[#64748b] absolute right-3.5 top-1/2 -translate-y-1/2 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" /></svg>
+                            <svg className="w-3.5 h-3.5 text-app-text-muted absolute right-3.5 top-1/2 -translate-y-1/2 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" /></svg>
                         </div>
                     </div>
 
                     {/* BPM Range */}
-                    <div className="bg-[#111111] rounded-2xl p-4 border border-white/5 min-w-0">
+                    <div className="bg-app-card rounded-2xl p-4 border border-app-border min-w-0">
                         <div className="flex justify-between items-center mb-3">
-                            <p className="text-[11px] font-black text-white uppercase tracking-wider flex items-center gap-2">
-                                <span className="w-1 h-1 rounded-full bg-[#ede066]"></span>
+                            <p className="text-[11px] font-black text-app-text uppercase tracking-wider flex items-center gap-2">
+                                <span className="w-1 h-1 rounded-full bg-app-primary"></span>
                                 {t('bpm')}
                             </p>
                             <div className="flex items-center gap-2">
-                                <span className="text-[10px] font-black text-[#ede066] bg-[#ede066]/10 px-2 py-0.5 rounded border border-[#ede066]/20">{bpmRange[0]} - {bpmRange[1]}</span>
+                                <span className="text-[10px] font-black text-app-primary bg-app-primary/10 px-2 py-0.5 rounded border border-app-primary/20">{bpmRange[0]} - {bpmRange[1]}</span>
                                 {(bpmRange[0] !== BPM_MIN || bpmRange[1] !== BPM_MAX) && (
                                     <button
                                         type="button"
                                         onClick={() => onFilterChange({ ...filters, bpmRange: [BPM_MIN, BPM_MAX] })}
-                                        className="text-[9px] font-bold text-[#64748b] hover:text-[#ede066] uppercase tracking-wider transition-colors"
+                                        className="text-[9px] font-bold text-app-text-muted hover:text-app-primary uppercase tracking-wider transition-colors"
                                     >
                                         {t('reset')}
                                     </button>
@@ -172,7 +172,7 @@ export const Sidebar: React.FC<FilterProps> = ({ filters, onFilterChange }) => {
                         </div>
                         <div className="flex gap-2 items-center mb-2">
                             <label className="flex-1 flex flex-col gap-1">
-                                <span className="text-[9px] font-bold text-[#64748b] uppercase tracking-wider">Min</span>
+                                <span className="text-[9px] font-bold text-app-text-muted uppercase tracking-wider">Min</span>
                                 <input
                                     type="number"
                                     min={BPM_MIN}
@@ -182,11 +182,11 @@ export const Sidebar: React.FC<FilterProps> = ({ filters, onFilterChange }) => {
                                         const v = Math.min(BPM_MAX, Math.max(BPM_MIN, parseInt(e.target.value, 10) || BPM_MIN));
                                         onFilterChange({ ...filters, bpmRange: [v, Math.max(v, bpmRange[1])] });
                                     }}
-                                    className="w-full bg-[#0a0a0a] border border-white/10 rounded-lg px-3 py-2 text-xs text-white font-bold focus:outline-none focus:border-[#ede066]/50"
+                                    className="w-full bg-app-input-bg border border-app-border rounded-lg px-3 py-2 text-xs text-app-text font-bold focus:outline-none focus:border-app-primary/50"
                                 />
                             </label>
                             <label className="flex-1 flex flex-col gap-1">
-                                <span className="text-[9px] font-bold text-[#64748b] uppercase tracking-wider">Max</span>
+                                <span className="text-[9px] font-bold text-app-text-muted uppercase tracking-wider">Max</span>
                                 <input
                                     type="number"
                                     min={BPM_MIN}
@@ -196,7 +196,7 @@ export const Sidebar: React.FC<FilterProps> = ({ filters, onFilterChange }) => {
                                         const v = Math.min(BPM_MAX, Math.max(BPM_MIN, parseInt(e.target.value, 10) || BPM_MAX));
                                         onFilterChange({ ...filters, bpmRange: [Math.min(v, bpmRange[0]), v] });
                                     }}
-                                    className="w-full bg-[#0a0a0a] border border-white/10 rounded-lg px-3 py-2 text-xs text-white font-bold focus:outline-none focus:border-[#ede066]/50"
+                                    className="w-full bg-app-input-bg border border-app-border rounded-lg px-3 py-2 text-xs text-app-text font-bold focus:outline-none focus:border-app-primary/50"
                                 />
                             </label>
                         </div>
@@ -210,7 +210,7 @@ export const Sidebar: React.FC<FilterProps> = ({ filters, onFilterChange }) => {
                                     const v = Number(e.target.value);
                                     onFilterChange({ ...filters, bpmRange: [v, Math.max(v, bpmRange[1])] });
                                 }}
-                                className="flex-1 min-w-0 w-0 accent-[#ede066] h-1.5 bg-[#0a0a0a] rounded-full appearance-none cursor-pointer"
+                                className="flex-1 min-w-0 w-0 accent-app-primary h-1.5 bg-app-input-bg rounded-full appearance-none cursor-pointer"
                             />
                             <input
                                 type="range"
@@ -221,28 +221,28 @@ export const Sidebar: React.FC<FilterProps> = ({ filters, onFilterChange }) => {
                                     const v = Number(e.target.value);
                                     onFilterChange({ ...filters, bpmRange: [Math.min(v, bpmRange[0]), v] });
                                 }}
-                                className="flex-1 min-w-0 w-0 accent-[#ede066] h-1.5 bg-[#0a0a0a] rounded-full appearance-none cursor-pointer"
+                                className="flex-1 min-w-0 w-0 accent-app-primary h-1.5 bg-app-input-bg rounded-full appearance-none cursor-pointer"
                             />
                         </div>
-                        <p className="text-[9px] text-[#64748b] mt-1.5">{BPM_MIN} - {BPM_MAX} {t('bpmRangeHint')}</p>
+                        <p className="text-[9px] text-app-text-muted mt-1.5">{BPM_MIN} - {BPM_MAX} {t('bpmRangeHint')}</p>
                     </div>
 
                     {/* Price Range */}
-                    <div className="bg-[#111111] rounded-2xl p-4 border border-white/5 min-w-0">
+                    <div className="bg-app-card rounded-2xl p-4 border border-app-border min-w-0">
                         <div className="flex justify-between items-center mb-3">
-                            <p className="text-[11px] font-black text-white uppercase tracking-wider flex items-center gap-2">
-                                <span className="w-1 h-1 rounded-full bg-[#ede066]"></span>
+                            <p className="text-[11px] font-black text-app-text uppercase tracking-wider flex items-center gap-2">
+                                <span className="w-1 h-1 rounded-full bg-app-primary"></span>
                                 {t('price')}
                             </p>
                             <div className="flex items-center gap-2">
-                                <span className="text-[10px] font-black text-[#ede066] bg-[#ede066]/10 px-2 py-0.5 rounded border border-[#ede066]/20">
+                                <span className="text-[10px] font-black text-app-primary bg-app-primary/10 px-2 py-0.5 rounded border border-app-primary/20">
                                     {priceRange[0].toLocaleString('tr-TR')} - {priceRange[1].toLocaleString('tr-TR')}
                                 </span>
                                 {(priceRange[0] !== priceBounds[0] || priceRange[1] !== priceBounds[1]) && (
                                     <button
                                         type="button"
                                         onClick={() => onFilterChange({ ...filters, priceRange: [priceBounds[0], priceBounds[1]] })}
-                                        className="text-[9px] font-bold text-[#64748b] hover:text-[#ede066] uppercase tracking-wider transition-colors"
+                                        className="text-[9px] font-bold text-app-text-muted hover:text-app-primary uppercase tracking-wider transition-colors"
                                     >
                                         {t('reset')}
                                     </button>
@@ -251,7 +251,7 @@ export const Sidebar: React.FC<FilterProps> = ({ filters, onFilterChange }) => {
                         </div>
                         <div className="flex gap-2 items-center mb-2">
                             <label className="flex-1 flex flex-col gap-1">
-                                <span className="text-[9px] font-bold text-[#64748b] uppercase tracking-wider">Min</span>
+                                <span className="text-[9px] font-bold text-app-text-muted uppercase tracking-wider">Min</span>
                                 <input
                                     type="number"
                                     min={priceBounds[0]}
@@ -261,11 +261,11 @@ export const Sidebar: React.FC<FilterProps> = ({ filters, onFilterChange }) => {
                                         const v = Math.min(priceBounds[1], Math.max(priceBounds[0], Number(e.target.value) || priceBounds[0]));
                                         onFilterChange({ ...filters, priceRange: [v, Math.max(v, priceRange[1])] });
                                     }}
-                                    className="w-full bg-[#0a0a0a] border border-white/10 rounded-lg px-3 py-2 text-xs text-white font-bold focus:outline-none focus:border-[#ede066]/50"
+                                    className="w-full bg-app-input-bg border border-app-border rounded-lg px-3 py-2 text-xs text-app-text font-bold focus:outline-none focus:border-app-primary/50"
                                 />
                             </label>
                             <label className="flex-1 flex flex-col gap-1">
-                                <span className="text-[9px] font-bold text-[#64748b] uppercase tracking-wider">Max</span>
+                                <span className="text-[9px] font-bold text-app-text-muted uppercase tracking-wider">Max</span>
                                 <input
                                     type="number"
                                     min={priceBounds[0]}
@@ -275,7 +275,7 @@ export const Sidebar: React.FC<FilterProps> = ({ filters, onFilterChange }) => {
                                         const v = Math.min(priceBounds[1], Math.max(priceBounds[0], Number(e.target.value) || priceBounds[1]));
                                         onFilterChange({ ...filters, priceRange: [Math.min(v, priceRange[0]), v] });
                                     }}
-                                    className="w-full bg-[#0a0a0a] border border-white/10 rounded-lg px-3 py-2 text-xs text-white font-bold focus:outline-none focus:border-[#ede066]/50"
+                                    className="w-full bg-app-input-bg border border-app-border rounded-lg px-3 py-2 text-xs text-app-text font-bold focus:outline-none focus:border-app-primary/50"
                                 />
                             </label>
                         </div>
@@ -303,7 +303,7 @@ export const Sidebar: React.FC<FilterProps> = ({ filters, onFilterChange }) => {
                                 className="flex-1 min-w-0 w-0 accent-[#ede066] h-1.5 bg-[#0a0a0a] rounded-full appearance-none cursor-pointer"
                             />
                         </div>
-                        <div className="flex justify-between text-[9px] font-bold text-[#64748b] mt-2 px-1">
+                        <div className="flex justify-between text-[9px] font-bold text-app-text-muted mt-2 px-1">
                             <span>{priceBounds[0].toLocaleString('tr-TR')}</span>
                             <span>{priceBounds[1].toLocaleString('tr-TR')}</span>
                         </div>
@@ -319,7 +319,7 @@ export const Sidebar: React.FC<FilterProps> = ({ filters, onFilterChange }) => {
                             bpmRange: [BPM_MIN, BPM_MAX],
                             priceRange: [priceBounds[0], priceBounds[1]],
                         })}
-                        className="w-full py-3 rounded-xl text-xs font-black uppercase tracking-wider border border-white/10 text-[#94a3b8] hover:text-[#ede066] hover:border-[#ede066]/30 hover:bg-white/5 transition-all"
+                        className="w-full py-3 rounded-xl text-xs font-black uppercase tracking-wider border border-app-border text-app-text-muted hover:text-app-primary hover:border-app-primary/30 hover:bg-app-surface transition-all"
                     >
                         {t('resetFiltering')}
                     </button>

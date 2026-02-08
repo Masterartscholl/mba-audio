@@ -44,9 +44,9 @@ export const CategoryBar: React.FC<CategoryBarProps> = ({ filters, onFilterChang
     };
 
     return (
-        <div className="px-10 pt-6 pb-4 border-b border-white/5 bg-[#0a0a0a]/90 shrink-0">
+        <div className="px-10 pt-6 pb-4 border-b border-app-border bg-app-bg/90 shrink-0">
             <div className="flex flex-wrap items-center gap-3">
-                <span className="text-[11px] font-black text-[#64748b] uppercase tracking-wider mr-1">
+                <span className="text-[11px] font-black text-app-text-muted uppercase tracking-wider mr-1">
                     {t('categories')}
                 </span>
                 {categories.map(cat => (
@@ -55,8 +55,8 @@ export const CategoryBar: React.FC<CategoryBarProps> = ({ filters, onFilterChang
                         type="button"
                         onClick={() => handleCategoryClick(cat.id)}
                         className={`px-4 py-2 rounded-xl text-xs font-bold uppercase tracking-wider transition-all ${selectedCategoryId === cat.id
-                            ? 'bg-[#ede066] text-[#0b1121] shadow-lg shadow-[#ede066]/25'
-                            : 'bg-white/5 text-[#94a3b8] border border-white/10 hover:bg-white/10 hover:text-white hover:border-white/20'
+                            ? 'bg-app-primary text-app-primary-foreground shadow-lg shadow-app-primary/25'
+                            : 'bg-app-surface text-app-text-muted border border-app-border hover:bg-app-card hover:text-app-text hover:border-app-border'
                             }`}
                     >
                         {cat.name}
@@ -66,7 +66,7 @@ export const CategoryBar: React.FC<CategoryBarProps> = ({ filters, onFilterChang
                     <button
                         type="button"
                         onClick={handleReset}
-                        className="px-4 py-2 rounded-xl text-xs font-bold uppercase tracking-wider bg-white/5 text-[#64748b] border border-white/10 hover:bg-white/10 hover:text-[#ede066] hover:border-[#ede066]/30 transition-all"
+                        className="px-4 py-2 rounded-xl text-xs font-bold uppercase tracking-wider bg-app-surface text-app-text-muted border border-app-border hover:bg-app-card hover:text-app-primary hover:border-app-primary/30 transition-all"
                     >
                         {t('resetFiltering')}
                     </button>

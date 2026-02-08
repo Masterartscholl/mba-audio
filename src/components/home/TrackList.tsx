@@ -90,30 +90,30 @@ export const TrackList: React.FC<TrackListProps> = ({ filters, currency }) => {
         <div className="flex-1 overflow-y-auto custom-scrollbar flex flex-col">
             <div className="px-10 py-10 flex items-end justify-between">
                 <div>
-                    <h2 className="text-4xl font-black text-white tracking-tighter uppercase leading-none">{t('browseTracks')}</h2>
-                    <p className="text-[#64748b] text-sm font-bold mt-4 uppercase tracking-widest">
+                    <h2 className="text-4xl font-black text-app-text tracking-tighter uppercase leading-none">{t('browseTracks')}</h2>
+                    <p className="text-app-text-muted text-sm font-bold mt-4 uppercase tracking-widest">
                         {totalCount} {t('resultsFound')}
                     </p>
                 </div>
                 <div className="flex items-center gap-3">
-                    <span className="text-[10px] font-black text-[#64748b] uppercase tracking-widest">{t('sortBy')}</span>
+                    <span className="text-[10px] font-black text-app-text-muted uppercase tracking-widest">{t('sortBy')}</span>
                     <div className="relative">
                         <select
                             value={sortBy}
                             onChange={(e) => setSortBy(e.target.value as SortOption)}
-                            className="bg-[#1e293b]/50 border border-[#1e293b] rounded-xl px-4 py-2 text-xs text-white font-bold appearance-none pr-10 focus:outline-none focus:border-white/20 transition-all cursor-pointer"
+                            className="bg-app-surface border border-app-border rounded-xl px-4 py-2 text-xs text-app-text font-bold appearance-none pr-10 focus:outline-none focus:border-app-primary/50 transition-all cursor-pointer"
                         >
                             <option value="relevance">{t('relevance')}</option>
                             <option value="newest">{t('newest')}</option>
                             <option value="priceLow">{t('priceLow')}</option>
                             <option value="priceHigh">{t('priceHigh')}</option>
                         </select>
-                        <svg className="w-4 h-4 text-[#64748b] absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" /></svg>
+                        <svg className="w-4 h-4 text-app-text-muted absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" /></svg>
                     </div>
                 </div>
             </div>
 
-            <div className="px-10 py-4 flex text-[11px] font-black text-[#64748b] uppercase tracking-[0.2em] border-b border-white/5 bg-white/[0.01]">
+            <div className="px-10 py-4 flex text-[11px] font-black text-app-text-muted uppercase tracking-[0.2em] border-b border-app-border bg-app-surface">
                 <div className="w-12"></div>
                 <div className="flex-1 pr-8">{t('titleArtist')}</div>
                 <div className="w-32">{t('genre')}</div>
@@ -128,7 +128,7 @@ export const TrackList: React.FC<TrackListProps> = ({ filters, currency }) => {
                         <TrackRow key={track.id} track={track} currency={currency} queue={tracks} />
                     ))
                 ) : (
-                    <div className="flex flex-col items-center justify-center py-32 text-[#64748b]">
+                    <div className="flex flex-col items-center justify-center py-32 text-app-text-muted">
                         <svg className="w-16 h-16 opacity-10 mb-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12-3c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zM9 10l12-3" /></svg>
                         <p className="font-black uppercase tracking-[0.2em]">{t('noTracksFilter')}</p>
                     </div>
