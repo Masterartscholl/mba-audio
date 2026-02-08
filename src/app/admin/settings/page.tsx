@@ -18,6 +18,10 @@ type Settings = {
     is_maintenance_mode: boolean;
     active_theme: string;
     default_lang: string;
+    link_privacy_policy: string;
+    link_distance_selling: string;
+    link_delivery_return: string;
+    link_terms_conditions: string;
 };
 
 export default function SettingsPage() {
@@ -38,7 +42,11 @@ export default function SettingsPage() {
         is_watermark_active: true,
         is_maintenance_mode: false,
         active_theme: 'dark',
-        default_lang: 'tr'
+        default_lang: 'tr',
+        link_privacy_policy: '',
+        link_distance_selling: '',
+        link_delivery_return: '',
+        link_terms_conditions: ''
     });
 
     // Profile State
@@ -94,7 +102,13 @@ export default function SettingsPage() {
                 console.error('Supabase fetch error:', error);
                 toast.error('Ayarlar yüklenirken bir hata oluştu');
             } else if (data) {
-                setSettings(data);
+                setSettings({
+                    ...data,
+                    link_privacy_policy: data.link_privacy_policy ?? '',
+                    link_distance_selling: data.link_distance_selling ?? '',
+                    link_delivery_return: data.link_delivery_return ?? '',
+                    link_terms_conditions: data.link_terms_conditions ?? ''
+                });
             }
         } catch (err: any) {
             console.error('Settings fetch catch:', err);
@@ -298,6 +312,59 @@ export default function SettingsPage() {
                                         type="text"
                                         value={settings.whatsapp_no}
                                         onChange={(e) => setSettings({ ...settings, whatsapp_no: e.target.value })}
+                                        className="w-full bg-admin-bg border border-admin-border rounded-xl px-4 py-3.5 text-admin-text focus:outline-none focus:border-admin-primary/50 transition-all font-medium"
+                                    />
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Yasal Linkler (Ödeme sayfası) */}
+                        <div className="bg-admin-card rounded-3xl p-8 border border-admin-border space-y-6 shadow-xl leading-relaxed md:col-span-2">
+                            <div className="flex items-center gap-3 mb-2">
+                                <div className="p-2.5 rounded-xl bg-admin-bg text-admin-primary border border-admin-border">
+                                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" /></svg>
+                                </div>
+                                <h3 className="text-xl font-bold text-admin-text">{t('legalLinks')}</h3>
+                            </div>
+                            <p className="text-sm text-admin-text-muted">{t('legalLinksDesc')}</p>
+                            <div className="grid md:grid-cols-2 gap-4">
+                                <div className="space-y-2">
+                                    <label className="text-xs uppercase font-bold text-admin-text-muted tracking-wider">{t('linkPrivacyPolicy')}</label>
+                                    <input
+                                        type="url"
+                                        value={settings.link_privacy_policy}
+                                        onChange={(e) => setSettings({ ...settings, link_privacy_policy: e.target.value })}
+                                        placeholder="https://..."
+                                        className="w-full bg-admin-bg border border-admin-border rounded-xl px-4 py-3.5 text-admin-text focus:outline-none focus:border-admin-primary/50 transition-all font-medium"
+                                    />
+                                </div>
+                                <div className="space-y-2">
+                                    <label className="text-xs uppercase font-bold text-admin-text-muted tracking-wider">{t('linkDistanceSelling')}</label>
+                                    <input
+                                        type="url"
+                                        value={settings.link_distance_selling}
+                                        onChange={(e) => setSettings({ ...settings, link_distance_selling: e.target.value })}
+                                        placeholder="https://..."
+                                        className="w-full bg-admin-bg border border-admin-border rounded-xl px-4 py-3.5 text-admin-text focus:outline-none focus:border-admin-primary/50 transition-all font-medium"
+                                    />
+                                </div>
+                                <div className="space-y-2">
+                                    <label className="text-xs uppercase font-bold text-admin-text-muted tracking-wider">{t('linkDeliveryReturn')}</label>
+                                    <input
+                                        type="url"
+                                        value={settings.link_delivery_return}
+                                        onChange={(e) => setSettings({ ...settings, link_delivery_return: e.target.value })}
+                                        placeholder="https://..."
+                                        className="w-full bg-admin-bg border border-admin-border rounded-xl px-4 py-3.5 text-admin-text focus:outline-none focus:border-admin-primary/50 transition-all font-medium"
+                                    />
+                                </div>
+                                <div className="space-y-2">
+                                    <label className="text-xs uppercase font-bold text-admin-text-muted tracking-wider">{t('linkTermsConditions')}</label>
+                                    <input
+                                        type="url"
+                                        value={settings.link_terms_conditions}
+                                        onChange={(e) => setSettings({ ...settings, link_terms_conditions: e.target.value })}
+                                        placeholder="https://..."
                                         className="w-full bg-admin-bg border border-admin-border rounded-xl px-4 py-3.5 text-admin-text focus:outline-none focus:border-admin-primary/50 transition-all font-medium"
                                     />
                                 </div>
