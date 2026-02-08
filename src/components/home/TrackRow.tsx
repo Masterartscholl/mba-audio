@@ -14,7 +14,7 @@ interface TrackRowProps {
 }
 
 export const TrackRow: React.FC<TrackRowProps> = ({ track, currency, queue }) => {
-    const { currentTrack, isPlaying, playTrack } = useAudio();
+    const { currentTrack, isPlaying, playTrack, togglePlay, progress, duration } = useAudio();
     const { addItem } = useCart();
     const { isFavorite, toggleFavorite } = useFavorites();
     const isActive = currentTrack?.id === track.id;
@@ -36,10 +36,10 @@ export const TrackRow: React.FC<TrackRowProps> = ({ track, currency, queue }) =>
 
     return (
         <div className={`group flex items-center px-10 py-5 transition-all border-b border-white/5 hover:bg-white/[0.02] ${isActive ? 'bg-white/[0.03]' : ''}`}>
-            {/* Play Button */}
+            {/* Play / Pause: aynı parçadaysa listeden de durdurabilirsin */}
             <div className="w-12 flex-shrink-0">
                 <button
-                    onClick={() => playTrack(track, queue && queue.length > 0 ? queue : undefined)}
+                    onClick={() => isActive ? togglePlay() : playTrack(track, queue && queue.length > 0 ? queue : undefined)}
                     className={`w-10 h-10 rounded-full flex items-center justify-center transition-all ${isActive && isPlaying
                         ? 'bg-[#ede066] text-[#0b1121] scale-110 shadow-lg shadow-[#ede066]/20'
                         : 'bg-white/5 text-white hover:bg-[#ede066] hover:text-[#0b1121] group-hover:scale-105'
@@ -52,9 +52,9 @@ export const TrackRow: React.FC<TrackRowProps> = ({ track, currency, queue }) =>
                 </button>
             </div>
 
-            {/* Title / Artist */}
+            {/* Title / Artist - başlık ince font */}
             <div className="flex-1 min-w-0 pr-8">
-                <h4 className={`text-sm font-black uppercase tracking-tight truncate transition-colors ${isActive ? 'text-[#ede066]' : 'text-white'}`}>
+                <h4 className={`text-sm font-medium uppercase tracking-tight truncate transition-colors ${isActive ? 'text-[#ede066]' : 'text-white'}`}>
                     {track.title}
                 </h4>
                 <p className="text-[10px] font-bold text-[#64748b] uppercase tracking-[0.15em] leading-none mt-1">
@@ -69,9 +69,14 @@ export const TrackRow: React.FC<TrackRowProps> = ({ track, currency, queue }) =>
                 </span>
             </div>
 
-            {/* Waveform */}
+            {/* Waveform - müziğe göre ilerleme rengi (progressColor) */}
             <div className="w-64 px-8 overflow-hidden">
-                <TrackWaveform url={track.preview_url} isPlaying={isActive && isPlaying} />
+                <TrackWaveform
+                    url={track.preview_url}
+                    isPlaying={isActive && isPlaying}
+                    progress={isActive ? progress : undefined}
+                    duration={isActive ? duration : undefined}
+                />
             </div>
 
             {/* BPM */}

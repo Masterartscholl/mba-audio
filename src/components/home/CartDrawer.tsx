@@ -57,7 +57,7 @@ export const CartDrawer: React.FC = () => {
                                     </div>
                                 </div>
                                 <div className="flex-1 min-w-0">
-                                    <h4 className="text-sm font-black text-white uppercase tracking-tight truncate">{track.title}</h4>
+                                    <h4 className="text-sm font-medium text-white uppercase tracking-tight truncate">{track.title}</h4>
                                     <p className="text-[10px] font-bold text-[#64748b] uppercase tracking-widest truncate">{track.artist_name || 'Unknown'}</p>
                                     <div className="mt-2 w-40 h-8 overflow-hidden rounded">
                                         <TrackWaveform url={track.preview_url} isPlaying={false} />

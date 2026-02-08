@@ -72,6 +72,21 @@ export const AudioProvider: React.FC<{ children: React.ReactNode }> = ({ childre
 
         const handleTimeUpdate = () => setProgress(audio.currentTime);
         const handleDurationChange = () => setDuration(audio.duration);
+
+        // Çalarken waveform/progress bar için daha akıcı güncelleme (timeupdate ~250ms'de bir gelir)
+        let rafId: number;
+        const tick = () => {
+            if (audioRef.current && !audioRef.current.paused) {
+                setProgress(audioRef.current.currentTime);
+            }
+            rafId = requestAnimationFrame(tick);
+        };
+        const onPlay = () => { rafId = requestAnimationFrame(tick); };
+        const onPauseOrEnd = () => cancelAnimationFrame(rafId);
+        audio.addEventListener('play', onPlay);
+        audio.addEventListener('pause', onPauseOrEnd);
+        audio.addEventListener('ended', onPauseOrEnd);
+
         const handleEnded = () => {
             const mode = repeatModeRef.current;
             const q = queueRef.current;
@@ -107,9 +122,13 @@ export const AudioProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         audio.addEventListener('ended', handleEnded);
 
         return () => {
+            cancelAnimationFrame(rafId);
             audio.removeEventListener('timeupdate', handleTimeUpdate);
             audio.removeEventListener('durationchange', handleDurationChange);
             audio.removeEventListener('ended', handleEnded);
+            audio.removeEventListener('play', onPlay);
+            audio.removeEventListener('pause', onPauseOrEnd);
+            audio.removeEventListener('ended', onPauseOrEnd);
         };
     }, [playTrackAt]);
 
