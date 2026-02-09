@@ -16,22 +16,48 @@ export default function LibraryPage() {
 
     useEffect(() => {
         const run = async () => {
-            const purchasedIds = typeof window !== 'undefined'
-                ? JSON.parse(localStorage.getItem('mba-purchased-ids') || '[]')
-                : [];
-            if (purchasedIds.length === 0) {
-                setPurchasedTracks([]);
-                setLoading(false);
-                return;
-            }
             try {
-                const { data } = await supabase
-                    .from('tracks')
-                    .select('*, categories(name), genres(name), modes(name)')
-                    .in('id', purchasedIds)
-                    .eq('status', 'published');
-                setPurchasedTracks(data || []);
-            } catch {
+                setLoading(true);
+                // Kullanıcının başarılı siparişlerinden ilişkili track'leri getir
+                const { data, error } = await supabase
+                    .from('orders')
+                    .select(`
+                        id,
+                        amount,
+                        created_at,
+                        tracks (
+                            id,
+                            title,
+                            artist_name,
+                            image_url,
+                            preview_url,
+                            bpm,
+                            categories ( name ),
+                            genres ( name )
+                        )
+                    `)
+                    .eq('status', 'success')
+                    .order('created_at', { ascending: false });
+
+                if (error) {
+                    console.error('Library orders fetch error:', error);
+                    setPurchasedTracks([]);
+                } else {
+                    const list =
+                        (data as any[])?.map((o) => {
+                            const track = (o as any).tracks;
+                            if (!track) return null;
+                            return {
+                                ...track,
+                                order_id: o.id,
+                                amount: o.amount,
+                                purchased_at: o.created_at,
+                            };
+                        }).filter(Boolean) || [];
+                    setPurchasedTracks(list);
+                }
+            } catch (e) {
+                console.error('Library fetch error:', e);
                 setPurchasedTracks([]);
             } finally {
                 setLoading(false);
@@ -49,14 +75,14 @@ export default function LibraryPage() {
                     <div className="flex-1 overflow-y-auto custom-scrollbar flex flex-col">
                         <div className="px-10 py-10 flex items-end justify-between">
                             <div>
-                                <h2 className="text-4xl font-black text-white tracking-tighter uppercase leading-none">{t('myLibraryTitle')}</h2>
-                                <p className="text-[#64748b] text-sm font-bold mt-4 uppercase tracking-widest">
+                                <h2 className="text-4xl font-black text-app-text tracking-tighter uppercase leading-none">{t('myLibraryTitle')}</h2>
+                                <p className="text-app-text-muted text-sm font-bold mt-4 uppercase tracking-widest">
                                     {purchasedTracks.length} {t('purchasedCount')}
                                 </p>
                             </div>
                         </div>
 
-                        <div className="px-10 py-4 flex text-[11px] font-black text-[#64748b] uppercase tracking-[0.2em] border-b border-white/5 bg-white/[0.01]">
+                        <div className="px-10 py-4 flex text-[11px] font-black text-app-text-muted uppercase tracking-[0.2em] border-b border-app-border bg-app-surface">
                             <div className="w-12"></div>
                             <div className="flex-1 pr-8">{t('titleArtist')}</div>
                             <div className="w-32">{t('genre')}</div>
@@ -67,10 +93,10 @@ export default function LibraryPage() {
 
                         <div className="flex-1">
                             {loading ? (
-                                <div className="px-10 py-12 text-[#64748b] text-sm font-bold">{t('loading')}</div>
+                                <div className="px-10 py-12 text-app-text-muted text-sm font-bold">{t('loading')}</div>
                             ) : purchasedTracks.length > 0 ? (
-                                purchasedTracks.map(track => (
-                                    <LibraryTrackRow key={track.id} track={track} />
+                                purchasedTracks.map((track: any) => (
+                                <LibraryTrackRow key={track.id} track={track} />
                                 ))
                             ) : (
                                 <div className="flex flex-col items-center justify-center py-32 text-[#64748b]">

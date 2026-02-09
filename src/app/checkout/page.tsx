@@ -20,15 +20,10 @@ const DEFAULT_LINKS = {
 export default function CheckoutPage() {
     const t = useTranslations('App');
     const { items } = useCart();
-    const [cardNumber, setCardNumber] = useState('');
-    const [cardName, setCardName] = useState('');
-    const [expiry, setExpiry] = useState('');
-    const [cvc, setCvc] = useState('');
     const [billingName, setBillingName] = useState('');
     const [billingTcId, setBillingTcId] = useState('');
     const [billingAddress, setBillingAddress] = useState('');
     const [acceptTerms, setAcceptTerms] = useState(false);
-    const [cardErrors, setCardErrors] = useState<{ cardNumber?: string; cardName?: string; expiry?: string; cvc?: string }>({});
     const [billingErrors, setBillingErrors] = useState<{ billingTcId?: string }>({});
     const [legalLinks, setLegalLinks] = useState<typeof DEFAULT_LINKS>(DEFAULT_LINKS);
 
@@ -49,17 +44,6 @@ export default function CheckoutPage() {
     const total = items.reduce((s, t) => s + (t.price ?? 0), 0);
     const currency = items[0]?.currency || 'TL';
 
-    const formatCardNumber = (v: string) => {
-        const digits = v.replace(/\D/g, '').slice(0, 16);
-        return digits.replace(/(.{4})/g, '$1 ').trim();
-    };
-
-    const formatExpiry = (v: string) => {
-        const digits = v.replace(/\D/g, '').slice(0, 4);
-        if (digits.length >= 2) return `${digits.slice(0, 2)}/${digits.slice(2)}`;
-        return digits;
-    };
-
     const formatTcId = (v: string) => v.replace(/\D/g, '').slice(0, 11);
 
     /** TC Kimlik No doğrulama (11 hane, resmi algoritma) */
@@ -75,67 +59,6 @@ export default function CheckoutPage() {
         return digits[10] === d11;
     };
 
-    /** Luhn algoritması ile kart numarası doğrulama */
-    const isLuhnValid = (value: string): boolean => {
-        const digits = value.replace(/\D/g, '');
-        if (digits.length < 13 || digits.length > 19) return false;
-        let sum = 0;
-        let isEven = false;
-        for (let i = digits.length - 1; i >= 0; i--) {
-            let d = parseInt(digits[i], 10);
-            if (isEven) {
-                d *= 2;
-                if (d > 9) d -= 9;
-            }
-            sum += d;
-            isEven = !isEven;
-        }
-        return sum % 10 === 0;
-    };
-
-    /** Son kullanma tarihi geçerli mi (MM/YY, gelecek veya bu ay) */
-    const isExpiryValid = (value: string): boolean => {
-        const digits = value.replace(/\D/g, '');
-        if (digits.length !== 4) return false;
-        const month = parseInt(digits.slice(0, 2), 10);
-        const year = 2000 + parseInt(digits.slice(2, 4), 10);
-        if (month < 1 || month > 12) return false;
-        const now = new Date();
-        const currentYear = now.getFullYear();
-        const currentMonth = now.getMonth() + 1;
-        if (year < currentYear) return false;
-        if (year === currentYear && month < currentMonth) return false;
-        return true;
-    };
-
-    const validateCardForm = (): boolean => {
-        const err: typeof cardErrors = {};
-        const rawCard = cardNumber.replace(/\D/g, '');
-        if (rawCard.length < 13) {
-            err.cardNumber = t('cardErrorNumberRequired');
-        } else if (!isLuhnValid(cardNumber)) {
-            err.cardNumber = t('cardErrorNumberInvalid');
-        }
-        const nameTrim = cardName.trim();
-        if (nameTrim.length < 2) {
-            err.cardName = t('cardErrorNameRequired');
-        } else if (!/^[\p{L}\p{M}\s.'-]+$/u.test(nameTrim)) {
-            err.cardName = t('cardErrorNameInvalid');
-        }
-        if (expiry.replace(/\D/g, '').length !== 4) {
-            err.expiry = t('cardErrorExpiryRequired');
-        } else if (!isExpiryValid(expiry)) {
-            err.expiry = t('cardErrorExpiryInvalid');
-        }
-        if (cvc.length < 3) {
-            err.cvc = t('cardErrorCvcRequired');
-        } else if (cvc.length !== 3 && cvc.length !== 4) {
-            err.cvc = t('cardErrorCvcInvalid');
-        }
-        setCardErrors(err);
-        return Object.keys(err).length === 0;
-    };
-
     const validateBillingForm = (): boolean => {
         const err: { billingTcId?: string } = {};
         if (billingTcId.length !== 11) {
@@ -147,13 +70,76 @@ export default function CheckoutPage() {
         return Object.keys(err).length === 0;
     };
 
-    const handleSubmit = (e: React.FormEvent) => {
+    const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        if (!validateCardForm()) return;
         if (!validateBillingForm()) return;
-        setCardErrors({});
+        if (!acceptTerms) return;
         setBillingErrors({});
-        // İyzico entegrasyonu: cardNumber, cardName, expiry, cvc + fatura bilgileri (billingName, billingTcId, billingAddress) backend'e gönderilecek, ödeme alınıp fatura oluşturulacak
+
+        try {
+            const res = await fetch('/api/payment', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    items: items.map((t) => t.id),
+                }),
+            });
+
+            if (!res.ok) {
+                console.error('Payment init failed', await res.text());
+                return;
+            }
+
+            const data = await res.json();
+            console.log('IYZIPAY INIT RESPONSE', data);
+            if (data.checkoutFormContent) {
+                // 1) Sayfanın üzerine basit bir overlay ve hedef div ekle
+                let overlay = document.getElementById('iyzipay-overlay') as HTMLDivElement | null;
+                if (!overlay) {
+                    overlay = document.createElement('div');
+                    overlay.id = 'iyzipay-overlay';
+                    overlay.style.position = 'fixed';
+                    overlay.style.inset = '0';
+                    overlay.style.background = 'rgba(0,0,0,0.75)';
+                    overlay.style.zIndex = '9999';
+                    overlay.style.display = 'flex';
+                    overlay.style.alignItems = 'center';
+                    overlay.style.justifyContent = 'center';
+
+                    const panel = document.createElement('div');
+                    panel.style.background = '#ffffff';
+                    panel.style.borderRadius = '16px';
+                    panel.style.maxWidth = '480px';
+                    panel.style.width = '100%';
+                    panel.style.margin = '16px';
+                    panel.style.padding = '8px';
+
+                    const formDiv = document.createElement('div');
+                    formDiv.id = 'iyzipay-checkout-form';
+                    formDiv.style.minHeight = '520px';
+
+                    panel.appendChild(formDiv);
+                    overlay.appendChild(panel);
+                    document.body.appendChild(overlay);
+                }
+
+                // 2) checkoutFormContent içindeki <script> kodunu alıp gerçek script tag olarak ekle
+                const raw = String(data.checkoutFormContent);
+                const scriptContent = raw
+                    .replace(/^\s*<script[^>]*>/i, '')
+                    .replace(/<\/script>\s*$/i, '');
+
+                const scriptTag = document.createElement('script');
+                scriptTag.type = 'text/javascript';
+                scriptTag.innerHTML = scriptContent;
+                document.body.appendChild(scriptTag);
+
+                // Formun görünmesi için sayfanın üstüne kaydır
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            }
+        } catch (err) {
+            console.error('Payment submit error:', err);
+        }
     };
 
     return (
@@ -182,67 +168,8 @@ export default function CheckoutPage() {
                 </p>
 
                 <form onSubmit={handleSubmit} className="grid lg:grid-cols-5 gap-10">
-                    {/* Sol: Form */}
+                    {/* Sol: Fatura ve onaylar */}
                     <div className="lg:col-span-3 space-y-8">
-                        {/* Kart Bilgileri */}
-                        <div className="bg-app-card rounded-2xl p-6 lg:p-8 border border-app-border">
-                            <h2 className="text-xs font-black text-app-primary uppercase tracking-[0.2em] mb-6 flex items-center gap-2">
-                                <span className="w-1 h-1 rounded-full bg-[#ede066]" />
-                                {t('cardDetails')}
-                            </h2>
-                            <div className="space-y-5">
-                                <div>
-                                    <label className="block text-[11px] font-black text-app-text-muted uppercase tracking-widest mb-2">{t('cardNumber')}</label>
-                                    <input
-                                        type="text"
-                                        placeholder="0000 0000 0000 0000"
-                                        value={cardNumber}
-                                        onChange={(e) => { setCardNumber(formatCardNumber(e.target.value)); setCardErrors(prev => ({ ...prev, cardNumber: undefined })); }}
-                                        maxLength={19}
-                                        className={`w-full bg-app-input-bg border rounded-xl px-4 py-3.5 text-white placeholder:text-app-text-muted focus:outline-none transition-all font-mono text-sm ${cardErrors.cardNumber ? 'border-red-500/60 focus:border-red-500/60' : 'border-white/10 focus:border-app-primary/50'}`}
-                                    />
-                                    {cardErrors.cardNumber && <p className="mt-1.5 text-[11px] text-red-400 font-medium">{cardErrors.cardNumber}</p>}
-                                </div>
-                                <div>
-                                    <label className="block text-[11px] font-black text-app-text-muted uppercase tracking-widest mb-2">{t('cardName')}</label>
-                                    <input
-                                        type="text"
-                                        placeholder="AD SOYAD"
-                                        value={cardName}
-                                        onChange={(e) => { setCardName(e.target.value.toUpperCase()); setCardErrors(prev => ({ ...prev, cardName: undefined })); }}
-                                        className={`w-full bg-app-input-bg border rounded-xl px-4 py-3.5 text-white placeholder:text-app-text-muted focus:outline-none transition-all uppercase ${cardErrors.cardName ? 'border-red-500/60 focus:border-red-500/60' : 'border-white/10 focus:border-app-primary/50'}`}
-                                    />
-                                    {cardErrors.cardName && <p className="mt-1.5 text-[11px] text-red-400 font-medium">{cardErrors.cardName}</p>}
-                                </div>
-                                <div className="grid grid-cols-2 gap-4">
-                                    <div>
-                                        <label className="block text-[11px] font-black text-app-text-muted uppercase tracking-widest mb-2">{t('expiry')}</label>
-                                        <input
-                                            type="text"
-                                            placeholder="MM/YY"
-                                            value={expiry}
-                                            onChange={(e) => { setExpiry(formatExpiry(e.target.value)); setCardErrors(prev => ({ ...prev, expiry: undefined })); }}
-                                            maxLength={5}
-                                            className={`w-full bg-app-input-bg border rounded-xl px-4 py-3.5 text-white placeholder:text-app-text-muted focus:outline-none transition-all font-mono ${cardErrors.expiry ? 'border-red-500/60 focus:border-red-500/60' : 'border-white/10 focus:border-app-primary/50'}`}
-                                        />
-                                        {cardErrors.expiry && <p className="mt-1.5 text-[11px] text-red-400 font-medium">{cardErrors.expiry}</p>}
-                                    </div>
-                                    <div>
-                                        <label className="block text-[11px] font-black text-app-text-muted uppercase tracking-widest mb-2">CVC</label>
-                                        <input
-                                            type="text"
-                                            placeholder="***"
-                                            value={cvc}
-                                            onChange={(e) => { setCvc(e.target.value.replace(/\D/g, '').slice(0, 4)); setCardErrors(prev => ({ ...prev, cvc: undefined })); }}
-                                            maxLength={4}
-                                            className={`w-full bg-app-input-bg border rounded-xl px-4 py-3.5 text-white placeholder:text-app-text-muted focus:outline-none transition-all font-mono ${cardErrors.cvc ? 'border-red-500/60 focus:border-red-500/60' : 'border-white/10 focus:border-app-primary/50'}`}
-                                        />
-                                        {cardErrors.cvc && <p className="mt-1.5 text-[11px] text-red-400 font-medium">{cardErrors.cvc}</p>}
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
                         {/* Fatura Bilgileri (İyzico ödeme ve fatura oluşturma için) */}
                         <div className="bg-app-card rounded-2xl p-6 lg:p-8 border border-app-border">
                             <h2 className="text-xs font-black text-app-primary uppercase tracking-[0.2em] mb-6 flex items-center gap-2">
@@ -284,6 +211,16 @@ export default function CheckoutPage() {
                                     />
                                 </div>
                             </div>
+                        </div>
+
+                        {/* Bilgilendirme: Kart bilgileri iyzico güvenli ödeme penceresinde alınır */}
+                        <div className="bg-app-card rounded-2xl p-4 border border-dashed border-app-border text-xs text-app-text-muted">
+                            <p className="font-bold uppercase tracking-[0.18em] mb-1 text-app-text">
+                                {t('cardInfoTitle')}
+                            </p>
+                            <p>
+                                {t('cardInfoDescription')}
+                            </p>
                         </div>
 
                         <label className="flex items-start gap-3 cursor-pointer group">

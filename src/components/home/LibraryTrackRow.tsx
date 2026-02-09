@@ -3,6 +3,7 @@
 import React from 'react';
 import { useTranslations } from 'next-intl';
 import { useAudio } from '@/context/AudioContext';
+import { useFavorites } from '@/context/FavoritesContext';
 import { TrackWaveform } from './TrackWaveform';
 
 interface LibraryTrackRowProps {
@@ -12,11 +13,13 @@ interface LibraryTrackRowProps {
 export const LibraryTrackRow: React.FC<LibraryTrackRowProps> = ({ track }) => {
     const t = useTranslations('App');
     const { currentTrack, isPlaying, playTrack, togglePlay, progress, duration } = useAudio();
+    const { isFavorite, toggleFavorite } = useFavorites();
     const isActive = currentTrack?.id === track.id;
+    const fav = isFavorite(track.id);
 
     const handleDownload = (format: 'wav' | 'mp3') => {
-        // Backend'de signed URL ile indirme sağlanacak
-        window.open(`#download-${format}-${track.id}`, '_blank');
+        const url = `/api/download/${track.id}?format=${format}`;
+        window.open(url, '_blank');
     };
 
     return (
@@ -47,7 +50,7 @@ export const LibraryTrackRow: React.FC<LibraryTrackRowProps> = ({ track }) => {
 
             <div className="w-32">
                 <span className="px-3 py-1 bg-app-surface border border-app-border rounded-lg text-[10px] font-black text-app-text-muted uppercase tracking-widest">
-                    {track.genres?.name || 'Vocal'}
+                    {track.genres?.name || track.genre?.name || 'Vocal'}
                 </span>
             </div>
 
@@ -65,6 +68,15 @@ export const LibraryTrackRow: React.FC<LibraryTrackRowProps> = ({ track }) => {
             </div>
 
             <div className="w-48 flex items-center justify-end gap-2">
+                <button
+                    onClick={() => toggleFavorite(track)}
+                    className={`w-9 h-9 rounded-lg flex items-center justify-center transition-all ${fav ? 'text-app-primary' : 'text-app-text-muted hover:text-app-primary/80'}`}
+                    aria-label={fav ? 'Favorilerden çıkar' : 'Favorilere ekle'}
+                >
+                    <svg className="w-5 h-5" fill={fav ? 'currentColor' : 'none'} stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+                    </svg>
+                </button>
                 <button
                     onClick={() => handleDownload('wav')}
                     className="px-4 py-2.5 bg-[#ede066]/10 border border-app-primary/30 rounded-xl text-[11px] font-black text-app-primary uppercase tracking-widest hover:bg-[#ede066] hover:text-[#0b1121] transition-all active:scale-95"

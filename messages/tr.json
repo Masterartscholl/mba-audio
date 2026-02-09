@@ -279,6 +279,8 @@
         "privacyMockParagraph1": "MüzikBank olarak kişisel verilerinizin güvenliği bizim için önceliklidir. Topladığımız veriler arasında ad, e-posta, fatura adresi ve ödeme bilgileri yer alabilir. Bu veriler sipariş işleme, hesap yönetimi, müşteri desteği ve yasal yükümlülüklerimizi yerine getirmek amacıyla kullanılır.",
         "privacyMockParagraph2": "Ödeme işlemleri güvenli ödeme altyapısı (ör. iyzico) üzerinden gerçekleştirilir; kredi kartı bilgileriniz bizim sunucularımızda saklanmaz. İletişim ve pazarlama e-postaları yalnızca açık rızanız varsa gönderilir; istediğiniz zaman abonelikten çıkabilirsiniz.",
         "privacyMockParagraph3": "Verileriniz, yürürlükteki mevzuata uygun süre boyunca saklanır. Haklarınız kapsamında erişim, düzeltme, silme ve veri taşınabilirliği taleplerinizi bize iletebilirsiniz. Detaylı bilgi için gizlilik politikası sayfamızı inceleyebilirsiniz.",
+        "cardInfoTitle": "Kart Bilgileri Güvenli Ödeme Ekranında Alınır",
+        "cardInfoDescription": "Bu sayfada yalnızca fatura ve sözleşme onayı bilgilerinizi topluyoruz. Kart numaranız ve diğer hassas bilgileriniz, iyzico’nun güvenli ödeme penceresinde alınır ve MüzikBank sunucularında asla saklanmaz.",
         "payButton": "Ödemeyi Tamamla",
         "orderSummary": "Sipariş Özeti",
         "cartEmptyCheckout": "Sepetiniz boş. Ödeme yapmak için sepetinize parça ekleyin.",
