@@ -1,6 +1,10 @@
 "use client";
 
 import React from 'react';
+import { usePathname, useRouter } from 'next/navigation';
+import { useTranslations } from 'next-intl';
+import { toast } from 'sonner';
+import { useAuth } from '@/hooks/useAuth';
 import { useAudio } from '@/context/AudioContext';
 import { useCart } from '@/context/CartContext';
 import { useFavorites } from '@/context/FavoritesContext';
@@ -14,24 +18,50 @@ interface TrackRowProps {
 }
 
 export const TrackRow: React.FC<TrackRowProps> = ({ track, currency, queue }) => {
+    const t = useTranslations('App');
+    const pathname = usePathname();
+    const router = useRouter();
+    const { user } = useAuth();
     const { currentTrack, isPlaying, playTrack, togglePlay, progress, duration } = useAudio();
     const { addItem } = useCart();
     const { isFavorite, toggleFavorite } = useFavorites();
     const isActive = currentTrack?.id === track.id;
     const fav = isFavorite(track.id);
 
+    const requireLogin = (action: () => void, message: string) => {
+        if (!user) {
+            toast.info(message);
+            router.push(`/login?returnUrl=${encodeURIComponent(pathname)}`);
+            return;
+        }
+        action();
+    };
+
+    const handlePlay = () => {
+        requireLogin(() => {
+            if (isActive) togglePlay();
+            else playTrack(track, queue && queue.length > 0 ? queue : undefined);
+        }, t('loginRequiredToPlay'));
+    };
+
     const handleAddToCart = (e: React.MouseEvent) => {
         e.preventDefault();
-        addItem({
-            id: track.id,
-            title: track.title,
-            artist_name: track.artist_name ?? 'Unknown Artist',
-            preview_url: track.preview_url,
-            price: track.price,
-            currency,
-            bpm: track.bpm,
-            genres: track.genres
-        });
+        requireLogin(() => {
+            addItem({
+                id: track.id,
+                title: track.title,
+                artist_name: track.artist_name ?? 'Unknown Artist',
+                preview_url: track.preview_url,
+                price: track.price,
+                currency,
+                bpm: track.bpm,
+                genres: track.genres
+            });
+        }, t('loginRequiredToAddCart'));
+    };
+
+    const handleFavorite = () => {
+        requireLogin(() => toggleFavorite(track), t('loginRequiredToFavorite'));
     };
 
     return (
@@ -39,7 +69,7 @@ export const TrackRow: React.FC<TrackRowProps> = ({ track, currency, queue }) =>
             {/* Play / Pause: aynı parçadaysa listeden de durdurabilirsin */}
             <div className="w-12 flex-shrink-0">
                 <button
-                    onClick={() => isActive ? togglePlay() : playTrack(track, queue && queue.length > 0 ? queue : undefined)}
+                    onClick={handlePlay}
                     className={`w-10 h-10 rounded-full flex items-center justify-center transition-all ${isActive && isPlaying
                         ? 'bg-app-primary text-app-primary-foreground scale-110 shadow-lg shadow-app-primary/20'
                         : 'bg-app-surface text-app-text hover:bg-app-primary hover:text-app-primary-foreground group-hover:scale-105'
@@ -65,7 +95,7 @@ export const TrackRow: React.FC<TrackRowProps> = ({ track, currency, queue }) =>
             {/* Genre */}
             <div className="w-32">
                 <span className="px-3 py-1 bg-app-surface border border-app-border rounded-lg text-[10px] font-black text-app-text-muted uppercase tracking-widest">
-                    {track.genres?.name || 'Vocal'}
+                    {track.genres?.name || track.genre?.name || 'Vocal'}
                 </span>
             </div>
 
@@ -87,7 +117,7 @@ export const TrackRow: React.FC<TrackRowProps> = ({ track, currency, queue }) =>
             {/* Favori + Action */}
             <div className="w-40 flex items-center justify-end gap-2">
                 <button
-                    onClick={() => toggleFavorite(track)}
+                    onClick={handleFavorite}
                     className={`w-9 h-9 rounded-lg flex items-center justify-center transition-all ${fav ? 'text-app-primary' : 'text-app-text-muted hover:text-app-primary/80'}`}
                     aria-label={fav ? 'Favorilerden çıkar' : 'Favorilere ekle'}
                 >

@@ -1,8 +1,11 @@
 import type { Metadata } from "next";
+import { Suspense } from "react";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { NextIntlClientProvider } from 'next-intl';
 import { getLocale, getMessages } from 'next-intl/server';
+import { AuthRefreshSync } from "@/components/AuthRefreshSync";
+import { ProfileCompleteGuard } from "@/components/ProfileCompleteGuard";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -50,6 +53,10 @@ export default async function RootLayout({
               <CartProvider>
                 <FavoritesProvider>
                   <SearchProvider>
+                    <Suspense fallback={null}>
+                      <AuthRefreshSync />
+                    </Suspense>
+                    <ProfileCompleteGuard />
                     {children}
                     <Toaster position="top-right" richColors theme="dark" />
                   </SearchProvider>

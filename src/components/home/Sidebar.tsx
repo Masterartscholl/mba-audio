@@ -60,7 +60,7 @@ export const Sidebar: React.FC<FilterProps> = ({ filters, onFilterChange }) => {
 
 
     return (
-        <aside className="w-80 min-w-[18rem] max-w-[20rem] bg-app-bg border-r border-app-border flex flex-col h-screen sticky top-0 overflow-hidden shrink-0">
+        <aside className="w-80 min-w-[18rem] max-w-[20rem] bg-app-bg border-r-2 border-app-border flex flex-col h-screen sticky top-0 overflow-hidden shrink-0">
             {/* Logo Area */}
             <div className="h-24 flex items-center px-8 border-b border-app-border shrink-0">
                 <Link href="/" className="flex items-center gap-3">

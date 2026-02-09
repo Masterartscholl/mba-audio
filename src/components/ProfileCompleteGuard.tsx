@@ -1,0 +1,25 @@
+"use client";
+
+import { usePathname, useRouter } from "next/navigation";
+import { useEffect } from "react";
+import { useAuth } from "@/hooks/useAuth";
+
+/**
+ * Google (veya OAuth) ile giriş yapıp profilinde ad soyad olmayan kullanıcıyı
+ * ayarlar sayfasına yönlendirir; böylece isim soyisim bilgisi istenmiş olur.
+ */
+export function ProfileCompleteGuard() {
+  const { user, profile, loading } = useAuth();
+  const pathname = usePathname();
+  const router = useRouter();
+
+  useEffect(() => {
+    if (loading || !user) return;
+    const name = profile?.full_name?.trim();
+    if (name) return;
+    if (pathname === "/settings") return;
+    router.replace("/settings?complete=1");
+  }, [loading, user, profile?.full_name, pathname, router]);
+
+  return null;
+}

@@ -10,7 +10,7 @@ import { ThemeSwitcher } from '@/components/home/ThemeSwitcher';
 import { LanguageSwitcher } from '@/components/home/LanguageSwitcher';
 import logoImg from '@/images/logo.jpg';
 
-export default function LoginPage() {
+export default function SignupPage() {
   const t = useTranslations('App');
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -18,25 +18,42 @@ export default function LoginPage() {
 
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [fullName, setFullName] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const handleLogin = async (e: React.FormEvent) => {
+  const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
     setError(null);
     try {
-      const { error: err } = await supabase.auth.signInWithPassword({ email, password });
+      const { error: err } = await supabase.auth.signUp({
+        email,
+        password,
+        options: {
+          data: { full_name: fullName.trim() || undefined },
+          emailRedirectTo: `${window.location.origin}${returnUrl ? `?returnUrl=${encodeURIComponent(returnUrl)}` : ''}`,
+        },
+      });
       if (err) throw err;
-      router.push(returnUrl);
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user) {
+        await supabase
+          .from('profiles')
+          .update({ full_name: fullName.trim() || null })
+          .eq('id', user.id);
+        router.push(returnUrl);
+      } else {
+        router.push(`/login?returnUrl=${encodeURIComponent(returnUrl)}&message=confirm_email`);
+      }
     } catch (err: unknown) {
-      setError(err instanceof Error ? err.message : t('loginError'));
+      setError(err instanceof Error ? err.message : 'Kayıt sırasında bir hata oluştu.');
     } finally {
       setLoading(false);
     }
   };
 
-  const handleGoogleLogin = async () => {
+  const handleGoogleSignup = async () => {
     setLoading(true);
     setError(null);
     try {
@@ -48,7 +65,7 @@ export default function LoginPage() {
       });
       if (err) throw err;
     } catch (err: unknown) {
-      setError(err instanceof Error ? err.message : t('loginGoogleError'));
+      setError(err instanceof Error ? err.message : 'Google ile giriş yapılamadı.');
     } finally {
       setLoading(false);
     }
@@ -70,17 +87,28 @@ export default function LoginPage() {
       <main className="flex-1 flex items-center justify-center p-4">
         <div className="w-full max-w-md">
           <div className="text-center mb-8">
-            <h1 className="text-2xl font-black text-app-text uppercase tracking-widest">{t('loginTitle')}</h1>
-            <p className="text-app-text-muted text-sm mt-2">{t('loginSubtitle')}</p>
+            <h1 className="text-2xl font-black text-app-text uppercase tracking-widest">{t('signupTitle')}</h1>
+            <p className="text-app-text-muted text-sm mt-2">{t('signupSubtitle')}</p>
           </div>
 
           <div className="bg-app-card border border-app-border rounded-3xl p-8 shadow-xl">
-            <form onSubmit={handleLogin} className="space-y-5">
+            <form onSubmit={handleSignup} className="space-y-5">
               {error && (
                 <div className="bg-red-500/10 border border-red-500/20 text-red-500 px-4 py-3 rounded-xl text-sm text-center">
                   {error}
                 </div>
               )}
+
+              <div>
+                <label className="block text-xs uppercase font-bold text-app-text-muted tracking-wider mb-1.5">{t('fullName')}</label>
+                <input
+                  type="text"
+                  value={fullName}
+                  onChange={(e) => setFullName(e.target.value)}
+                  placeholder={t('fullNamePlaceholder')}
+                  className="w-full bg-app-input-bg border border-app-border rounded-xl px-4 py-3 text-sm text-app-text placeholder:text-app-text-muted focus:outline-none focus:border-app-primary/50 transition-all"
+                />
+              </div>
 
               <div>
                 <label className="block text-xs uppercase font-bold text-app-text-muted tracking-wider mb-1.5">{t('email')}</label>
@@ -102,8 +130,10 @@ export default function LoginPage() {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="••••••••"
+                  minLength={6}
                   className="w-full bg-app-input-bg border border-app-border rounded-xl px-4 py-3 text-sm text-app-text placeholder:text-app-text-muted focus:outline-none focus:border-app-primary/50 transition-all"
                 />
+                <p className="text-xs text-app-text-muted mt-1">{t('passwordMinHint')}</p>
               </div>
 
               <button
@@ -114,7 +144,7 @@ export default function LoginPage() {
                 {loading ? (
                   <span className="w-5 h-5 border-2 border-app-primary-foreground/30 border-t-app-primary-foreground rounded-full animate-spin" />
                 ) : (
-                  t('loginButton')
+                  t('signupButton')
                 )}
               </button>
             </form>
@@ -130,7 +160,7 @@ export default function LoginPage() {
 
             <button
               type="button"
-              onClick={handleGoogleLogin}
+              onClick={handleGoogleSignup}
               disabled={loading}
               className="w-full bg-app-surface border border-app-border text-app-text font-bold py-3.5 rounded-xl hover:border-app-primary/50 transition-colors flex items-center justify-center gap-2 disabled:opacity-50"
             >
@@ -140,14 +170,14 @@ export default function LoginPage() {
                 <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" />
                 <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" />
               </svg>
-              {t('loginWithGoogle')}
+              {t('signupWithGoogle')}
             </button>
           </div>
 
           <p className="text-center text-app-text-muted text-sm mt-6">
-            {t('noAccountYet')}{' '}
-            <Link href={`/signup${returnUrl !== '/' ? `?returnUrl=${encodeURIComponent(returnUrl)}` : ''}`} className="text-app-primary font-bold hover:underline">
-              {t('signupLink')}
+            {t('alreadyHaveAccount')}{' '}
+            <Link href={`/login${returnUrl !== '/' ? `?returnUrl=${encodeURIComponent(returnUrl)}` : ''}`} className="text-app-primary font-bold hover:underline">
+              {t('loginLink')}
             </Link>
           </p>
         </div>

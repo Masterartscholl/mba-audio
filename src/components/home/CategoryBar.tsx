@@ -12,13 +12,22 @@ interface CategoryBarProps {
 export const CategoryBar: React.FC<CategoryBarProps> = ({ filters, onFilterChange }) => {
     const t = useTranslations('App');
     const [categories, setCategories] = useState<{ id: number; name: string }[]>([]);
+    const [loading, setLoading] = useState(true);
 
     useEffect(() => {
+        let cancelled = false;
         const run = async () => {
-            const { data } = await supabase.from('categories').select('id, name').order('name');
+            setLoading(true);
+            const { data, error } = await supabase.from('categories').select('id, name').order('name');
+            if (cancelled) return;
+            if (error) {
+                console.error('Categories fetch error:', error);
+            }
             setCategories((data as { id: number; name: string }[]) || []);
+            setLoading(false);
         };
         run();
+        return () => { cancelled = true; };
     }, []);
 
     const selectedCategoryId = filters.categoryId ?? null;
@@ -49,7 +58,14 @@ export const CategoryBar: React.FC<CategoryBarProps> = ({ filters, onFilterChang
                 <span className="text-[11px] font-black text-app-text-muted uppercase tracking-wider mr-1">
                     {t('categories')}
                 </span>
-                {categories.map(cat => (
+                {loading ? (
+                    <>
+                        <span className="px-4 py-2 rounded-xl text-xs font-bold uppercase tracking-wider bg-app-surface/50 text-app-text-muted animate-pulse w-24" />
+                        <span className="px-4 py-2 rounded-xl text-xs font-bold uppercase tracking-wider bg-app-surface/50 text-app-text-muted animate-pulse w-28" />
+                        <span className="px-4 py-2 rounded-xl text-xs font-bold uppercase tracking-wider bg-app-surface/50 text-app-text-muted animate-pulse w-32" />
+                    </>
+                ) : (
+                categories.map(cat => (
                     <button
                         key={cat.id}
                         type="button"
@@ -61,7 +77,8 @@ export const CategoryBar: React.FC<CategoryBarProps> = ({ filters, onFilterChang
                     >
                         {cat.name}
                     </button>
-                ))}
+                ))
+                )}
                 {hasActiveFilter && (
                     <button
                         type="button"

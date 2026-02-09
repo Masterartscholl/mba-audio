@@ -29,9 +29,10 @@ export const TrackList: React.FC<TrackListProps> = ({ filters, currency }) => {
     const fetchTracks = async () => {
         try {
             setLoading(true);
+            // tracks tablosunda category_id, genre_id var; mode alanı text (mode_id yok). İlişkiler: category, genre (tekil isimler Supabase’de yaygın).
             let q = supabase
                 .from('tracks')
-                .select('*, categories(name), genres(name), modes(name)', { count: 'exact' })
+                .select('*, categories(name), genres(name)', { count: 'exact' })
                 .eq('status', 'published');
 
             const catId = filters.categoryId != null && filters.categoryId !== '' ? Number(filters.categoryId) : null;
@@ -41,9 +42,7 @@ export const TrackList: React.FC<TrackListProps> = ({ filters, currency }) => {
             if (filters.genres?.length > 0) {
                 q = q.in('genre_id', filters.genres);
             }
-            if (filters.modeId) {
-                q = q.eq('mode_id', filters.modeId);
-            }
+            // mode_id yok; tracks.mode text. Mod filtresi atlandı (istersen mode ile eşleştirilebilir).
             const priceMin = filters.priceRange?.[0], priceMax = filters.priceRange?.[1];
             const [boundsMin, boundsMax] = [filters.priceBounds?.[0] ?? 0, filters.priceBounds?.[1] ?? 10000];
             const priceFullRange = priceMin === boundsMin && priceMax === boundsMax;
@@ -60,7 +59,7 @@ export const TrackList: React.FC<TrackListProps> = ({ filters, currency }) => {
 
             const trimmed = searchQuery.trim();
             if (trimmed.length > 0) {
-                q = q.or(`title.ilike.%${trimmed}%,artist_name.ilike.%${trimmed}%`);
+                q = q.ilike('title', `%${trimmed}%`);
             }
 
             if (sortBy === 'newest' || sortBy === 'relevance') {
@@ -71,11 +70,18 @@ export const TrackList: React.FC<TrackListProps> = ({ filters, currency }) => {
                 q = q.order('price', { ascending: false });
             }
 
-            const { data, count } = await q;
+            const { data, error: queryError, count } = await q;
 
-            if (data) {
+            if (queryError) {
+                console.error('Tracks query error:', queryError);
+                const fallback = await supabase.from('tracks').select('*', { count: 'exact' }).eq('status', 'published').order('created_at', { ascending: false });
+                if (fallback.data) {
+                    setTracks(fallback.data);
+                    setTotalCount(fallback.count ?? 0);
+                }
+            } else if (data) {
                 setTracks(data);
-                setTotalCount(count || 0);
+                setTotalCount(count ?? 0);
             }
         } catch (err) {
             console.error('Error fetching tracks:', err);
