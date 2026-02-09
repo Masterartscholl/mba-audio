@@ -96,7 +96,7 @@ export default function LibraryPage() {
                                 <div className="px-10 py-12 text-app-text-muted text-sm font-bold">{t('loading')}</div>
                             ) : purchasedTracks.length > 0 ? (
                                 purchasedTracks.map((track: any) => (
-                                <LibraryTrackRow key={track.id} track={track} />
+                                <LibraryTrackRow key={`${track.id}-${track.order_id}`} track={track} />
                                 ))
                             ) : (
                                 <div className="flex flex-col items-center justify-center py-32 text-[#64748b]">

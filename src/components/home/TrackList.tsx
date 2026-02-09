@@ -4,6 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { useTranslations } from 'next-intl';
 import { supabase } from '@/lib/supabase';
 import { useSearch } from '@/context/SearchContext';
+import { useAuth } from '@/hooks/useAuth';
 import { TrackRow } from './TrackRow';
 import { SkeletonLoader } from '../admin/SkeletonLoader';
 
@@ -17,10 +18,23 @@ interface TrackListProps {
 export const TrackList: React.FC<TrackListProps> = ({ filters, currency }) => {
     const t = useTranslations('App');
     const { query: searchQuery } = useSearch();
+    const { user } = useAuth();
     const [tracks, setTracks] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
     const [totalCount, setTotalCount] = useState(0);
     const [sortBy, setSortBy] = useState<SortOption>('newest');
+    const [purchasedTrackIds, setPurchasedTrackIds] = useState<number[]>([]);
+
+    useEffect(() => {
+        if (user) {
+            fetch('/api/me/purchased-track-ids')
+                .then((res) => res.json())
+                .then((data) => setPurchasedTrackIds(Array.isArray(data?.trackIds) ? data.trackIds : []))
+                .catch(() => setPurchasedTrackIds([]));
+        } else {
+            setPurchasedTrackIds([]);
+        }
+    }, [user]);
 
     useEffect(() => {
         fetchTracks();
@@ -131,7 +145,7 @@ export const TrackList: React.FC<TrackListProps> = ({ filters, currency }) => {
             <div className="flex-1">
                 {tracks.length > 0 ? (
                     tracks.map(track => (
-                        <TrackRow key={track.id} track={track} currency={currency} queue={tracks} />
+                        <TrackRow key={track.id} track={track} currency={currency} queue={tracks} purchasedTrackIds={purchasedTrackIds} />
                     ))
                 ) : (
                     <div className="flex flex-col items-center justify-center py-32 text-app-text-muted">

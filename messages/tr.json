@@ -214,6 +214,8 @@
         "waveform": "Waveform",
         "action": "Favori / İşlem",
         "noTracksFilter": "Seçilen filtrelerle parça bulunamadı",
+        "purchased": "Satın alındı",
+        "downloadInLibrary": "Kütüphanede indir",
         "cartEmpty": "Sepetiniz boş",
         "cartEmptyHint": "Parça eklemek için Keşfet sayfasından fiyata tıklayın.",
         "remove": "Kaldır",

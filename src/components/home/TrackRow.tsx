@@ -1,6 +1,7 @@
 "use client";
 
 import React from 'react';
+import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import { toast } from 'sonner';
@@ -15,9 +16,10 @@ interface TrackRowProps {
     track: any;
     currency: string;
     queue?: any[];
+    purchasedTrackIds?: number[];
 }
 
-export const TrackRow: React.FC<TrackRowProps> = ({ track, currency, queue }) => {
+export const TrackRow: React.FC<TrackRowProps> = ({ track, currency, queue, purchasedTrackIds = [] }) => {
     const t = useTranslations('App');
     const pathname = usePathname();
     const router = useRouter();
@@ -27,6 +29,7 @@ export const TrackRow: React.FC<TrackRowProps> = ({ track, currency, queue }) =>
     const { isFavorite, toggleFavorite } = useFavorites();
     const isActive = currentTrack?.id === track.id;
     const fav = isFavorite(track.id);
+    const isPurchased = purchasedTrackIds.includes(Number(track.id));
 
     const requireLogin = (action: () => void, message: string) => {
         if (!user) {
@@ -123,12 +126,19 @@ export const TrackRow: React.FC<TrackRowProps> = ({ track, currency, queue }) =>
                 >
                     <svg className="w-5 h-5" fill={fav ? 'currentColor' : 'none'} stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" /></svg>
                 </button>
-                <button
-                    onClick={handleAddToCart}
-                    className="px-5 py-2.5 bg-[#3b82f6]/10 border border-[#3b82f6]/30 rounded-xl text-[11px] font-black text-[#3b82f6] uppercase tracking-widest hover:bg-[#3b82f6] hover:text-app-text transition-all active:scale-95 shadow-sm"
-                >
-                    {formatPrice(track.price, currency)}
-                </button>
+                {isPurchased ? (
+                    <span className="flex items-center gap-2 text-[11px] font-black text-app-text-muted uppercase tracking-widest">
+                        <span>{t('purchased')}</span>
+                        <Link href="/library" className="text-app-primary hover:underline">{t('downloadInLibrary')}</Link>
+                    </span>
+                ) : (
+                    <button
+                        onClick={handleAddToCart}
+                        className="px-5 py-2.5 bg-[#3b82f6]/10 border border-[#3b82f6]/30 rounded-xl text-[11px] font-black text-[#3b82f6] uppercase tracking-widest hover:bg-[#3b82f6] hover:text-app-text transition-all active:scale-95 shadow-sm"
+                    >
+                        {formatPrice(track.price, currency)}
+                    </button>
+                )}
             </div>
         </div>
     );

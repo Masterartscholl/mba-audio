@@ -214,6 +214,8 @@
         "waveform": "Waveform",
         "action": "Favorite / Action",
         "noTracksFilter": "No tracks found with selected filters",
+        "purchased": "Purchased",
+        "downloadInLibrary": "Download in Library",
         "cartEmpty": "Your cart is empty",
         "cartEmptyHint": "Click the price on the Discover page to add tracks.",
         "remove": "Remove",
