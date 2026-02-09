@@ -17,9 +17,44 @@ export const LibraryTrackRow: React.FC<LibraryTrackRowProps> = ({ track }) => {
     const isActive = currentTrack?.id === track.id;
     const fav = isFavorite(track.id);
 
-    const handleDownload = (format: 'wav' | 'mp3') => {
-        const url = `/api/download/${track.id}?format=${format}`;
-        window.open(url, '_blank');
+    const handleDownload = async (format: 'wav' | 'mp3') => {
+        try {
+            const res = await fetch(`/api/download/${track.id}?format=${format}`);
+            if (!res.ok) {
+                console.error('Download failed', await res.text());
+                return;
+            }
+
+            const data = await res.json();
+            if (!data?.signedUrl) {
+                console.error('Signed URL missing in response');
+                return;
+            }
+
+            // Supabase signed URL'i cross-origin olduğu için birçok tarayıcı
+            // download attribute'unu yok sayıp yeni sekmede oynatıyor.
+            // Bunu engellemek için dosyayı Blob olarak indirip kendi blob URL'mizle indiriyoruz.
+            const fileResponse = await fetch(data.signedUrl as string);
+            if (!fileResponse.ok) {
+                console.error('Blob download failed');
+                return;
+            }
+
+            const blob = await fileResponse.blob();
+            const objectUrl = URL.createObjectURL(blob);
+
+            const link = document.createElement('a');
+            link.href = objectUrl;
+            // Dosya adı: eser adı + format (tarayıcı destekliyorsa)
+            const safeTitle = (track.title || 'track').toString().replace(/[^\w\-ğüşöçıİĞÜŞÖÇ ]+/g, '');
+            link.download = `${safeTitle || 'track'}.${format}`;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            URL.revokeObjectURL(objectUrl);
+        } catch (err) {
+            console.error('Download error', err);
+        }
     };
 
     return (

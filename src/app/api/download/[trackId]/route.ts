@@ -90,6 +90,7 @@ export async function GET(
     return NextResponse.json({ error: 'İndirme linki oluşturulamadı' }, { status: 500 });
   }
 
-  return NextResponse.redirect(signed.signedUrl, { status: 303 });
+  // Artık redirect yerine JSON döndürüyoruz; frontend gizli bir <a download> ile doğrudan indirme başlatacak.
+  return NextResponse.json({ signedUrl: signed.signedUrl });
 }
 
