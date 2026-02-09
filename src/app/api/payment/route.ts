@@ -13,12 +13,6 @@ type PaymentInitRequest = {
   items: Array<string | number>;
 };
 
-  const iyzipay = new Iyzipay({
-  apiKey: process.env.IYZIPAY_API_KEY || '',
-  secretKey: process.env.IYZIPAY_SECRET_KEY || '',
-  uri: process.env.IYZIPAY_BASE_URL || 'https://sandbox-api.iyzipay.com',
-});
-
 export async function POST(request: NextRequest) {
   try {
     const body = (await request.json()) as PaymentInitRequest;
@@ -100,6 +94,22 @@ export async function POST(request: NextRequest) {
     const total = tracks.reduce((sum, t: any) => sum + Number((t as any).price || 0), 0);
     // orders tablosunda `currency` NOT NULL görünüyor; her zaman set edilmeli.
     const currency = 'TRY';
+
+    // 3.5) Iyzipay konfigürasyonu (env eksikse erken dön)
+    const apiKey = process.env.IYZIPAY_API_KEY;
+    const secretKey = process.env.IYZIPAY_SECRET_KEY;
+    const baseUrl = process.env.IYZIPAY_BASE_URL || 'https://sandbox-api.iyzipay.com';
+
+    if (!apiKey || !secretKey) {
+      console.error('Iyzipay init error: API anahtarları tanımlı değil');
+      return NextResponse.json({ error: 'Ödeme servis ayarları eksik' }, { status: 500 });
+    }
+
+    const iyzipay = new Iyzipay({
+      apiKey,
+      secretKey,
+      uri: baseUrl,
+    });
 
     // 4) Kullanıcı profilini çek (buyer bilgisi için)
     const { data: profile } = await supabaseAdmin

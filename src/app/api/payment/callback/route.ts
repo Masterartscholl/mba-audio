@@ -7,12 +7,6 @@ export const runtime = 'nodejs';
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const Iyzipay = require('iyzipay');
 
-const iyzipay = new Iyzipay({
-  apiKey: process.env.IYZIPAY_API_KEY || '',
-  secretKey: process.env.IYZIPAY_SECRET_KEY || '',
-  uri: process.env.IYZIPAY_BASE_URL || 'https://sandbox-api.iyzipay.com',
-});
-
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || '';
 const supabaseServiceKey =
   process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || '';
@@ -28,6 +22,21 @@ export async function POST(request: NextRequest) {
   if (!supabaseAdmin) {
     return NextResponse.redirect(new URL('/checkout/failure', request.url), { status: 303 });
   }
+
+  const apiKey = process.env.IYZIPAY_API_KEY;
+  const secretKey = process.env.IYZIPAY_SECRET_KEY;
+  const baseUrl = process.env.IYZIPAY_BASE_URL || 'https://sandbox-api.iyzipay.com';
+
+  if (!apiKey || !secretKey) {
+    console.error('Iyzipay callback error: API anahtarları tanımlı değil');
+    return NextResponse.redirect(new URL('/checkout/failure', request.url), { status: 303 });
+  }
+
+  const iyzipay = new Iyzipay({
+    apiKey,
+    secretKey,
+    uri: baseUrl,
+  });
 
   let token: string | null = null;
 
