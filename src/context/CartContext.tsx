@@ -27,6 +27,7 @@ interface CartContextType {
     isOpen: boolean;
     addItem: (track: CartTrack) => void;
     removeItem: (trackId: string | number) => void;
+    clearCart: () => void;
     openCart: () => void;
     closeCart: () => void;
     toggleCart: () => void;
@@ -91,6 +92,10 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
         setItems(prev => prev.filter(t => t.id !== trackId));
     }, []);
 
+    const clearCart = useCallback(() => {
+        setItems([]);
+    }, []);
+
     const openCart = useCallback(() => setIsOpen(true), []);
     const closeCart = useCallback(() => setIsOpen(false), []);
     const toggleCart = useCallback(() => setIsOpen(prev => !prev), []);
@@ -102,6 +107,7 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
                 isOpen,
                 addItem,
                 removeItem,
+                clearCart,
                 openCart,
                 closeCart,
                 toggleCart,

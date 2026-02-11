@@ -22,6 +22,7 @@ export const QuickAddModal = ({
     const t = useTranslations('Categories');
     const tc = useTranslations('Common');
     const [name, setName] = useState("");
+    const [nameEn, setNameEn] = useState("");
     const [loading, setLoading] = useState(false);
 
     if (!isOpen) return null;
@@ -34,19 +35,20 @@ export const QuickAddModal = ({
         try {
             let error;
             if (type === 'category') {
-                const res = await supabase.from('categories').insert([{ name }]);
+                const res = await supabase.from('categories').insert([{ name, name_en: nameEn || null }]);
                 error = res.error;
             } else if (type === 'genre') {
-                const res = await supabase.from('genres').insert([{ name, category_id: Number(categoryId) }]);
+                const res = await supabase.from('genres').insert([{ name, name_en: nameEn || null, category_id: Number(categoryId) }]);
                 error = res.error;
             } else {
-                const res = await supabase.from('modes').insert([{ name, category_id: Number(categoryId) }]);
+                const res = await supabase.from('modes').insert([{ name, name_en: nameEn || null, category_id: Number(categoryId) }]);
                 error = res.error;
             }
 
             if (error) throw error;
             onSuccess();
             setName("");
+            setNameEn("");
             onClose();
         } catch (error: any) {
             alert(tc('error') + ": " + error.message);
@@ -68,6 +70,12 @@ export const QuickAddModal = ({
                     onChange={(e) => setName(e.target.value)}
                     className="w-full bg-admin-bg border border-admin-border rounded-xl px-4 py-3 text-admin-text focus:border-admin-primary mb-4 outline-none font-medium"
                     placeholder={placeholderText}
+                />
+                <input
+                    value={nameEn}
+                    onChange={(e) => setNameEn(e.target.value)}
+                    className="w-full bg-admin-bg border border-admin-border rounded-xl px-4 py-3 text-admin-text focus:border-admin-primary mb-4 outline-none font-medium"
+                    placeholder={placeholderText + ' (English)'}
                 />
                 <div className="flex gap-3">
                     <button onClick={onClose} className="flex-1 py-3 text-admin-text-muted hover:text-admin-text bg-admin-bg rounded-xl font-medium transition-colors border border-admin-border">

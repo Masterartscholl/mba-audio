@@ -9,17 +9,20 @@ import { useTranslations } from 'next-intl';
 type Category = {
     id: number;
     name: string;
+    name_en?: string;
 };
 
 type Genre = {
     id: number;
     name: string;
+    name_en?: string;
     category_id: number;
 };
 
 type Mode = {
     id: number;
     name: string;
+    name_en?: string;
     category_id: number;
 };
 

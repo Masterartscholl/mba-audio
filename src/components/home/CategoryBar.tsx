@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from 'react';
-import { useTranslations } from 'next-intl';
+import { useTranslations, useLocale } from 'next-intl';
 import { supabase } from '@/lib/supabase';
 
 interface CategoryBarProps {
@@ -12,14 +12,15 @@ interface CategoryBarProps {
 
 export const CategoryBar: React.FC<CategoryBarProps> = ({ filters, onFilterChange, onCategoryNameChange }) => {
     const t = useTranslations('App');
-    const [categories, setCategories] = useState<{ id: number; name: string }[]>([]);
+    const locale = useLocale();
+    const [categories, setCategories] = useState<{ id: number; name: string; name_en?: string }[]>([]);
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
         let cancelled = false;
         const run = async () => {
             setLoading(true);
-            const { data, error } = await supabase.from('categories').select('id, name').order('name');
+            const { data, error } = await supabase.from('categories').select('id, name, name_en').order('name');
             if (cancelled) return;
             if (error) {
                 console.error('Categories fetch error:', error);
@@ -36,7 +37,9 @@ export const CategoryBar: React.FC<CategoryBarProps> = ({ filters, onFilterChang
 
     const handleCategoryClick = (id: number) => {
         const nextId = selectedCategoryId === id ? null : id;
-        const nextName = nextId != null ? (categories.find((c) => c.id === nextId)?.name ?? null) : null;
+        const cat = nextId != null ? categories.find((c) => c.id === nextId) : null;
+        const baseName = cat ? (locale === 'en' ? (cat.name_en || cat.name) : cat.name) : null;
+        const nextName = baseName ?? null;
         if (onCategoryNameChange) {
             onCategoryNameChange(nextName);
         }
@@ -73,19 +76,22 @@ export const CategoryBar: React.FC<CategoryBarProps> = ({ filters, onFilterChang
                         <span className="px-4 py-2 rounded-xl text-xs font-bold uppercase tracking-wider bg-app-surface/50 text-app-text-muted animate-pulse w-32" />
                     </>
                 ) : (
-                categories.map(cat => (
-                    <button
-                        key={cat.id}
-                        type="button"
-                        onClick={() => handleCategoryClick(cat.id)}
-                        className={`px-4 py-2 rounded-xl text-xs font-bold uppercase tracking-wider transition-all ${selectedCategoryId === cat.id
-                            ? 'bg-app-primary text-app-primary-foreground shadow-lg shadow-app-primary/25'
-                            : 'bg-app-surface text-app-text-muted border border-app-border hover:bg-app-card hover:text-app-text hover:border-app-border'
-                            }`}
-                    >
-                        {cat.name}
-                    </button>
-                ))
+                categories.map(cat => {
+                    const label = locale === 'en' ? (cat.name_en || cat.name) : cat.name;
+                    return (
+                        <button
+                            key={cat.id}
+                            type="button"
+                            onClick={() => handleCategoryClick(cat.id)}
+                            className={`px-4 py-2 rounded-xl text-xs font-bold uppercase tracking-wider transition-all ${selectedCategoryId === cat.id
+                                ? 'bg-app-primary text-app-primary-foreground shadow-lg shadow-app-primary/25'
+                                : 'bg-app-surface text-app-text-muted border border-app-border hover:bg-app-card hover:text-app-text hover:border-app-border'
+                                }`}
+                        >
+                            {label}
+                        </button>
+                    );
+                })
                 )}
                 {hasActiveFilter && (
                     <button

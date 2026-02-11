@@ -24,7 +24,7 @@ export default function CheckoutPage() {
     const [billingTcId, setBillingTcId] = useState('');
     const [billingAddress, setBillingAddress] = useState('');
     const [acceptTerms, setAcceptTerms] = useState(false);
-    const [billingErrors, setBillingErrors] = useState<{ billingTcId?: string }>({});
+    const [billingErrors, setBillingErrors] = useState<{ billingName?: string; billingTcId?: string; billingAddress?: string }>({});
     const [legalLinks, setLegalLinks] = useState<typeof DEFAULT_LINKS>(DEFAULT_LINKS);
 
     useEffect(() => {
@@ -60,11 +60,20 @@ export default function CheckoutPage() {
     };
 
     const validateBillingForm = (): boolean => {
-        const err: { billingTcId?: string } = {};
+        const err: { billingName?: string; billingTcId?: string; billingAddress?: string } = {};
+
+        if (!billingName.trim()) {
+            err.billingName = t('billingErrorNameRequired');
+        }
+
         if (billingTcId.length !== 11) {
             err.billingTcId = t('billingErrorTcIdRequired');
         } else if (!isValidTcId(billingTcId)) {
             err.billingTcId = t('billingErrorTcIdInvalid');
+        }
+
+        if (!billingAddress.trim() || billingAddress.trim().length < 10) {
+            err.billingAddress = t('billingErrorAddressRequired');
         }
         setBillingErrors(err);
         return Object.keys(err).length === 0;
@@ -183,9 +192,15 @@ export default function CheckoutPage() {
                                         type="text"
                                         placeholder={t('billingFullNamePlaceholder')}
                                         value={billingName}
-                                        onChange={(e) => setBillingName(e.target.value)}
-                                        className="w-full bg-app-input-bg border border-white/10 rounded-xl px-4 py-3.5 text-white placeholder:text-app-text-muted focus:outline-none focus:border-app-primary/50 transition-all"
+                                        onChange={(e) => {
+                                            setBillingName(e.target.value);
+                                            setBillingErrors(prev => ({ ...prev, billingName: undefined }));
+                                        }}
+                                        className={`w-full bg-app-input-bg border rounded-xl px-4 py-3.5 text-white placeholder:text-app-text-muted focus:outline-none transition-all ${billingErrors.billingName ? 'border-red-500/60 focus:border-red-500/60' : 'border-white/10 focus:border-app-primary/50'}`}
                                     />
+                                    {billingErrors.billingName && (
+                                        <p className="mt-1.5 text-[11px] text-red-400 font-medium">{billingErrors.billingName}</p>
+                                    )}
                                 </div>
                                 <div>
                                     <label className="block text-[11px] font-black text-app-text-muted uppercase tracking-widest mb-2">{t('billingTcId')}</label>
@@ -205,10 +220,16 @@ export default function CheckoutPage() {
                                     <textarea
                                         placeholder={t('billingAddressPlaceholder')}
                                         value={billingAddress}
-                                        onChange={(e) => setBillingAddress(e.target.value)}
+                                        onChange={(e) => {
+                                            setBillingAddress(e.target.value);
+                                            setBillingErrors(prev => ({ ...prev, billingAddress: undefined }));
+                                        }}
                                         rows={3}
-                                        className="w-full bg-app-input-bg border border-white/10 rounded-xl px-4 py-3.5 text-white placeholder:text-app-text-muted focus:outline-none focus:border-app-primary/50 transition-all resize-none"
+                                        className={`w-full bg-app-input-bg border rounded-xl px-4 py-3.5 text-white placeholder:text-app-text-muted focus:outline-none transition-all resize-none ${billingErrors.billingAddress ? 'border-red-500/60 focus:border-red-500/60' : 'border-white/10 focus:border-app-primary/50'}`}
                                     />
+                                    {billingErrors.billingAddress && (
+                                        <p className="mt-1.5 text-[11px] text-red-400 font-medium">{billingErrors.billingAddress}</p>
+                                    )}
                                 </div>
                             </div>
                         </div>

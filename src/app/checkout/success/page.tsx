@@ -2,10 +2,18 @@
 
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
+import { useEffect } from 'react';
+import { useCart } from '@/context/CartContext';
 
 export default function CheckoutSuccessPage() {
   const searchParams = useSearchParams();
   const orderId = searchParams.get('orderId');
+  const { clearCart } = useCart();
+
+  useEffect(() => {
+    // Başarılı ödeme sonrası sepeti temizle
+    clearCart();
+  }, [clearCart]);
 
   return (
     <div className="min-h-screen bg-app-bg flex items-center justify-center px-4">

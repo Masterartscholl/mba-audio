@@ -47,19 +47,32 @@ export const TrackRow: React.FC<TrackRowProps> = ({ track, currency, queue, purc
         }, t('loginRequiredToPlay'));
     };
 
+    const addCurrentTrackToCart = () => {
+        addItem({
+            id: track.id,
+            title: track.title,
+            artist_name: track.artist_name ?? 'Unknown Artist',
+            preview_url: track.preview_url,
+            price: track.price,
+            currency,
+            bpm: track.bpm,
+            genres: track.genres
+        });
+    };
+
     const handleAddToCart = (e: React.MouseEvent) => {
         e.preventDefault();
         requireLogin(() => {
-            addItem({
-                id: track.id,
-                title: track.title,
-                artist_name: track.artist_name ?? 'Unknown Artist',
-                preview_url: track.preview_url,
-                price: track.price,
-                currency,
-                bpm: track.bpm,
-                genres: track.genres
-            });
+            addCurrentTrackToCart();
+            toast.success(t('addedToCartShort'));
+        }, t('loginRequiredToAddCart'));
+    };
+
+    const handleQuickBuy = (e: React.MouseEvent) => {
+        e.preventDefault();
+        requireLogin(() => {
+            addCurrentTrackToCart();
+            router.push('/checkout');
         }, t('loginRequiredToAddCart'));
     };
 
@@ -118,7 +131,7 @@ export const TrackRow: React.FC<TrackRowProps> = ({ track, currency, queue, purc
             </div>
 
             {/* Favori + Action */}
-            <div className="w-40 flex items-center justify-end gap-2">
+            <div className="w-52 flex items-center justify-end gap-3">
                 <button
                     onClick={handleFavorite}
                     className={`w-9 h-9 rounded-lg flex items-center justify-center transition-all ${fav ? 'text-app-primary' : 'text-app-text-muted hover:text-app-primary/80'}`}
@@ -127,17 +140,32 @@ export const TrackRow: React.FC<TrackRowProps> = ({ track, currency, queue, purc
                     <svg className="w-5 h-5" fill={fav ? 'currentColor' : 'none'} stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" /></svg>
                 </button>
                 {isPurchased ? (
-                    <span className="flex items-center gap-2 text-[11px] font-black text-app-text-muted uppercase tracking-widest">
-                        <span>{t('purchased')}</span>
-                        <Link href="/library" className="text-app-primary hover:underline">{t('downloadInLibrary')}</Link>
+                    <span className="flex flex-col items-end gap-1 text-[11px] font-black text-app-text-muted uppercase tracking-widest">
+                        <span className="text-xs">{t('purchased')}</span>
+                        <Link href="/library" className="text-app-primary hover:underline text-[10px]">
+                            {t('downloadInLibrary')}
+                        </Link>
                     </span>
                 ) : (
-                    <button
-                        onClick={handleAddToCart}
-                        className="px-5 py-2.5 bg-[#3b82f6]/10 border border-[#3b82f6]/30 rounded-xl text-[11px] font-black text-[#3b82f6] uppercase tracking-widest hover:bg-[#3b82f6] hover:text-app-text transition-all active:scale-95 shadow-sm"
-                    >
-                        {formatPrice(track.price, currency)}
-                    </button>
+                    <div className="flex flex-col items-end gap-1">
+                        <span className="text-[11px] font-black text-[#3b82f6] uppercase tracking-widest">
+                            {formatPrice(track.price, currency)}
+                        </span>
+                        <div className="flex gap-1">
+                            <button
+                                onClick={handleAddToCart}
+                                className="px-3 py-1.5 rounded-lg border border-app-border text-[10px] font-black text-app-text-muted uppercase tracking-widest hover:border-app-primary hover:text-app-primary transition-all bg-app-surface/60"
+                            >
+                                {t('addToCartShort')}
+                            </button>
+                            <button
+                                onClick={handleQuickBuy}
+                                className="px-3 py-1.5 rounded-lg bg-app-primary text-[10px] font-black text-app-primary-foreground uppercase tracking-widest hover:bg-app-primary/90 transition-all"
+                            >
+                                {t('quickBuy')}
+                            </button>
+                        </div>
+                    </div>
                 )}
             </div>
         </div>

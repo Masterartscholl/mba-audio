@@ -5,7 +5,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { usePathname } from 'next/navigation';
 import { supabase } from '@/lib/supabase';
-import { useTranslations } from 'next-intl';
+import { useTranslations, useLocale } from 'next-intl';
 import logoImg from '@/images/logo.jpg';
 
 const BPM_MIN = 0;
@@ -18,6 +18,7 @@ interface FilterProps {
 
 export const Sidebar: React.FC<FilterProps> = ({ filters, onFilterChange }) => {
     const t = useTranslations('App');
+    const locale = useLocale();
     const pathname = usePathname();
     const [genres, setGenres] = useState<any[]>([]);
     const [modes, setModes] = useState<any[]>([]);
@@ -112,7 +113,9 @@ export const Sidebar: React.FC<FilterProps> = ({ filters, onFilterChange }) => {
                                 {t('genre')}
                             </p>
                             <div className="flex flex-wrap gap-2">
-                                {genres.map(genre => (
+                                {genres.map(genre => {
+                                    const label = locale === 'en' ? (genre.name_en || genre.name) : genre.name;
+                                    return (
                                     <button
                                         key={genre.id}
                                         type="button"
@@ -124,9 +127,9 @@ export const Sidebar: React.FC<FilterProps> = ({ filters, onFilterChange }) => {
                                             ? 'bg-app-primary/20 text-app-primary border-app-primary/40'
                                             : 'bg-app-surface text-app-text-muted border-transparent hover:border-app-border hover:text-app-text hover:bg-app-card'
                                             }`}>
-                                        {genre.name}
+                                        {label}
                                     </button>
-                                ))}
+                                );))}
                             </div>
                         </div>
                     )}
@@ -142,9 +145,12 @@ export const Sidebar: React.FC<FilterProps> = ({ filters, onFilterChange }) => {
                                 onChange={(e) => onFilterChange({ ...filters, modeId: e.target.value ? Number(e.target.value) : null })}
                                 className="w-full bg-app-input-bg border border-app-border rounded-xl px-4 py-2.5 text-xs text-app-text font-bold appearance-none focus:outline-none focus:border-app-primary/50 transition-all cursor-pointer hover:bg-[#141414]">
                                 <option value="">{t('selectMood')}</option>
-                                {(selectedCategory ? modes.filter((m: any) => m.category_id === selectedCategory) : modes).map((mode: any) => (
-                                    <option key={mode.id} value={mode.id}>{mode.name}</option>
-                                ))}
+                                {(selectedCategory ? modes.filter((m: any) => m.category_id === selectedCategory) : modes).map((mode: any) => {
+                                    const label = locale === 'en' ? (mode.name_en || mode.name) : mode.name;
+                                    return (
+                                        <option key={mode.id} value={mode.id}>{label}</option>
+                                    );
+                                })}
                             </select>
                             <svg className="w-3.5 h-3.5 text-app-text-muted absolute right-3.5 top-1/2 -translate-y-1/2 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" /></svg>
                         </div>
