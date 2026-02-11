@@ -33,6 +33,16 @@ export const TrackWaveform: React.FC<WaveformProps> = ({
     const wsRef = useRef<WaveSurfer | null>(null);
     const [isVisible, setIsVisible] = useState(false);
     const [isLoaded, setIsLoaded] = useState(false);
+    const [isVerySmall, setIsVerySmall] = useState(false);
+
+    // Çok küçük ekran tespiti (yalnızca client)
+    useEffect(() => {
+        if (typeof window === 'undefined') return;
+        const check = () => setIsVerySmall(window.innerWidth < 360);
+        check();
+        window.addEventListener('resize', check);
+        return () => window.removeEventListener('resize', check);
+    }, []);
 
     // IntersectionObserver ile lazy loading
     useEffect(() => {
@@ -45,17 +55,22 @@ export const TrackWaveform: React.FC<WaveformProps> = ({
                     observer.disconnect();
                 }
             },
-            { rootMargin: '200px' } // 200px önceden yüklemeye başla
+            { rootMargin: isVerySmall ? '80px' : '160px' } // mobilde biraz daha dar
         );
 
         observer.observe(containerRef.current);
 
         return () => observer.disconnect();
-    }, [enabled]);
+    }, [enabled, isVerySmall]);
 
     // WaveSurfer instance oluştur ve yükle
     useEffect(() => {
         if (!containerRef.current || !url || !isVisible || !enabled) return;
+
+        // Çok küçük ekranda ve parça çalmıyorsa WaveSurfer oluşturma; sadece ince skeleton göster
+        if (isVerySmall && !isPlaying) {
+            return;
+        }
 
         // Önceki instance varsa temizle
         if (wsRef.current) {
@@ -102,7 +117,7 @@ export const TrackWaveform: React.FC<WaveformProps> = ({
             console.error('WaveSurfer creation error:', err);
             setIsLoaded(false);
         }
-    }, [url, isVisible, enabled]);
+    }, [url, isVisible, enabled, isVerySmall, isPlaying]);
 
     // Progress senkronizasyonu
     useEffect(() => {

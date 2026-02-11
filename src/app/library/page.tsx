@@ -73,10 +73,10 @@ export default function LibraryPage() {
                 <Header />
                 <main className="flex-1 flex flex-col overflow-hidden">
                     <div className="flex-1 overflow-y-auto custom-scrollbar flex flex-col">
-                        <div className="px-4 lg:px-10 py-8 lg:py-10 flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
+                        <div className="px-4 lg:px-10 py-6 lg:py-10 flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">
                             <div>
-                                <h2 className="text-4xl font-black text-app-text tracking-tighter uppercase leading-none">{t('myLibraryTitle')}</h2>
-                                <p className="text-app-text-muted text-sm font-bold mt-4 uppercase tracking-widest">
+                                <h2 className="text-2xl lg:text-4xl font-black text-app-text tracking-tighter uppercase leading-none">{t('myLibraryTitle')}</h2>
+                                <p className="text-app-text-muted text-xs lg:text-sm font-bold mt-3 lg:mt-4 uppercase tracking-widest">
                                     {purchasedTracks.length} {t('purchasedCount')}
                                 </p>
                             </div>

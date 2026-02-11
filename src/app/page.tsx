@@ -24,7 +24,7 @@ export default function Home() {
   };
 
   return (
-    <div className="flex flex-col lg:flex-row min-h-screen bg-app-bg overflow-hidden selection:bg-[#3b82f6]/30">
+    <div className="flex flex-col lg:flex-row min-h-screen bg-app-bg selection:bg-[#3b82f6]/30">
       {/* Left Sidebar */}
       <Sidebar filters={filters} onFilterChange={setFilters} />
 
@@ -54,7 +54,7 @@ export default function Home() {
             onClick={() => setIsMobileSidebarOpen(false)}
             aria-label="Close filters"
           />
-          <div className="absolute left-0 top-0 h-full w-4/5 max-w-xs bg-app-bg shadow-2xl border-r border-app-border">
+          <div className="absolute left-0 top-0 h-full w-full max-w-sm sm:w-4/5 sm:max-w-xs bg-app-bg shadow-2xl border-r border-app-border">
             <SidebarMobileDrawer
               filters={filters}
               onFilterChange={setFilters}

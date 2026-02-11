@@ -113,9 +113,9 @@ export default function SettingsPage() {
         </div>
       </header>
 
-      <main className="flex-1 max-w-2xl w-full mx-auto px-4 py-10">
+      <main className="flex-1 max-w-2xl w-full mx-auto px-4 py-8 lg:py-10">
         <h1 className="text-2xl font-black text-app-text uppercase tracking-widest mb-1">{t('settingsTitle')}</h1>
-        <p className="text-app-text-muted text-sm mb-10">{t('settingsSubtitle')}</p>
+        <p className="text-app-text-muted text-sm mb-8 lg:mb-10">{t('settingsSubtitle')}</p>
 
         {isCompleteProfile && isProfileIncomplete && !isGoogleUser && (
           <div className="bg-app-primary/10 border border-app-primary/30 text-app-text rounded-2xl p-4 mb-6">

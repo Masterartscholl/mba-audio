@@ -170,22 +170,22 @@ export default function CheckoutPage() {
                 </div>
             </header>
 
-            <div className="max-w-6xl mx-auto px-6 py-12 lg:py-16">
-                <h1 className="text-3xl lg:text-4xl font-black text-app-text tracking-tighter uppercase mb-2">{t('paymentTitle')}</h1>
-                <p className="text-app-text-muted text-sm font-bold uppercase tracking-widest mb-10">
+            <div className="max-w-6xl mx-auto px-4 sm:px-6 py-8 lg:py-16">
+                <h1 className="text-2xl lg:text-4xl font-black text-app-text tracking-tighter uppercase mb-2">{t('paymentTitle')}</h1>
+                <p className="text-app-text-muted text-xs lg:text-sm font-bold uppercase tracking-widest mb-6 lg:mb-10">
                     {t('paymentSubtitle')}
                 </p>
 
                 <form onSubmit={handleSubmit} className="grid lg:grid-cols-5 gap-10">
                     {/* Sol: Fatura ve onaylar */}
-                    <div className="lg:col-span-3 space-y-8">
+                    <div className="lg:col-span-3 space-y-6 lg:space-y-8">
                         {/* Fatura Bilgileri (İyzico ödeme ve fatura oluşturma için) */}
                         <div className="bg-app-card rounded-2xl p-6 lg:p-8 border border-app-border">
                             <h2 className="text-xs font-black text-app-primary uppercase tracking-[0.2em] mb-6 flex items-center gap-2">
                                 <span className="w-1 h-1 rounded-full bg-[#ede066]" />
                                 {t('billingDetails')}
                             </h2>
-                            <div className="space-y-5">
+                            <div className="space-y-4 lg:space-y-5">
                                 <div>
                                     <label className="block text-[11px] font-black text-app-text-muted uppercase tracking-widest mb-2">{t('billingFullName')}</label>
                                     <input

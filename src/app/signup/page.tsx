@@ -84,15 +84,15 @@ export default function SignupPage() {
         </div>
       </header>
 
-      <main className="flex-1 flex items-center justify-center p-4">
+      <main className="flex-1 flex items-center justify-center px-4 py-8">
         <div className="w-full max-w-md">
-          <div className="text-center mb-8">
+          <div className="text-center mb-6 lg:mb-8">
             <h1 className="text-2xl font-black text-app-text uppercase tracking-widest">{t('signupTitle')}</h1>
             <p className="text-app-text-muted text-sm mt-2">{t('signupSubtitle')}</p>
           </div>
 
-          <div className="bg-app-card border border-app-border rounded-3xl p-8 shadow-xl">
-            <form onSubmit={handleSignup} className="space-y-5">
+          <div className="bg-app-card border border-app-border rounded-3xl p-6 lg:p-8 shadow-xl">
+            <form onSubmit={handleSignup} className="space-y-4 lg:space-y-5">
               {error && (
                 <div className="bg-red-500/10 border border-red-500/20 text-red-500 px-4 py-3 rounded-xl text-sm text-center">
                   {error}

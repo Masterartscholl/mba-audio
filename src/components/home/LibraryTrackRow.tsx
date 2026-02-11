@@ -58,7 +58,8 @@ export const LibraryTrackRow: React.FC<LibraryTrackRowProps> = ({ track }) => {
     };
 
     return (
-        <div className={`group flex flex-col lg:flex-row items-start lg:items-center gap-4 lg:gap-0 px-4 lg:px-10 py-4 lg:py-5 transition-all border-b border-app-border hover:bg-app-surface ${isActive ? 'bg-app-surface' : ''}`}>
+        <div className={`group flex flex-col lg:flex-row items-start lg:items-center gap-3 lg:gap-0 px-4 lg:px-10 py-4 lg:py-5 transition-all border-b border-app-border hover:bg-app-surface ${isActive ? 'bg-app-surface' : ''}`}>
+            {/* ÜST SATIR: Play + Başlık/Artist */}
             <div className="w-12 flex-shrink-0">
                 <button
                     onClick={() => isActive ? togglePlay() : playTrack(track)}
@@ -83,12 +84,24 @@ export const LibraryTrackRow: React.FC<LibraryTrackRowProps> = ({ track }) => {
                 </p>
             </div>
 
-            <div className="w-full lg:w-32 mt-2 lg:mt-0">
+            {/* ORTA SATIR: Genre + BPM pill'leri (mobil) */}
+            <div className="w-full flex items-center gap-2 mt-2 lg:hidden">
+                <span className="px-3 py-1 bg-app-surface border border-app-border rounded-lg text-[10px] font-black text-app-text-muted uppercase tracking-widest">
+                    {track.genres?.name || track.genre?.name || 'Vocal'}
+                </span>
+                <span className="px-2 py-1 rounded-lg bg-app-surface text-[10px] font-black text-app-text uppercase tracking-widest">
+                    {track.bpm || '-'} BPM
+                </span>
+            </div>
+
+            {/* Masaüstü Genre sütunu */}
+            <div className="hidden lg:block w-32">
                 <span className="px-3 py-1 bg-app-surface border border-app-border rounded-lg text-[10px] font-black text-app-text-muted uppercase tracking-widest">
                     {track.genres?.name || track.genre?.name || 'Vocal'}
                 </span>
             </div>
 
+            {/* ALT SATIR: Waveform */}
             <div className="w-full lg:w-64 px-0 lg:px-8 mt-3 lg:mt-0 overflow-hidden">
                 <TrackWaveform
                     url={track.preview_url}
@@ -98,7 +111,7 @@ export const LibraryTrackRow: React.FC<LibraryTrackRowProps> = ({ track }) => {
                 />
             </div>
 
-            <div className="w-full lg:w-20 text-left lg:text-center mt-2 lg:mt-0">
+            <div className="hidden lg:flex w-20 justify-center">
                 <span className="text-xs font-black text-app-text">{track.bpm || '-'}</span>
             </div>
 
@@ -112,18 +125,20 @@ export const LibraryTrackRow: React.FC<LibraryTrackRowProps> = ({ track }) => {
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
                     </svg>
                 </button>
-                <button
-                    onClick={() => handleDownload('wav')}
-                    className="px-4 py-2.5 bg-[#ede066]/10 border border-app-primary/30 rounded-xl text-[11px] font-black text-app-primary uppercase tracking-widest hover:bg-[#ede066] hover:text-[#0b1121] transition-all active:scale-95"
-                >
-                    {t('downloadWav')}
-                </button>
-                <button
-                    onClick={() => handleDownload('mp3')}
-                    className="px-4 py-2.5 bg-app-surface border border-app-border rounded-xl text-[11px] font-black text-app-text uppercase tracking-widest hover:bg-app-card transition-all active:scale-95"
-                >
-                    {t('downloadMp3')}
-                </button>
+                <div className="flex flex-col sm:flex-row w-full lg:w-auto gap-2">
+                    <button
+                        onClick={() => handleDownload('wav')}
+                        className="w-full sm:w-auto px-4 py-2.5 bg-[#ede066]/10 border border-app-primary/30 rounded-xl text-[11px] font-black text-app-primary uppercase tracking-widest hover:bg-[#ede066] hover:text-[#0b1121] transition-all active:scale-95"
+                    >
+                        {t('downloadWav')}
+                    </button>
+                    <button
+                        onClick={() => handleDownload('mp3')}
+                        className="w-full sm:w-auto px-4 py-2.5 bg-app-surface border border-app-border rounded-xl text-[11px] font-black text-app-text uppercase tracking-widest hover:bg-app-card transition-all active:scale-95"
+                    >
+                        {t('downloadMp3')}
+                    </button>
+                </div>
             </div>
         </div>
     );

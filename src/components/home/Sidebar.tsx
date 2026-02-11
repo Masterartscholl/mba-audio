@@ -428,8 +428,8 @@ export const SidebarMobileDrawer: React.FC<SidebarMobileDrawerProps> = ({ filter
 
     return (
         <div className="flex h-full flex-col bg-app-bg border-r border-app-border">
-            {/* Logo Area - mobile */}
-            <div className="h-16 flex items-center px-5 border-b border-app-border shrink-0">
+            {/* Logo + Close - mobile */}
+            <div className="h-16 flex items-center justify-between px-5 border-b border-app-border shrink-0">
                 <Link href="/" className="flex items-center gap-3" onClick={onClose}>
                     <Image src={logoImg} alt="MüzikBank" width={28} height={28} className="rounded-lg object-contain" />
                     <div>
@@ -437,10 +437,20 @@ export const SidebarMobileDrawer: React.FC<SidebarMobileDrawerProps> = ({ filter
                         <p className="text-[9px] font-bold text-app-text-muted tracking-widest uppercase">{t('audioLibrary')}</p>
                     </div>
                 </Link>
+                <button
+                    type="button"
+                    onClick={onClose}
+                    className="w-9 h-9 rounded-xl bg-app-surface border border-app-border flex items-center justify-center text-app-text-muted hover:text-app-text hover:border-app-primary/40 transition-all"
+                    aria-label={t('close')}
+                >
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                </button>
             </div>
 
             {/* Scrollable Content */}
-            <div className="flex-1 overflow-y-auto overflow-x-hidden custom-scrollbar p-4 space-y-6 min-w-0">
+            <div className="flex-1 overflow-y-auto overflow-x-hidden custom-scrollbar p-4 space-y-5 min-w-0">
                 {/* Navigation */}
                 <div>
                     <h3 className="text-[11px] font-black text-app-text-muted tracking-[0.2em] mb-3 pl-1 uppercase">{t('menu')}</h3>

@@ -83,8 +83,8 @@ export const TrackRow: React.FC<TrackRowProps> = ({ track, currency, queue, purc
     };
 
     return (
-        <div className={`group flex flex-col lg:flex-row items-start lg:items-center gap-4 lg:gap-0 px-4 lg:px-10 py-4 lg:py-5 transition-all border-b border-app-border hover:bg-app-surface ${isActive ? 'bg-app-surface' : ''}`}>
-            {/* Play / Pause: aynı parçadaysa listeden de durdurabilirsin */}
+        <div className={`group flex flex-col lg:flex-row items-start lg:items-center gap-3 lg:gap-0 px-4 lg:px-10 py-4 lg:py-5 transition-all border-b border-app-border hover:bg-app-surface ${isActive ? 'bg-app-surface' : ''}`}>
+            {/* ÜST SATIR: Play + Başlık/Artist */}
             <div className="w-12 flex-shrink-0">
                 <button
                     onClick={handlePlay}
@@ -110,14 +110,24 @@ export const TrackRow: React.FC<TrackRowProps> = ({ track, currency, queue, purc
                 </p>
             </div>
 
-            {/* Genre */}
-            <div className="w-full lg:w-32 mt-2 lg:mt-0">
+            {/* ORTA SATIR: Genre + BPM pill'leri (mobil) */}
+            <div className="w-full flex items-center gap-2 mt-2 lg:hidden">
+                <span className="px-3 py-1 bg-app-surface border border-app-border rounded-lg text-[10px] font-black text-app-text-muted uppercase tracking-widest">
+                    {track.genres?.name || track.genre?.name || 'Vocal'}
+                </span>
+                <span className="px-2 py-1 rounded-lg bg-app-surface text-[10px] font-black text-app-text uppercase tracking-widest">
+                    {track.bpm || '-'} BPM
+                </span>
+            </div>
+
+            {/* Masaüstü için ayrı Genre sütunu */}
+            <div className="hidden lg:block w-32">
                 <span className="px-3 py-1 bg-app-surface border border-app-border rounded-lg text-[10px] font-black text-app-text-muted uppercase tracking-widest">
                     {track.genres?.name || track.genre?.name || 'Vocal'}
                 </span>
             </div>
 
-            {/* Waveform - müziğe göre ilerleme rengi (progressColor) */}
+            {/* ALT SATIR: Waveform + aksiyonlar */}
             <div className="w-full lg:w-64 px-0 lg:px-8 mt-3 lg:mt-0 overflow-hidden">
                 <TrackWaveform
                     url={track.preview_url}
@@ -128,8 +138,8 @@ export const TrackRow: React.FC<TrackRowProps> = ({ track, currency, queue, purc
                 />
             </div>
 
-            {/* BPM */}
-            <div className="w-full lg:w-20 text-left lg:text-center mt-2 lg:mt-0">
+            {/* BPM sütunu sadece desktop'ta */}
+            <div className="hidden lg:flex w-20 justify-center">
                 <span className="text-xs font-black text-app-text">{track.bpm || '-'}</span>
             </div>
 
@@ -150,20 +160,21 @@ export const TrackRow: React.FC<TrackRowProps> = ({ track, currency, queue, purc
                         </Link>
                     </span>
                 ) : (
-                    <div className="flex flex-col items-end gap-1">
+                    <div className="flex-1 lg:flex-none flex flex-col items-end gap-1 w-full lg:w-auto">
                         <span className="text-[11px] font-black text-[#3b82f6] uppercase tracking-widest">
                             {formatPrice(track.price, currency)}
                         </span>
-                        <div className="flex gap-1">
+                        {/* Mobilde tam genişlikli iki buton, desktop'ta yan yana küçük butonlar */}
+                        <div className="flex flex-col sm:flex-row w-full lg:w-auto gap-2">
                             <button
                                 onClick={handleAddToCart}
-                                className="px-3 py-1.5 rounded-lg border border-app-border text-[10px] font-black text-app-text-muted uppercase tracking-widest hover:border-app-primary hover:text-app-primary transition-all bg-app-surface/60"
+                                className="w-full sm:w-auto px-3 py-2 rounded-xl border border-app-border text-[10px] font-black text-app-text-muted uppercase tracking-widest hover:border-app-primary hover:text-app-primary transition-all bg-app-surface/60"
                             >
                                 {t('addToCartShort')}
                             </button>
                             <button
                                 onClick={handleQuickBuy}
-                                className="px-3 py-1.5 rounded-lg bg-app-primary text-[10px] font-black text-app-primary-foreground uppercase tracking-widest hover:bg-app-primary/90 transition-all"
+                                className="w-full sm:w-auto px-3 py-2 rounded-xl bg-app-primary text-[10px] font-black text-app-primary-foreground uppercase tracking-widest hover:bg-app-primary/90 transition-all"
                             >
                                 {t('quickBuy')}
                             </button>
