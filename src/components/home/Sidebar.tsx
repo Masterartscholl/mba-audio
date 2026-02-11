@@ -113,23 +113,28 @@ export const Sidebar: React.FC<FilterProps> = ({ filters, onFilterChange }) => {
                                 {t('genre')}
                             </p>
                             <div className="flex flex-wrap gap-2">
-                                {genres.map(genre => {
+                                {genres.map((genre) => {
                                     const label = locale === 'en' ? (genre.name_en || genre.name) : genre.name;
                                     return (
-                                    <button
-                                        key={genre.id}
-                                        type="button"
-                                        onClick={() => {
-                                        const next = selectedGenres.includes(genre.id) ? selectedGenres.filter((id: number) => id !== genre.id) : [...selectedGenres, genre.id];
-                                        onFilterChange({ ...filters, genres: next });
-                                    }}
-                                        className={`px-3 py-1.5 rounded-lg text-[10px] font-bold uppercase tracking-wider transition-all border ${selectedGenres.includes(genre.id)
-                                            ? 'bg-app-primary/20 text-app-primary border-app-primary/40'
-                                            : 'bg-app-surface text-app-text-muted border-transparent hover:border-app-border hover:text-app-text hover:bg-app-card'
-                                            }`}>
-                                        {label}
-                                    </button>
-                                );))}
+                                        <button
+                                            key={genre.id}
+                                            type="button"
+                                            onClick={() => {
+                                                const next = selectedGenres.includes(genre.id)
+                                                    ? selectedGenres.filter((id: number) => id !== genre.id)
+                                                    : [...selectedGenres, genre.id];
+                                                onFilterChange({ ...filters, genres: next });
+                                            }}
+                                            className={`px-3 py-1.5 rounded-lg text-[10px] font-bold uppercase tracking-wider transition-all border ${
+                                                selectedGenres.includes(genre.id)
+                                                    ? 'bg-app-primary/20 text-app-primary border-app-primary/40'
+                                                    : 'bg-app-surface text-app-text-muted border-transparent hover:border-app-border hover:text-app-text hover:bg-app-card'
+                                            }`}
+                                        >
+                                            {label}
+                                        </button>
+                                    );
+                                })}
                             </div>
                         </div>
                     )}
