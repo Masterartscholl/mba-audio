@@ -275,7 +275,7 @@ export default function CheckoutPage() {
 
                     {/* Sağ: Sipariş Özeti */}
                     <div className="lg:col-span-2">
-                        <div className="bg-app-card rounded-2xl p-6 border border-app-border sticky top-28">
+                        <div className="bg-app-card rounded-2xl p-6 border border-app-border lg:sticky lg:top-28">
                             <h2 className="text-xs font-black text-app-text-muted uppercase tracking-[0.2em] mb-4">{t('orderSummary')}</h2>
                             {items.length === 0 ? (
                                 <p className="text-sm text-app-text-muted font-bold">{t('cartEmptyCheckout')}</p>

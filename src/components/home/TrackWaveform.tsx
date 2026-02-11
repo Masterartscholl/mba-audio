@@ -66,12 +66,13 @@ export const TrackWaveform: React.FC<WaveformProps> = ({
         setIsLoaded(false);
 
         try {
+            const isMobile = typeof window !== 'undefined' && window.innerWidth < 768;
             const ws = WaveSurfer.create({
                 container: containerRef.current,
                 waveColor: '#4a4a4a',
                 progressColor: '#ede066',
-                height: 40,
-                barWidth: 2,
+                height: isMobile ? 32 : 40,
+                barWidth: isMobile ? 1.5 : 2,
                 barGap: 1,
                 barRadius: 2,
                 cursorWidth: 0,
@@ -113,11 +114,11 @@ export const TrackWaveform: React.FC<WaveformProps> = ({
     }, [progress, duration, isLoaded]);
 
     if (!enabled) {
-        return <div className="w-full h-10" />;
+        return <div className="w-full h-8 lg:h-10" />;
     }
 
     return (
-        <div className="relative w-full h-10 flex items-center overflow-hidden rounded-full">
+        <div className="relative w-full h-8 lg:h-10 flex items-center overflow-hidden rounded-full">
             {/* WaveSurfer container'ı */}
             <div 
                 ref={containerRef} 

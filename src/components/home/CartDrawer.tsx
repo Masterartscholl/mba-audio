@@ -49,9 +49,9 @@ export const CartDrawer: React.FC = () => {
                         items.map(track => (
                             <div
                                 key={track.id}
-                                className="flex items-center gap-4 p-4 rounded-xl bg-app-surface border border-app-border hover:border-app-border transition-all group"
+                                className="flex flex-col sm:flex-row items-start sm:items-center gap-4 p-4 rounded-xl bg-app-surface border border-app-border hover:border-app-border transition-all group"
                             >
-                                <div className="w-12 flex-shrink-0">
+                                <div className="w-10 sm:w-12 flex-shrink-0">
                                     <div className="w-10 h-10 rounded-lg bg-app-primary/10 border border-app-primary/20 flex items-center justify-center">
                                         <svg className="w-5 h-5 text-app-primary" fill="currentColor" viewBox="0 0 24 24"><path d="M12 3v10.55c-.59-.34-1.27-.55-2-.55-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4V7h4V3h-6z" /></svg>
                                     </div>
@@ -59,11 +59,11 @@ export const CartDrawer: React.FC = () => {
                                 <div className="flex-1 min-w-0">
                                     <h4 className="text-sm font-medium text-app-text uppercase tracking-tight truncate">{track.title}</h4>
                                     <p className="text-[10px] font-bold text-app-text-muted uppercase tracking-widest truncate">{track.artist_name || 'Unknown'}</p>
-                                    <div className="mt-2 w-40 h-8 overflow-hidden rounded">
+                                    <div className="mt-2 w-full sm:w-40 h-8 overflow-hidden rounded">
                                         <TrackWaveform url={track.preview_url} isPlaying={false} enabled={true} />
                                     </div>
                                 </div>
-                                <div className="flex flex-col items-end gap-2 shrink-0">
+                                <div className="flex flex-col items-end gap-2 shrink-0 mt-2 sm:mt-0">
                                     {track.price != null && (
                                         <span className="text-[11px] font-black text-app-primary">{formatPrice(track.price, track.currency || 'TL')}</span>
                                     )}
@@ -88,18 +88,18 @@ export const CartDrawer: React.FC = () => {
                                 {t('total')}: {formatPrice(items.reduce((s, t) => s + (t.price ?? 0), 0), items[0]?.currency || 'TL')}
                             </span>
                         </div>
-                        <div className="flex items-center justify-between gap-3">
+                        <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
                             <button
                                 type="button"
                                 onClick={clearCart}
-                                className="px-4 py-3 rounded-xl border border-app-border text-[11px] font-bold text-app-text-muted uppercase tracking-widest hover:text-red-400 hover:border-red-400/60 transition-all bg-app-bg/60"
+                                className="w-full sm:w-auto px-4 py-3 rounded-xl border border-app-border text-[11px] font-bold text-app-text-muted uppercase tracking-widest hover:text-red-400 hover:border-red-400/60 transition-all bg-app-bg/60"
                             >
                                 {t('clearCart')}
                             </button>
                             <Link
                                 href="/checkout"
                                 onClick={closeCart}
-                                className="flex-1 py-4 rounded-xl bg-app-primary text-app-primary-foreground text-center text-sm font-black uppercase tracking-widest hover:opacity-90 active:scale-[0.98] transition-all shadow-lg shadow-app-primary/20"
+                                className="w-full sm:flex-1 py-4 rounded-xl bg-app-primary text-app-primary-foreground text-center text-sm font-black uppercase tracking-widest hover:opacity-90 active:scale-[0.98] transition-all shadow-lg shadow-app-primary/20"
                             >
                                 {t('checkout')}
                             </Link>

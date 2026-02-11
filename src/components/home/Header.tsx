@@ -12,7 +12,11 @@ import { CartDrawer } from './CartDrawer';
 import { LanguageSwitcher } from './LanguageSwitcher';
 import { ThemeSwitcher } from './ThemeSwitcher';
 
-export const Header: React.FC = () => {
+interface HeaderProps {
+    onOpenMobileSidebar?: () => void;
+}
+
+export const Header: React.FC<HeaderProps> = ({ onOpenMobileSidebar }) => {
     const pathname = usePathname();
     const t = useTranslations('App');
     const { openCart, totalCount } = useCart();
@@ -39,8 +43,20 @@ export const Header: React.FC = () => {
 
     return (
         <>
-            <header className="h-20 border-b border-app-border px-10 flex items-center justify-between sticky top-0 bg-app-bg/90 backdrop-blur-xl z-50">
-                <div className="flex items-center gap-6 flex-1">
+            <header className="h-20 border-b border-app-border px-4 lg:px-10 flex items-center justify-between sticky top-0 bg-app-bg/90 backdrop-blur-xl z-50">
+                <div className="flex items-center gap-3 lg:gap-6 flex-1">
+                    {/* Mobile sidebar toggle */}
+                    <button
+                        type="button"
+                        onClick={onOpenMobileSidebar}
+                        className="lg:hidden w-10 h-10 rounded-xl bg-app-surface border border-app-border flex items-center justify-center text-app-text hover:text-app-primary hover:border-app-primary/30 transition-all"
+                        aria-label={t('filters')}
+                    >
+                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6h16M4 12h10M4 18h7" />
+                        </svg>
+                    </button>
+
                     <div className="relative w-full max-w-3xl">
                         <input
                             type="search"

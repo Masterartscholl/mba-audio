@@ -67,13 +67,13 @@ export default function LibraryPage() {
     }, []);
 
     return (
-        <div className="flex h-screen bg-app-bg overflow-hidden selection:bg-[#3b82f6]/30">
+        <div className="flex flex-col lg:flex-row min-h-screen bg-app-bg overflow-hidden selection:bg-[#3b82f6]/30">
             <Sidebar filters={{}} onFilterChange={() => {}} />
             <div className="flex-1 flex flex-col min-w-0">
                 <Header />
                 <main className="flex-1 flex flex-col overflow-hidden">
                     <div className="flex-1 overflow-y-auto custom-scrollbar flex flex-col">
-                        <div className="px-10 py-10 flex items-end justify-between">
+                        <div className="px-4 lg:px-10 py-8 lg:py-10 flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
                             <div>
                                 <h2 className="text-4xl font-black text-app-text tracking-tighter uppercase leading-none">{t('myLibraryTitle')}</h2>
                                 <p className="text-app-text-muted text-sm font-bold mt-4 uppercase tracking-widest">
@@ -82,7 +82,7 @@ export default function LibraryPage() {
                             </div>
                         </div>
 
-                        <div className="px-10 py-4 flex text-[11px] font-black text-app-text-muted uppercase tracking-[0.2em] border-b border-app-border bg-app-surface">
+                        <div className="hidden lg:flex px-10 py-4 text-[11px] font-black text-app-text-muted uppercase tracking-[0.2em] border-b border-app-border bg-app-surface">
                             <div className="w-12"></div>
                             <div className="flex-1 pr-8">{t('titleArtist')}</div>
                             <div className="w-32">{t('genre')}</div>

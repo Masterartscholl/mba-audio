@@ -83,7 +83,7 @@ export const TrackRow: React.FC<TrackRowProps> = ({ track, currency, queue, purc
     };
 
     return (
-        <div className={`group flex items-center px-10 py-5 transition-all border-b border-app-border hover:bg-app-surface ${isActive ? 'bg-app-surface' : ''}`}>
+        <div className={`group flex flex-col lg:flex-row items-start lg:items-center gap-4 lg:gap-0 px-4 lg:px-10 py-4 lg:py-5 transition-all border-b border-app-border hover:bg-app-surface ${isActive ? 'bg-app-surface' : ''}`}>
             {/* Play / Pause: aynı parçadaysa listeden de durdurabilirsin */}
             <div className="w-12 flex-shrink-0">
                 <button
@@ -101,7 +101,7 @@ export const TrackRow: React.FC<TrackRowProps> = ({ track, currency, queue, purc
             </div>
 
             {/* Title / Artist - başlık ince font */}
-            <div className="flex-1 min-w-0 pr-8">
+            <div className="flex-1 min-w-0 pr-0 lg:pr-8 mt-1 lg:mt-0">
                 <h4 className={`text-sm font-medium uppercase tracking-tight truncate transition-colors ${isActive ? 'text-app-primary' : 'text-app-text'}`}>
                     {track.title}
                 </h4>
@@ -111,14 +111,14 @@ export const TrackRow: React.FC<TrackRowProps> = ({ track, currency, queue, purc
             </div>
 
             {/* Genre */}
-            <div className="w-32">
+            <div className="w-full lg:w-32 mt-2 lg:mt-0">
                 <span className="px-3 py-1 bg-app-surface border border-app-border rounded-lg text-[10px] font-black text-app-text-muted uppercase tracking-widest">
                     {track.genres?.name || track.genre?.name || 'Vocal'}
                 </span>
             </div>
 
             {/* Waveform - müziğe göre ilerleme rengi (progressColor) */}
-            <div className="w-64 px-8 overflow-hidden">
+            <div className="w-full lg:w-64 px-0 lg:px-8 mt-3 lg:mt-0 overflow-hidden">
                 <TrackWaveform
                     url={track.preview_url}
                     isPlaying={isActive && isPlaying}
@@ -129,12 +129,12 @@ export const TrackRow: React.FC<TrackRowProps> = ({ track, currency, queue, purc
             </div>
 
             {/* BPM */}
-            <div className="w-20 text-center">
+            <div className="w-full lg:w-20 text-left lg:text-center mt-2 lg:mt-0">
                 <span className="text-xs font-black text-app-text">{track.bpm || '-'}</span>
             </div>
 
             {/* Favori + Action */}
-            <div className="w-52 flex items-center justify-end gap-3">
+            <div className="w-full lg:w-52 flex items-center justify-between lg:justify-end gap-3 mt-3 lg:mt-0">
                 <button
                     onClick={handleFavorite}
                     className={`w-9 h-9 rounded-lg flex items-center justify-center transition-all ${fav ? 'text-app-primary' : 'text-app-text-muted hover:text-app-primary/80'}`}
