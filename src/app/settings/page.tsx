@@ -24,6 +24,7 @@ export default function SettingsPage() {
 
   const isCompleteProfile = searchParams.get('complete') === '1';
   const isPasswordReset = searchParams.get('reset') === '1';
+  const isProfileIncomplete = !profile?.full_name?.trim();
   const isGoogleUser = Boolean(
     user?.app_metadata?.provider === 'google' ||
     user?.identities?.some((id) => id.provider === 'google')
@@ -116,7 +117,7 @@ export default function SettingsPage() {
         <h1 className="text-2xl font-black text-app-text uppercase tracking-widest mb-1">{t('settingsTitle')}</h1>
         <p className="text-app-text-muted text-sm mb-10">{t('settingsSubtitle')}</p>
 
-        {isCompleteProfile && (
+        {isCompleteProfile && isProfileIncomplete && (
           <div className="bg-app-primary/10 border border-app-primary/30 text-app-text rounded-2xl p-4 mb-6">
             <p className="text-sm font-medium">{t('completeProfileTitle')}</p>
             <p className="text-xs text-app-text-muted mt-1">{t('completeProfileHint')}</p>
