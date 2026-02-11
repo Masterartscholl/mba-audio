@@ -148,7 +148,7 @@ export const TrackList: React.FC<TrackListProps> = ({ filters, currency, selecte
                 if (fallback.data) {
                     const trimmedInner = searchQuery.trim().toLowerCase();
                     const filtered = trimmedInner
-                        ? fallback.data.filter((track) => {
+                        ? fallback.data.filter((track: any) => {
                               const genreName = track.genres?.name ? String(track.genres.name).toLowerCase() : '';
                               const title = track.title ? String(track.title).toLowerCase() : '';
                               const artist = track.artist_name ? String(track.artist_name).toLowerCase() : '';
@@ -166,7 +166,7 @@ export const TrackList: React.FC<TrackListProps> = ({ filters, currency, selecte
             } else if (data) {
                 const trimmedInner = searchQuery.trim().toLowerCase();
                 const filtered = trimmedInner
-                    ? data.filter((track) => {
+                    ? data.filter((track: any) => {
                           const genreName = track.genres?.name ? String(track.genres.name).toLowerCase() : '';
                           const title = track.title ? String(track.title).toLowerCase() : '';
                           const artist = track.artist_name ? String(track.artist_name).toLowerCase() : '';
