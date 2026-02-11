@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useTranslations, useLocale } from 'next-intl';
 import { supabase } from '@/lib/supabase';
 
@@ -16,21 +16,28 @@ export const CategoryBar: React.FC<CategoryBarProps> = ({ filters, onFilterChang
     const [categories, setCategories] = useState<{ id: number; name: string; name_en?: string }[]>([]);
     const [loading, setLoading] = useState(true);
 
-    useEffect(() => {
-        let cancelled = false;
-        const run = async () => {
+    const fetchCategories = useCallback(async () => {
+        try {
             setLoading(true);
-            const { data, error } = await supabase.from('categories').select('id, name, name_en').order('name');
-            if (cancelled) return;
+            const timeoutPromise = new Promise<never>((_, reject) =>
+                setTimeout(() => reject(new Error('Categories fetch timed out')), 10000)
+            );
+            const queryPromise = Promise.resolve(supabase.from('categories').select('id, name, name_en').order('name'));
+            const { data, error } = await Promise.race([queryPromise, timeoutPromise]);
             if (error) {
                 console.error('Categories fetch error:', error);
             }
             setCategories((data as { id: number; name: string }[]) || []);
+        } catch (err) {
+            console.error('Categories fetch failed:', err);
+        } finally {
             setLoading(false);
-        };
-        run();
-        return () => { cancelled = true; };
+        }
     }, []);
+
+    useEffect(() => {
+        fetchCategories();
+    }, [fetchCategories]);
 
     const selectedCategoryId = filters.categoryId ?? null;
     const hasActiveFilter = selectedCategoryId != null || (filters.genres?.length ?? 0) > 0 || filters.modeId != null;

@@ -19,12 +19,20 @@ export default function Home() {
   }, []);
 
   const fetchSettings = async () => {
-    const { data } = await supabase.from('settings').select('currency').eq('id', 1).single();
-    if (data) setCurrency(data.currency);
+    try {
+      const { data, error } = await Promise.race([
+        Promise.resolve(supabase.from('settings').select('currency').eq('id', 1).single()),
+        new Promise<never>((_, rej) => setTimeout(() => rej(new Error('Settings timeout')), 10000)),
+      ]);
+      if (error) console.error('Settings fetch error:', error);
+      if (data) setCurrency(data.currency);
+    } catch (err) {
+      console.error('Settings fetch failed:', err);
+    }
   };
 
   return (
-    <div className="flex flex-col lg:flex-row min-h-screen bg-app-bg selection:bg-[#3b82f6]/30">
+    <div className="flex flex-col min-h-screen lg:flex-row lg:h-screen lg:overflow-hidden bg-app-bg selection:bg-[#3b82f6]/30">
       {/* Left Sidebar */}
       <Sidebar filters={filters} onFilterChange={setFilters} />
 

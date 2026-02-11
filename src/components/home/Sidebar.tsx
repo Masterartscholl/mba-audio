@@ -6,7 +6,7 @@ import Image from 'next/image';
 import { usePathname } from 'next/navigation';
 import { supabase } from '@/lib/supabase';
 import { useTranslations, useLocale } from 'next-intl';
-import logoImg from '@/images/logo.jpg';
+import logoImg from '@/images/logo.png';
 
 const BPM_MIN = 0;
 const BPM_MAX = 300;
@@ -48,34 +48,53 @@ const useSidebarData = (filters: any, onFilterChange: FilterProps['onFilterChang
 
     useEffect(() => {
         const fetchInitialData = async () => {
-            const [modeRes, minPriceRes, maxPriceRes] = await Promise.all([
-                supabase.from('modes').select('*'),
-                supabase
-                    .from('tracks')
-                    .select('price')
-                    .eq('status', 'published')
-                    .not('price', 'is', null)
-                    .order('price', { ascending: true })
-                    .limit(1)
-                    .maybeSingle(),
-                supabase
-                    .from('tracks')
-                    .select('price')
-                    .eq('status', 'published')
-                    .not('price', 'is', null)
-                    .order('price', { ascending: false })
-                    .limit(1)
-                    .maybeSingle(),
-            ]);
-            setModes(modeRes.data || []);
-            const minP = minPriceRes.data?.price != null ? Number(minPriceRes.data.price) : 0;
-            const maxP = maxPriceRes.data?.price != null ? Number(maxPriceRes.data.price) : 10000;
-            onFilterChange((prev: any) => ({
-                ...prev,
-                priceBounds: [minP, maxP],
-                priceRange: [minP, maxP],
-                bpmRange: prev.bpmRange ?? [BPM_MIN, BPM_MAX],
-            }));
+            try {
+                const timeoutMs = 12000;
+                const timeout = <T,>(p: Promise<T>) =>
+                    Promise.race([
+                        p,
+                        new Promise<T>((_, rej) => setTimeout(() => rej(new Error('Sidebar query timeout')), timeoutMs)),
+                    ]);
+
+                const [modeRes, minPriceRes, maxPriceRes] = await Promise.all([
+                    timeout(Promise.resolve(supabase.from('modes').select('*'))),
+                    timeout(
+                        Promise.resolve(
+                            supabase
+                                .from('tracks')
+                                .select('price')
+                                .eq('status', 'published')
+                                .not('price', 'is', null)
+                                .order('price', { ascending: true })
+                                .limit(1)
+                                .maybeSingle()
+                        )
+                    ),
+                    timeout(
+                        Promise.resolve(
+                            supabase
+                                .from('tracks')
+                                .select('price')
+                                .eq('status', 'published')
+                                .not('price', 'is', null)
+                                .order('price', { ascending: false })
+                                .limit(1)
+                                .maybeSingle()
+                        )
+                    ),
+                ]);
+                setModes(modeRes.data || []);
+                const minP = minPriceRes.data?.price != null ? Number(minPriceRes.data.price) : 0;
+                const maxP = maxPriceRes.data?.price != null ? Number(maxPriceRes.data.price) : 10000;
+                onFilterChange((prev: any) => ({
+                    ...prev,
+                    priceBounds: [minP, maxP],
+                    priceRange: [minP, maxP],
+                    bpmRange: prev.bpmRange ?? [BPM_MIN, BPM_MAX],
+                }));
+            } catch (err) {
+                console.error('Sidebar fetchInitialData error:', err);
+            }
         };
 
         fetchInitialData();
@@ -91,8 +110,16 @@ const useSidebarData = (filters: any, onFilterChange: FilterProps['onFilterChang
     }, [selectedCategory]);
 
     const fetchGenres = async (catId: number) => {
-        const { data } = await supabase.from('genres').select('*').eq('category_id', catId);
-        setGenres(data || []);
+        try {
+            const { data } = await Promise.race([
+                Promise.resolve(supabase.from('genres').select('*').eq('category_id', catId)),
+                new Promise<never>((_, rej) => setTimeout(() => rej(new Error('Genres query timeout')), 10000)),
+            ]);
+            setGenres(data || []);
+        } catch (err) {
+            console.error('Genres fetch error:', err);
+            setGenres([]);
+        }
     };
 
     return {

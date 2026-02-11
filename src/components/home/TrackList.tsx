@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { useTranslations } from 'next-intl';
 import { supabase } from '@/lib/supabase';
 import { useSearch } from '@/context/SearchContext';
@@ -16,18 +16,30 @@ interface TrackListProps {
     selectedCategoryName?: string | null;
 }
 
+/** Verilen promise/thenable'a timeout uygular */
+function withTimeout<T>(promiseLike: PromiseLike<T>, ms: number, label = 'Query'): Promise<T> {
+    return new Promise<T>((resolve, reject) => {
+        const timer = setTimeout(() => reject(new Error(`${label} timed out after ${ms}ms`)), ms);
+        Promise.resolve(promiseLike).then(
+            (v) => { clearTimeout(timer); resolve(v); },
+            (e) => { clearTimeout(timer); reject(e); }
+        );
+    });
+}
+
 export const TrackList: React.FC<TrackListProps> = ({ filters, currency, selectedCategoryName }) => {
     const t = useTranslations('App');
     const { query: searchQuery } = useSearch();
     const { user } = useAuth();
     const [tracks, setTracks] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
+    const [error, setError] = useState<string | null>(null);
     const [totalCount, setTotalCount] = useState(0);
     const [sortBy, setSortBy] = useState<SortOption>('newest');
     const [purchasedTrackIds, setPurchasedTrackIds] = useState<number[]>([]);
 
-    // Basit oturum içi cache – aynı oturumda gereksiz tekrar fetch etmeyi önler
-    const purchasedCacheRef = React.useRef<{ value: number[] | null }>({ value: null });
+    const purchasedCacheRef = useRef<{ value: number[] | null }>({ value: null });
+    const retryCountRef = useRef(0);
 
     useEffect(() => {
         if (user) {
@@ -53,13 +65,11 @@ export const TrackList: React.FC<TrackListProps> = ({ filters, currency, selecte
         }
     }, [user]);
 
-    useEffect(() => {
-        fetchTracks();
-    }, [filters, searchQuery, sortBy]);
-
-    const fetchTracks = async () => {
+    const fetchTracks = useCallback(async () => {
         try {
             setLoading(true);
+            setError(null);
+
             let q = supabase
                 .from('tracks')
                 .select(
@@ -88,7 +98,6 @@ export const TrackList: React.FC<TrackListProps> = ({ filters, currency, selecte
             if (filters.genres?.length > 0) {
                 q = q.in('genre_id', filters.genres);
             }
-            // mode_id yok; tracks.mode text. Mod filtresi atlandı (istersen mode ile eşleştirilebilir).
             const priceMin = filters.priceRange?.[0], priceMax = filters.priceRange?.[1];
             const [boundsMin, boundsMax] = [filters.priceBounds?.[0] ?? 0, filters.priceBounds?.[1] ?? 10000];
             const priceFullRange = priceMin === boundsMin && priceMax === boundsMax;
@@ -106,7 +115,6 @@ export const TrackList: React.FC<TrackListProps> = ({ filters, currency, selecte
             const trimmed = searchQuery.trim();
             if (trimmed.length > 0) {
                 const pattern = `%${trimmed}%`;
-                // Parça adı veya sanatçı adına göre sunucu tarafı filtre
                 q = q.or(`title.ilike.${pattern},artist_name.ilike.${pattern}`);
             }
 
@@ -118,33 +126,33 @@ export const TrackList: React.FC<TrackListProps> = ({ filters, currency, selecte
                 q = q.order('price', { ascending: false });
             }
 
-            // İlk etapta sadece belirli bir aralıktaki kayıtları al (performans için)
-            const { data, error: queryError } = await q.range(0, 99);
+            // 15 saniye timeout ile sorgu yap
+            const { data, error: queryError } = await withTimeout(
+                q.range(0, 99),
+                15000,
+                'Tracks query'
+            );
 
             if (queryError) {
                 console.error('Tracks query error:', queryError);
-                const fallback = await supabase
-                    .from('tracks')
-                    .select(
-                        [
-                            'id',
-                            'title',
-                            'artist_name',
-                            'preview_url',
-                            'image_url',
-                            'price',
-                            'bpm',
-                            'category_id',
-                            'genre_id',
-                            'status',
-                            'created_at',
-                            'genres(name)',
-                        ].join(','),
-                        { count: 'exact' }
-                    )
-                    .eq('status', 'published')
-                    .order('created_at', { ascending: false })
-                    .range(0, 99);
+                // Fallback sorgu
+                const fallback = await withTimeout(
+                    supabase
+                        .from('tracks')
+                        .select(
+                            [
+                                'id', 'title', 'artist_name', 'preview_url', 'image_url',
+                                'price', 'bpm', 'category_id', 'genre_id', 'status', 'created_at',
+                                'genres(name)',
+                            ].join(','),
+                            { count: 'exact' }
+                        )
+                        .eq('status', 'published')
+                        .order('created_at', { ascending: false })
+                        .range(0, 99),
+                    15000,
+                    'Tracks fallback query'
+                );
                 if (fallback.data) {
                     const trimmedInner = searchQuery.trim().toLowerCase();
                     const filtered = trimmedInner
@@ -152,11 +160,7 @@ export const TrackList: React.FC<TrackListProps> = ({ filters, currency, selecte
                               const genreName = track.genres?.name ? String(track.genres.name).toLowerCase() : '';
                               const title = track.title ? String(track.title).toLowerCase() : '';
                               const artist = track.artist_name ? String(track.artist_name).toLowerCase() : '';
-                              return (
-                                  title.includes(trimmedInner) ||
-                                  artist.includes(trimmedInner) ||
-                                  genreName.includes(trimmedInner)
-                              );
+                              return title.includes(trimmedInner) || artist.includes(trimmedInner) || genreName.includes(trimmedInner);
                           })
                         : fallback.data;
 
@@ -170,25 +174,45 @@ export const TrackList: React.FC<TrackListProps> = ({ filters, currency, selecte
                           const genreName = track.genres?.name ? String(track.genres.name).toLowerCase() : '';
                           const title = track.title ? String(track.title).toLowerCase() : '';
                           const artist = track.artist_name ? String(track.artist_name).toLowerCase() : '';
-                          return (
-                              title.includes(trimmedInner) ||
-                              artist.includes(trimmedInner) ||
-                              genreName.includes(trimmedInner)
-                          );
+                          return title.includes(trimmedInner) || artist.includes(trimmedInner) || genreName.includes(trimmedInner);
                       })
                     : data;
 
                 setTracks(filtered);
                 setTotalCount(filtered.length);
+                retryCountRef.current = 0;
             }
         } catch (err) {
             console.error('Error fetching tracks:', err);
+            setError(err instanceof Error ? err.message : 'Veriler yüklenemedi');
         } finally {
             setLoading(false);
         }
-    };
+    }, [filters, searchQuery, sortBy]);
 
-    if (loading) return <div className="p-10"><SkeletonLoader /></div>;
+    useEffect(() => {
+        fetchTracks();
+    }, [fetchTracks]);
+
+    if (loading) return (
+        <div className="p-6 lg:p-10">
+            <SkeletonLoader />
+        </div>
+    );
+
+    if (error) return (
+        <div className="flex flex-col items-center justify-center py-32 text-app-text-muted gap-4">
+            <svg className="w-12 h-12 opacity-20" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4.5c-.77-.833-2.694-.833-3.464 0L3.34 16.5c-.77.833.192 2.5 1.732 2.5z" /></svg>
+            <p className="font-bold uppercase tracking-wider text-sm">{error}</p>
+            <button
+                type="button"
+                onClick={fetchTracks}
+                className="px-6 py-2 rounded-xl bg-app-primary text-app-primary-foreground font-bold text-sm hover:opacity-90 transition-opacity"
+            >
+                {t('retry') || 'Tekrar Dene'}
+            </button>
+        </div>
+    );
 
     const headingTitle =
         selectedCategoryName && String(selectedCategoryName).trim().length > 0

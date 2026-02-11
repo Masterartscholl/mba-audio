@@ -15,7 +15,7 @@ export default function FavoritesPage() {
     const [currency, setCurrency] = useState('TL');
 
     return (
-        <div className="flex flex-col lg:flex-row min-h-screen bg-app-bg overflow-hidden selection:bg-[#3b82f6]/30">
+        <div className="flex flex-col min-h-screen lg:flex-row lg:h-screen lg:overflow-hidden bg-app-bg selection:bg-[#3b82f6]/30">
             <Sidebar filters={{}} onFilterChange={() => {}} />
             <div className="flex-1 flex flex-col min-w-0">
                 <Header />

@@ -9,7 +9,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/lib/supabase';
 import { ThemeSwitcher } from '@/components/home/ThemeSwitcher';
 import { LanguageSwitcher } from '@/components/home/LanguageSwitcher';
-import logoImg from '@/images/logo.jpg';
+import logoImg from '@/images/logo.png';
 import { toast } from 'sonner';
 
 export default function SettingsPage() {

@@ -8,7 +8,7 @@ import { useCart } from '@/context/CartContext';
 import { formatPrice } from '@/utils/format';
 import { ThemeSwitcher } from '@/components/home/ThemeSwitcher';
 import { LanguageSwitcher } from '@/components/home/LanguageSwitcher';
-import logoImg from '@/images/logo.jpg';
+import logoImg from '@/images/logo.png';
 
 const DEFAULT_LINKS = {
     link_privacy_policy: 'https://www.muzikburada.net/services-7',
@@ -154,18 +154,19 @@ export default function CheckoutPage() {
     return (
         <div className="min-h-screen bg-app-bg text-app-text selection:bg-[#3b82f6]/30">
             {/* Header */}
-            <header className="h-20 border-b border-app-border px-6 lg:px-10 flex items-center justify-between sticky top-0 bg-app-bg/90 backdrop-blur-xl z-50">
+            <header className="h-14 sm:h-20 border-b border-app-border px-4 sm:px-6 lg:px-10 flex items-center justify-between sticky top-0 bg-app-bg/90 backdrop-blur-xl z-50">
                 <Link href="/" className="flex items-center shrink-0">
-                    <Image src={logoImg} alt="MüzikBank" width={40} height={40} className="rounded-xl object-contain" />
+                    <Image src={logoImg} alt="MüzikBank" width={32} height={32} className="rounded-xl object-contain sm:w-10 sm:h-10" />
                 </Link>
-                <div className="flex items-center gap-4">
+                <div className="flex items-center gap-2 sm:gap-4">
                     <ThemeSwitcher />
                     <LanguageSwitcher />
                     <Link
                         href="/"
-                        className="text-sm font-bold text-app-text-muted hover:text-app-primary uppercase tracking-widest transition-colors"
+                        className="text-xs sm:text-sm font-bold text-app-text-muted hover:text-app-primary uppercase tracking-widest transition-colors"
                     >
-                        ← {t('backToCart')}
+                        <span className="hidden sm:inline">← {t('backToCart')}</span>
+                        <span className="sm:hidden">←</span>
                     </Link>
                 </div>
             </header>
@@ -176,11 +177,11 @@ export default function CheckoutPage() {
                     {t('paymentSubtitle')}
                 </p>
 
-                <form onSubmit={handleSubmit} className="grid lg:grid-cols-5 gap-10">
+                <form onSubmit={handleSubmit} className="grid lg:grid-cols-5 gap-6 lg:gap-10">
                     {/* Sol: Fatura ve onaylar */}
-                    <div className="lg:col-span-3 space-y-6 lg:space-y-8">
+                    <div className="lg:col-span-3 space-y-5 lg:space-y-8">
                         {/* Fatura Bilgileri (İyzico ödeme ve fatura oluşturma için) */}
-                        <div className="bg-app-card rounded-2xl p-6 lg:p-8 border border-app-border">
+                        <div className="bg-app-card rounded-2xl p-4 sm:p-6 lg:p-8 border border-app-border">
                             <h2 className="text-xs font-black text-app-primary uppercase tracking-[0.2em] mb-6 flex items-center gap-2">
                                 <span className="w-1 h-1 rounded-full bg-[#ede066]" />
                                 {t('billingDetails')}
@@ -196,7 +197,7 @@ export default function CheckoutPage() {
                                             setBillingName(e.target.value);
                                             setBillingErrors(prev => ({ ...prev, billingName: undefined }));
                                         }}
-                                        className={`w-full bg-app-input-bg border rounded-xl px-4 py-3.5 text-white placeholder:text-app-text-muted focus:outline-none transition-all ${billingErrors.billingName ? 'border-red-500/60 focus:border-red-500/60' : 'border-white/10 focus:border-app-primary/50'}`}
+                                        className={`w-full bg-app-input-bg border rounded-xl px-4 py-3.5 text-app-text placeholder:text-app-text-muted focus:outline-none transition-all ${billingErrors.billingName ? 'border-red-500/60 focus:border-red-500/60' : 'border-app-border focus:border-app-primary/50'}`}
                                     />
                                     {billingErrors.billingName && (
                                         <p className="mt-1.5 text-[11px] text-red-400 font-medium">{billingErrors.billingName}</p>
@@ -211,7 +212,7 @@ export default function CheckoutPage() {
                                         value={billingTcId}
                                         onChange={(e) => { setBillingTcId(formatTcId(e.target.value)); setBillingErrors(prev => ({ ...prev, billingTcId: undefined })); }}
                                         maxLength={11}
-                                        className={`w-full bg-app-input-bg border rounded-xl px-4 py-3.5 text-white placeholder:text-app-text-muted focus:outline-none transition-all font-mono ${billingErrors.billingTcId ? 'border-red-500/60 focus:border-red-500/60' : 'border-white/10 focus:border-app-primary/50'}`}
+                                        className={`w-full bg-app-input-bg border rounded-xl px-4 py-3.5 text-app-text placeholder:text-app-text-muted focus:outline-none transition-all font-mono ${billingErrors.billingTcId ? 'border-red-500/60 focus:border-red-500/60' : 'border-app-border focus:border-app-primary/50'}`}
                                     />
                                     {billingErrors.billingTcId && <p className="mt-1.5 text-[11px] text-red-400 font-medium">{billingErrors.billingTcId}</p>}
                                 </div>
@@ -225,7 +226,7 @@ export default function CheckoutPage() {
                                             setBillingErrors(prev => ({ ...prev, billingAddress: undefined }));
                                         }}
                                         rows={3}
-                                        className={`w-full bg-app-input-bg border rounded-xl px-4 py-3.5 text-white placeholder:text-app-text-muted focus:outline-none transition-all resize-none ${billingErrors.billingAddress ? 'border-red-500/60 focus:border-red-500/60' : 'border-white/10 focus:border-app-primary/50'}`}
+                                        className={`w-full bg-app-input-bg border rounded-xl px-4 py-3.5 text-app-text placeholder:text-app-text-muted focus:outline-none transition-all resize-none ${billingErrors.billingAddress ? 'border-red-500/60 focus:border-red-500/60' : 'border-app-border focus:border-app-primary/50'}`}
                                     />
                                     {billingErrors.billingAddress && (
                                         <p className="mt-1.5 text-[11px] text-red-400 font-medium">{billingErrors.billingAddress}</p>
@@ -275,7 +276,7 @@ export default function CheckoutPage() {
 
                     {/* Sağ: Sipariş Özeti */}
                     <div className="lg:col-span-2">
-                        <div className="bg-app-card rounded-2xl p-6 border border-app-border lg:sticky lg:top-28">
+                        <div className="bg-app-card rounded-2xl p-4 sm:p-6 border border-app-border lg:sticky lg:top-28">
                             <h2 className="text-xs font-black text-app-text-muted uppercase tracking-[0.2em] mb-4">{t('orderSummary')}</h2>
                             {items.length === 0 ? (
                                 <p className="text-sm text-app-text-muted font-bold">{t('cartEmptyCheckout')}</p>
@@ -284,12 +285,12 @@ export default function CheckoutPage() {
                                     <ul className="space-y-3 mb-6 max-h-64 overflow-y-auto custom-scrollbar">
                                         {items.map(t => (
                                             <li key={t.id} className="flex justify-between items-center text-sm">
-                                                <span className="font-bold text-white truncate max-w-[180px]">{t.title}</span>
+                                                <span className="font-bold text-app-text truncate max-w-[180px]">{t.title}</span>
                                                 <span className="text-app-primary font-black shrink-0">{formatPrice(t.price ?? 0, currency)}</span>
                                             </li>
                                         ))}
                                     </ul>
-                                    <div className="border-t border-white/10 pt-4 flex justify-between items-center">
+                                    <div className="border-t border-app-border pt-4 flex justify-between items-center">
                                         <span className="text-sm font-bold text-app-text-muted uppercase">{t('total')}</span>
                                         <span className="text-xl font-black text-app-primary">{formatPrice(total, currency)}</span>
                                     </div>
