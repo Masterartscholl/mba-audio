@@ -38,18 +38,7 @@ export async function GET(request: NextRequest) {
     return NextResponse.redirect(redirectTo)
   }
 
-  // Google ile giriş yapanları ad soyad için ayarlar sayfasına yönlendir (cookie ile client'ta uygulanacak)
-  const isGoogle = data?.session?.user?.identities?.some(
-    (i: { provider?: string }) => i.provider === 'google'
-  )
-  if (isGoogle) {
-    response.cookies.set('redirect_after_auth', '/settings?complete=1', {
-      path: '/',
-      maxAge: 60,
-      httpOnly: false,
-      sameSite: 'lax',
-    })
-  }
-
+  // Artık Google kullanıcılarını zorunlu olarak /settings?complete=1 sayfasına yönlendirmiyoruz.
+  // Sadece auth_refresh ile belirtilen hedef sayfaya dönüyoruz.
   return response
 }
