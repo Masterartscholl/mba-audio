@@ -40,11 +40,13 @@ export const TrackRow: React.FC<TrackRowProps> = ({ track, currency, queue, purc
         action();
     };
 
+    // Misafir kullanıcılar da müzik dinleyebilsin; diğer aksiyonlar hâlâ login ister
     const handlePlay = () => {
-        requireLogin(() => {
-            if (isActive) togglePlay();
-            else playTrack(track, queue && queue.length > 0 ? queue : undefined);
-        }, t('loginRequiredToPlay'));
+        if (isActive) {
+            togglePlay();
+        } else {
+            playTrack(track, queue && queue.length > 0 ? queue : undefined);
+        }
     };
 
     const addCurrentTrackToCart = () => {

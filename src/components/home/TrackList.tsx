@@ -26,14 +26,30 @@ export const TrackList: React.FC<TrackListProps> = ({ filters, currency, selecte
     const [sortBy, setSortBy] = useState<SortOption>('newest');
     const [purchasedTrackIds, setPurchasedTrackIds] = useState<number[]>([]);
 
+    // Basit oturum içi cache – aynı oturumda gereksiz tekrar fetch etmeyi önler
+    const purchasedCacheRef = React.useRef<{ value: number[] | null }>({ value: null });
+
     useEffect(() => {
         if (user) {
+            if (purchasedCacheRef.current.value) {
+                setPurchasedTrackIds(purchasedCacheRef.current.value);
+                return;
+            }
+
             fetch('/api/me/purchased-track-ids')
                 .then((res) => res.json())
-                .then((data) => setPurchasedTrackIds(Array.isArray(data?.trackIds) ? data.trackIds : []))
-                .catch(() => setPurchasedTrackIds([]));
+                .then((data) => {
+                    const ids = Array.isArray(data?.trackIds) ? data.trackIds : [];
+                    purchasedCacheRef.current.value = ids;
+                    setPurchasedTrackIds(ids);
+                })
+                .catch(() => {
+                    purchasedCacheRef.current.value = [];
+                    setPurchasedTrackIds([]);
+                });
         } else {
             setPurchasedTrackIds([]);
+            purchasedCacheRef.current.value = null;
         }
     }, [user]);
 
@@ -44,10 +60,25 @@ export const TrackList: React.FC<TrackListProps> = ({ filters, currency, selecte
     const fetchTracks = async () => {
         try {
             setLoading(true);
-            // tracks tablosunda category_id, genre_id var; mode alanı text (mode_id yok). İlişkiler: category, genre (tekil isimler Supabase’de yaygın).
             let q = supabase
                 .from('tracks')
-                .select('*, categories(name), genres(name)', { count: 'exact' })
+                .select(
+                    [
+                        'id',
+                        'title',
+                        'artist_name',
+                        'preview_url',
+                        'image_url',
+                        'price',
+                        'bpm',
+                        'category_id',
+                        'genre_id',
+                        'status',
+                        'created_at',
+                        'genres(name)',
+                    ].join(','),
+                    { count: 'exact' }
+                )
                 .eq('status', 'published');
 
             const catId = filters.categoryId != null && filters.categoryId !== '' ? Number(filters.categoryId) : null;
@@ -85,11 +116,33 @@ export const TrackList: React.FC<TrackListProps> = ({ filters, currency, selecte
                 q = q.order('price', { ascending: false });
             }
 
-            const { data, error: queryError, count } = await q;
+            // İlk etapta sadece belirli bir aralıktaki kayıtları al (performans için)
+            const { data, error: queryError, count } = await q.range(0, 99);
 
             if (queryError) {
                 console.error('Tracks query error:', queryError);
-                const fallback = await supabase.from('tracks').select('*', { count: 'exact' }).eq('status', 'published').order('created_at', { ascending: false });
+                const fallback = await supabase
+                    .from('tracks')
+                    .select(
+                        [
+                            'id',
+                            'title',
+                            'artist_name',
+                            'preview_url',
+                            'image_url',
+                            'price',
+                            'bpm',
+                            'category_id',
+                            'genre_id',
+                            'status',
+                            'created_at',
+                            'genres(name)',
+                        ].join(','),
+                        { count: 'exact' }
+                    )
+                    .eq('status', 'published')
+                    .order('created_at', { ascending: false })
+                    .range(0, 99);
                 if (fallback.data) {
                     setTracks(fallback.data);
                     setTotalCount(fallback.count ?? 0);

@@ -3,7 +3,7 @@ import { NextResponse, type NextRequest } from 'next/server'
 
 const PROTECTED_CUSTOMER_ROUTES = ['/library', '/favorites', '/checkout', '/settings']
 
-export async function middleware(request: NextRequest) {
+export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl
   let response = NextResponse.next({
     request: { headers: request.headers },
@@ -59,3 +59,4 @@ export const config = {
     '/((?!_next/static|_next/image|favicon.ico|.*\\..*).*)',
   ],
 }
+

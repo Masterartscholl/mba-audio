@@ -303,6 +303,7 @@
         "bpmRangeHint": "range",
         "categories": "Categories",
         "resetFiltering": "Reset filtering",
+        "clearCart": "Clear cart",
         "login": "Log in",
         "signup": "Sign up",
         "loginTitle": "Log in",

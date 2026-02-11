@@ -47,24 +47,45 @@ export const TrackWaveform: React.FC<WaveformProps> = ({
     const durationRef = useRef(0);
     /** Görüntülenen oran – hedefe doğru yumuşak geçiş (lerp) için */
     const displayRatioRef = useRef(0);
+    const [isVisible, setIsVisible] = useState(false);
 
     progressRef.current = progress;
     durationRef.current = duration;
 
-    // Container genişliğini ölç (sarı dalga hizası için)
+    // Container genişliğini ölç (sarı dalga hizası için) ve görünürlüğü takip et
     useEffect(() => {
         const el = wrapperRef.current;
-        if (!el) return;
-        const update = () => setFullWidth(el.offsetWidth);
-        update();
-        const ro = new ResizeObserver(update);
+        if (!el || typeof window === 'undefined') return;
+
+        const updateWidth = () => setFullWidth(el.offsetWidth);
+        updateWidth();
+        const ro = new ResizeObserver(updateWidth);
         ro.observe(el);
-        return () => ro.disconnect();
+
+        const io = new IntersectionObserver(
+            (entries) => {
+                entries.forEach((entry) => {
+                    if (entry.target === el) {
+                        setIsVisible(entry.isIntersecting);
+                    }
+                });
+            },
+            {
+                root: null,
+                threshold: 0.1,
+            }
+        );
+        io.observe(el);
+
+        return () => {
+            ro.disconnect();
+            io.disconnect();
+        };
     }, []);
 
     // Arka plan (gri) dalga
     useEffect(() => {
-        if (!bgRef.current) return;
+        if (!bgRef.current || !isVisible) return;
         let ws: WaveSurfer | null = null;
         try {
             ws = WaveSurfer.create({
@@ -85,11 +106,11 @@ export const TrackWaveform: React.FC<WaveformProps> = ({
             ws?.destroy();
             wsBgRef.current = null;
         };
-    }, [url]);
+    }, [url, isVisible]);
 
     // Ön plan (sarı) dalga – aynı URL, sadece renk farklı; kırpma üst div'de
     useEffect(() => {
-        if (!fgRef.current) return;
+        if (!fgRef.current || !isVisible) return;
         let ws: WaveSurfer | null = null;
         try {
             ws = WaveSurfer.create({
@@ -111,13 +132,13 @@ export const TrackWaveform: React.FC<WaveformProps> = ({
             ws?.destroy();
             wsFgRef.current = null;
         };
-    }, [url]);
+    }, [url, isVisible]);
 
     // Akıcı progress: lerp ile yumuşak geçiş + GPU dostu stil
     const LERP = 0.35; // 0–1 arası; büyük = daha hızlı takip, küçük = daha yumuşak
     useEffect(() => {
         const wrap = progressWrapRef.current;
-        if (!wrap) return;
+        if (!wrap || !isVisible) return;
 
         if (duration <= 0) {
             wrap.style.width = '0%';

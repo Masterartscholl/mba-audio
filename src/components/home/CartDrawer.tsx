@@ -9,7 +9,7 @@ import { formatPrice } from '@/utils/format';
 
 export const CartDrawer: React.FC = () => {
     const t = useTranslations('App');
-    const { items, isOpen, closeCart, removeItem, totalCount } = useCart();
+    const { items, isOpen, closeCart, removeItem, clearCart, totalCount } = useCart();
 
     return (
         <>
@@ -81,20 +81,29 @@ export const CartDrawer: React.FC = () => {
 
                 {/* Footer - Ödemeye Geç (çalma barı yüksekliği kadar üstte) */}
                 {items.length > 0 && (
-                    <div className="p-6 pb-[7rem] border-t border-app-border bg-app-card/80 shrink-0">
-                        <div className="flex items-center justify-between mb-4">
+                    <div className="p-6 pb-[7rem] border-t border-app-border bg-app-card/80 shrink-0 space-y-3">
+                        <div className="flex items-center justify-between">
                             <span className="text-xs font-bold text-app-text-muted uppercase tracking-widest">{totalCount} {t('items')}</span>
                             <span className="text-sm font-black text-app-text">
                                 {t('total')}: {formatPrice(items.reduce((s, t) => s + (t.price ?? 0), 0), items[0]?.currency || 'TL')}
                             </span>
                         </div>
-                        <Link
-                            href="/checkout"
-                            onClick={closeCart}
-                            className="block w-full py-4 rounded-xl bg-app-primary text-app-primary-foreground text-center text-sm font-black uppercase tracking-widest hover:opacity-90 active:scale-[0.98] transition-all shadow-lg shadow-app-primary/20"
-                        >
-                            {t('checkout')}
-                        </Link>
+                        <div className="flex items-center justify-between gap-3">
+                            <button
+                                type="button"
+                                onClick={clearCart}
+                                className="px-4 py-3 rounded-xl border border-app-border text-[11px] font-bold text-app-text-muted uppercase tracking-widest hover:text-red-400 hover:border-red-400/60 transition-all bg-app-bg/60"
+                            >
+                                {t('clearCart')}
+                            </button>
+                            <Link
+                                href="/checkout"
+                                onClick={closeCart}
+                                className="flex-1 py-4 rounded-xl bg-app-primary text-app-primary-foreground text-center text-sm font-black uppercase tracking-widest hover:opacity-90 active:scale-[0.98] transition-all shadow-lg shadow-app-primary/20"
+                            >
+                                {t('checkout')}
+                            </Link>
+                        </div>
                     </div>
                 )}
             </div>
