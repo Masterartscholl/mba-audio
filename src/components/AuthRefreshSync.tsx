@@ -10,7 +10,6 @@ import { useEffect } from "react";
  * sayfayı bir kez yenileyerek session'ın kesin yüklenmesini sağlar.
  */
 export function AuthRefreshSync() {
-  const pathname = usePathname();
   const searchParams = useSearchParams();
 
   useEffect(() => {
@@ -26,10 +25,11 @@ export function AuthRefreshSync() {
       return;
     }
 
-    // Parametreyi kaldırıp aynı sayfayı yeniden yükle; cookie artık gönderilir, useAuth session'ı görür
-    const url = pathname || "/";
-    window.location.replace(url);
-  }, [pathname, searchParams]);
+    // Parametreyi kaldırıp aynı URL'yi yeniden yükle; diğer query'ler (reset, returnUrl vs.) korunur
+    const url = new URL(window.location.href);
+    url.searchParams.delete("auth_refresh");
+    window.location.replace(url.toString());
+  }, [searchParams]);
 
   return null;
 }
