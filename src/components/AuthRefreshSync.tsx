@@ -25,10 +25,11 @@ export function AuthRefreshSync() {
       return;
     }
 
-    // Parametreyi kaldırıp aynı URL'yi yeniden yükle; diğer query'ler (reset, returnUrl vs.) korunur
+    // Parametreyi kaldır ama sayfayı yeniden yükleme; session cookie zaten set edilmiş oluyor.
+    // Böylece gereksiz ikinci full-page reload'tan kaçınmış oluruz.
     const url = new URL(window.location.href);
     url.searchParams.delete("auth_refresh");
-    window.location.replace(url.toString());
+    window.history.replaceState(null, "", url.toString());
   }, [searchParams]);
 
   return null;
