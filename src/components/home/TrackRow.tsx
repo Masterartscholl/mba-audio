@@ -83,7 +83,7 @@ export const TrackRow: React.FC<TrackRowProps> = ({ track, currency, queue, purc
     };
 
     return (
-        <div className={`group flex flex-col lg:flex-row items-start lg:items-center gap-3 lg:gap-0 px-4 lg:px-10 py-4 lg:py-5 transition-all border-b border-app-border hover:bg-app-surface ${isActive ? 'bg-app-surface' : ''}`}>
+        <div className={`group flex flex-col lg:flex-row items-start lg:items-center gap-3 lg:gap-4 px-4 lg:px-10 py-4 lg:py-5 transition-all border-b border-app-border hover:bg-app-surface ${isActive ? 'bg-app-surface' : ''}`}>
             {/* ÜST SATIR: Play + Başlık/Artist */}
             <div className="w-12 flex-shrink-0">
                 <button
@@ -139,12 +139,12 @@ export const TrackRow: React.FC<TrackRowProps> = ({ track, currency, queue, purc
             </div>
 
             {/* BPM sütunu sadece desktop'ta */}
-            <div className="hidden lg:flex w-20 justify-center">
+            <div className="hidden lg:flex w-24 justify-center">
                 <span className="text-xs font-black text-app-text">{track.bpm || '-'}</span>
             </div>
 
             {/* Favori + Action */}
-            <div className="w-full lg:w-52 flex items-center justify-between lg:justify-end gap-3 mt-3 lg:mt-0">
+            <div className="w-full lg:w-52 flex items-center justify-between lg:justify-end gap-3 mt-3 lg:mt-0 lg:ml-6">
                 <button
                     onClick={handleFavorite}
                     className={`w-9 h-9 rounded-lg flex items-center justify-center transition-all ${fav ? 'text-app-primary' : 'text-app-text-muted hover:text-app-primary/80'}`}

@@ -50,6 +50,9 @@
 
   --font-geist-sans: Geist, sans-serif;
   --font-geist-mono: GeistMono, monospace;
+
+  /* Form kontrolleri (select vs.) için açık tema */
+  color-scheme: light;
 }
 
 [class~="dark"] {
@@ -74,6 +77,9 @@
   --app-primary: #ede066;
   --app-primary-foreground: #0b1121;
   --app-surface: rgba(255, 255, 255, 0.05);
+
+  /* Koyu modda native kontrolleri koyu yap */
+  color-scheme: dark;
 }
 
 body {
