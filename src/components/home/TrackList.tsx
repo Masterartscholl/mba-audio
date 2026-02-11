@@ -105,7 +105,16 @@ export const TrackList: React.FC<TrackListProps> = ({ filters, currency, selecte
 
             const trimmed = searchQuery.trim();
             if (trimmed.length > 0) {
-                q = q.ilike('title', `%${trimmed}%`);
+                const pattern = `%${trimmed}%`;
+                // Parça adı veya sanatçı adına göre ara
+                q = q.or(
+                    `title.ilike.${pattern},artist_name.ilike.${pattern}`
+                );
+                // Tür adına göre arama (genres.name)
+                q = q.or(
+                    `name.ilike.${pattern}`,
+                    { foreignTable: 'genres' }
+                );
             }
 
             if (sortBy === 'newest' || sortBy === 'relevance') {
