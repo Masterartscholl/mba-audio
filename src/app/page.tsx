@@ -11,6 +11,7 @@ import { supabase } from '@/lib/supabase';
 export default function Home() {
   const [filters, setFilters] = useState<any>({});
   const [currency, setCurrency] = useState('TL');
+  const [selectedCategoryName, setSelectedCategoryName] = useState<string | null>(null);
 
   useEffect(() => {
     fetchSettings();
@@ -29,10 +30,14 @@ export default function Home() {
       {/* Main Content Area */}
       <div className="flex-1 flex flex-col min-w-0">
         <Header />
-        <CategoryBar filters={filters} onFilterChange={setFilters} />
+        <CategoryBar
+          filters={filters}
+          onFilterChange={setFilters}
+          onCategoryNameChange={setSelectedCategoryName}
+        />
 
         <main className="flex-1 flex flex-col overflow-hidden">
-          <TrackList filters={filters} currency={currency} />
+          <TrackList filters={filters} currency={currency} selectedCategoryName={selectedCategoryName} />
         </main>
       </div>
 

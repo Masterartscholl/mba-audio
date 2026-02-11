@@ -20,25 +20,8 @@ export function useAuth() {
 
   useEffect(() => {
     const load = async () => {
-      const { data: { user: u } } = await supabase.auth.getUser();
-      setUser(u);
-      if (u) {
-        const { data: p } = await supabase
-          .from('profiles')
-          .select('id, email, full_name, avatar_url, is_admin, created_at')
-          .eq('id', u.id)
-          .single();
-        setProfile(p ?? null);
-      } else {
-        setProfile(null);
-      }
-      setLoading(false);
-    };
-    load();
-
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (event, session) => {
-        const u = session?.user ?? null;
+      try {
+        const { data: { user: u } } = await supabase.auth.getUser();
         setUser(u);
         if (u) {
           const { data: p } = await supabase
@@ -50,7 +33,38 @@ export function useAuth() {
         } else {
           setProfile(null);
         }
+      } catch (error) {
+        console.error('useAuth getUser error:', error);
+        setUser(null);
+        setProfile(null);
+      } finally {
         setLoading(false);
+      }
+    };
+    load();
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      async (event, session) => {
+        try {
+          const u = session?.user ?? null;
+          setUser(u);
+          if (u) {
+            const { data: p } = await supabase
+              .from('profiles')
+              .select('id, email, full_name, avatar_url, is_admin, created_at')
+              .eq('id', u.id)
+              .single();
+            setProfile(p ?? null);
+          } else {
+            setProfile(null);
+          }
+        } catch (error) {
+          console.error('useAuth onAuthStateChange error:', error);
+          setUser(null);
+          setProfile(null);
+        } finally {
+          setLoading(false);
+        }
       }
     );
     return () => subscription.unsubscribe();

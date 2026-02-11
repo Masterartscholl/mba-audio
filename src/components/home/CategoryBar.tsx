@@ -7,9 +7,10 @@ import { supabase } from '@/lib/supabase';
 interface CategoryBarProps {
     filters: { categoryId?: number | null; genres?: number[]; modeId?: number | null };
     onFilterChange: (next: (prev: any) => any) => void;
+    onCategoryNameChange?: (name: string | null) => void;
 }
 
-export const CategoryBar: React.FC<CategoryBarProps> = ({ filters, onFilterChange }) => {
+export const CategoryBar: React.FC<CategoryBarProps> = ({ filters, onFilterChange, onCategoryNameChange }) => {
     const t = useTranslations('App');
     const [categories, setCategories] = useState<{ id: number; name: string }[]>([]);
     const [loading, setLoading] = useState(true);
@@ -35,6 +36,10 @@ export const CategoryBar: React.FC<CategoryBarProps> = ({ filters, onFilterChang
 
     const handleCategoryClick = (id: number) => {
         const nextId = selectedCategoryId === id ? null : id;
+        const nextName = nextId != null ? (categories.find((c) => c.id === nextId)?.name ?? null) : null;
+        if (onCategoryNameChange) {
+            onCategoryNameChange(nextName);
+        }
         onFilterChange(prev => ({
             ...prev,
             categoryId: nextId,
@@ -44,6 +49,9 @@ export const CategoryBar: React.FC<CategoryBarProps> = ({ filters, onFilterChang
     };
 
     const handleReset = () => {
+        if (onCategoryNameChange) {
+            onCategoryNameChange(null);
+        }
         onFilterChange(prev => ({
             ...prev,
             categoryId: null,

@@ -13,9 +13,10 @@ type SortOption = 'relevance' | 'newest' | 'priceLow' | 'priceHigh';
 interface TrackListProps {
     filters: any;
     currency: string;
+    selectedCategoryName?: string | null;
 }
 
-export const TrackList: React.FC<TrackListProps> = ({ filters, currency }) => {
+export const TrackList: React.FC<TrackListProps> = ({ filters, currency, selectedCategoryName }) => {
     const t = useTranslations('App');
     const { query: searchQuery } = useSearch();
     const { user } = useAuth();
@@ -106,11 +107,16 @@ export const TrackList: React.FC<TrackListProps> = ({ filters, currency }) => {
 
     if (loading) return <div className="p-10"><SkeletonLoader /></div>;
 
+    const headingTitle =
+        selectedCategoryName && String(selectedCategoryName).trim().length > 0
+            ? selectedCategoryName
+            : t('browseTracks');
+
     return (
         <div className="flex-1 overflow-y-auto custom-scrollbar flex flex-col">
             <div className="px-10 py-10 flex items-end justify-between">
                 <div>
-                    <h2 className="text-4xl font-black text-app-text tracking-tighter uppercase leading-none">{t('browseTracks')}</h2>
+                    <h2 className="text-4xl font-black text-app-text tracking-tighter uppercase leading-none">{headingTitle}</h2>
                     <p className="text-app-text-muted text-sm font-bold mt-4 uppercase tracking-widest">
                         {totalCount} {t('resultsFound')}
                     </p>
