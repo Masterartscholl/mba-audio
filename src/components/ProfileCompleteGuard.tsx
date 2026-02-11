@@ -15,6 +15,11 @@ export function ProfileCompleteGuard() {
 
   useEffect(() => {
     if (loading || !user) return;
+    const isGoogleUser = Boolean(
+      user.app_metadata?.provider === 'google' ||
+      user.identities?.some((id) => id.provider === 'google')
+    );
+    if (isGoogleUser) return;
     // Profil tablosundaki ad-soyad veya Google metadata'dan gelen isim
     const nameFromProfile = profile?.full_name?.trim() || '';
     const nameFromMetadata =

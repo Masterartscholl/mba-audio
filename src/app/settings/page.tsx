@@ -117,7 +117,7 @@ export default function SettingsPage() {
         <h1 className="text-2xl font-black text-app-text uppercase tracking-widest mb-1">{t('settingsTitle')}</h1>
         <p className="text-app-text-muted text-sm mb-10">{t('settingsSubtitle')}</p>
 
-        {isCompleteProfile && isProfileIncomplete && (
+        {isCompleteProfile && isProfileIncomplete && !isGoogleUser && (
           <div className="bg-app-primary/10 border border-app-primary/30 text-app-text rounded-2xl p-4 mb-6">
             <p className="text-sm font-medium">{t('completeProfileTitle')}</p>
             <p className="text-xs text-app-text-muted mt-1">{t('completeProfileHint')}</p>
@@ -164,45 +164,44 @@ export default function SettingsPage() {
           </form>
         </section>
 
-        <section className="bg-app-card border border-app-border rounded-2xl p-6">
-          <h2 className="text-sm font-black text-app-text uppercase tracking-widest mb-4">
-            {isGoogleUser ? t('setPassword') : t('changePassword')}
-          </h2>
-          {isGoogleUser && (
-            <p className="text-xs text-app-text-muted mb-4">{t('setPasswordHint')}</p>
-          )}
-          <form onSubmit={handleChangePassword} className="space-y-4">
-            <div>
-              <label className="block text-xs uppercase font-bold text-app-text-muted tracking-wider mb-1.5">{t('newPassword')}</label>
-              <input
-                type="password"
-                value={newPassword}
-                onChange={(e) => setNewPassword(e.target.value)}
-                placeholder="••••••••"
-                minLength={6}
-                className="w-full bg-app-input-bg border border-app-border rounded-xl px-4 py-3 text-sm text-app-text placeholder:text-app-text-muted focus:outline-none focus:border-app-primary/50 transition-all"
-              />
-            </div>
-            <div>
-              <label className="block text-xs uppercase font-bold text-app-text-muted tracking-wider mb-1.5">{t('confirmPassword')}</label>
-              <input
-                type="password"
-                value={confirmPassword}
-                onChange={(e) => setConfirmPassword(e.target.value)}
-                placeholder="••••••••"
-                minLength={6}
-                className="w-full bg-app-input-bg border border-app-border rounded-xl px-4 py-3 text-sm text-app-text placeholder:text-app-text-muted focus:outline-none focus:border-app-primary/50 transition-all"
-              />
-            </div>
-            <button
-              type="submit"
-              disabled={changingPassword || !newPassword || !confirmPassword}
-              className="px-6 py-2.5 rounded-xl bg-app-primary text-app-primary-foreground font-bold text-sm hover:opacity-90 transition-opacity disabled:opacity-50"
-            >
-              {changingPassword ? '...' : (isGoogleUser ? t('setPassword') : t('changePassword'))}
-            </button>
-          </form>
-        </section>
+        {!isGoogleUser && (
+          <section className="bg-app-card border border-app-border rounded-2xl p-6">
+            <h2 className="text-sm font-black text-app-text uppercase tracking-widest mb-4">
+              {t('changePassword')}
+            </h2>
+            <form onSubmit={handleChangePassword} className="space-y-4">
+              <div>
+                <label className="block text-xs uppercase font-bold text-app-text-muted tracking-wider mb-1.5">{t('newPassword')}</label>
+                <input
+                  type="password"
+                  value={newPassword}
+                  onChange={(e) => setNewPassword(e.target.value)}
+                  placeholder="••••••••"
+                  minLength={6}
+                  className="w-full bg-app-input-bg border border-app-border rounded-xl px-4 py-3 text-sm text-app-text placeholder:text-app-text-muted focus:outline-none focus:border-app-primary/50 transition-all"
+                />
+              </div>
+              <div>
+                <label className="block text-xs uppercase font-bold text-app-text-muted tracking-wider mb-1.5">{t('confirmPassword')}</label>
+                <input
+                  type="password"
+                  value={confirmPassword}
+                  onChange={(e) => setConfirmPassword(e.target.value)}
+                  placeholder="••••••••"
+                  minLength={6}
+                  className="w-full bg-app-input-bg border border-app-border rounded-xl px-4 py-3 text-sm text-app-text placeholder:text-app-text-muted focus:outline-none focus:border-app-primary/50 transition-all"
+                />
+              </div>
+              <button
+                type="submit"
+                disabled={changingPassword || !newPassword || !confirmPassword}
+                className="px-6 py-2.5 rounded-xl bg-app-primary text-app-primary-foreground font-bold text-sm hover:opacity-90 transition-opacity disabled:opacity-50"
+              >
+                {changingPassword ? '...' : t('changePassword')}
+              </button>
+            </form>
+          </section>
+        )}
 
         <p className="text-center text-app-text-muted text-sm mt-8">
           <Link href="/" className="text-app-primary font-bold hover:underline">
