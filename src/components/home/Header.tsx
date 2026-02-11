@@ -2,7 +2,6 @@
 
 import React, { useState, useRef, useEffect } from 'react';
 import Link from 'next/link';
-import Image from 'next/image';
 import { usePathname } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import { useCart } from '@/context/CartContext';
@@ -12,8 +11,6 @@ import { supabase } from '@/lib/supabase';
 import { CartDrawer } from './CartDrawer';
 import { LanguageSwitcher } from './LanguageSwitcher';
 import { ThemeSwitcher } from './ThemeSwitcher';
-
-import logoImg from '@/images/logo.jpg';
 
 export const Header: React.FC = () => {
     const pathname = usePathname();
@@ -43,12 +40,8 @@ export const Header: React.FC = () => {
     return (
         <>
             <header className="h-20 border-b border-app-border px-10 flex items-center justify-between sticky top-0 bg-app-bg/90 backdrop-blur-xl z-50">
-                <div className="flex items-center gap-10 flex-1">
-                    <Link href="/" className="flex items-center shrink-0">
-                        <Image src={logoImg} alt="MüzikBank" width={40} height={40} className="rounded-xl object-contain" />
-                    </Link>
-
-                    <div className="relative w-full max-w-xl">
+                <div className="flex items-center gap-6 flex-1">
+                    <div className="relative w-full max-w-3xl">
                         <input
                             type="search"
                             value={query}

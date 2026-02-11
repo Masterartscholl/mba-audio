@@ -309,6 +309,10 @@
         "loginSubtitle": "Hesabınıza giriş yapın",
         "loginButton": "Giriş Yap",
         "loginError": "Giriş yapılırken bir hata oluştu.",
+        "forgotPassword": "Şifremi unuttum",
+        "forgotPasswordEmailRequired": "Lütfen e-posta adresinizi girin.",
+        "forgotPasswordEmailSent": "Eğer bu e-posta ile bir hesabınız varsa, şifre sıfırlama bağlantısı gönderdik.",
+        "forgotPasswordError": "Şifre sıfırlama bağlantısı gönderilirken bir hata oluştu.",
         "loginWithGoogle": "Google ile Giriş Yap",
         "loginGoogleError": "Google ile giriş yapılamadı.",
         "signupTitle": "Kayıt Ol",
@@ -348,6 +352,8 @@
         "completeProfileTitle": "Profilinizi tamamlayın",
         "completeProfileHint": "Lütfen adınızı ve soyadınızı girin. Bu bilgi fatura ve hesap yönetimi için kullanılır.",
         "setPassword": "Şifre belirle",
-        "setPasswordHint": "Google ile giriş yaptığınız için hesabınızda şu an şifre yok. İsterseniz bir şifre belirleyerek e-posta ve şifre ile de giriş yapabilirsiniz."
+        "setPasswordHint": "Google ile giriş yaptığınız için hesabınızda şu an şifre yok. İsterseniz bir şifre belirleyerek e-posta ve şifre ile de giriş yapabilirsiniz.",
+        "resetPasswordTitle": "Şifrenizi belirleyin",
+        "resetPasswordHint": "E-postadaki bağlantı ile geldiniz. Lütfen yeni şifrenizi belirleyip onaylayın."
     }
 }

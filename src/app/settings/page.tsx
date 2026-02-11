@@ -23,6 +23,7 @@ export default function SettingsPage() {
   const [changingPassword, setChangingPassword] = useState(false);
 
   const isCompleteProfile = searchParams.get('complete') === '1';
+  const isPasswordReset = searchParams.get('reset') === '1';
   const isGoogleUser = Boolean(
     user?.app_metadata?.provider === 'google' ||
     user?.identities?.some((id) => id.provider === 'google')
@@ -119,6 +120,13 @@ export default function SettingsPage() {
           <div className="bg-app-primary/10 border border-app-primary/30 text-app-text rounded-2xl p-4 mb-6">
             <p className="text-sm font-medium">{t('completeProfileTitle')}</p>
             <p className="text-xs text-app-text-muted mt-1">{t('completeProfileHint')}</p>
+          </div>
+        )}
+
+        {isPasswordReset && (
+          <div className="bg-app-primary/10 border border-app-primary/30 text-app-text rounded-2xl p-4 mb-6">
+            <p className="text-sm font-medium">{t('resetPasswordTitle')}</p>
+            <p className="text-xs text-app-text-muted mt-1">{t('resetPasswordHint')}</p>
           </div>
         )}
 

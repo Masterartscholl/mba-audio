@@ -20,11 +20,14 @@ export default function LoginPage() {
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [resetMessage, setResetMessage] = useState<string | null>(null);
+  const [resetLoading, setResetLoading] = useState(false);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
     setError(null);
+    setResetMessage(null);
     try {
       const { error: err } = await supabase.auth.signInWithPassword({ email, password });
       if (err) throw err;
@@ -51,6 +54,28 @@ export default function LoginPage() {
       setError(err instanceof Error ? err.message : t('loginGoogleError'));
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleForgotPassword = async (e: React.MouseEvent) => {
+    e.preventDefault();
+    setError(null);
+    setResetMessage(null);
+    if (!email) {
+      setError(t('forgotPasswordEmailRequired'));
+      return;
+    }
+    setResetLoading(true);
+    try {
+      const { error: err } = await supabase.auth.resetPasswordForEmail(email, {
+        redirectTo: `${window.location.origin}/auth/callback?next=${encodeURIComponent('/settings?reset=1')}`,
+      });
+      if (err) throw err;
+      setResetMessage(t('forgotPasswordEmailSent'));
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : t('forgotPasswordError'));
+    } finally {
+      setResetLoading(false);
     }
   };
 
@@ -81,6 +106,11 @@ export default function LoginPage() {
                   {error}
                 </div>
               )}
+              {resetMessage && (
+                <div className="bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 px-4 py-3 rounded-xl text-sm text-center">
+                  {resetMessage}
+                </div>
+              )}
 
               <div>
                 <label className="block text-xs uppercase font-bold text-app-text-muted tracking-wider mb-1.5">{t('email')}</label>
@@ -104,6 +134,17 @@ export default function LoginPage() {
                   placeholder="••••••••"
                   className="w-full bg-app-input-bg border border-app-border rounded-xl px-4 py-3 text-sm text-app-text placeholder:text-app-text-muted focus:outline-none focus:border-app-primary/50 transition-all"
                 />
+              </div>
+
+              <div className="flex justify-end">
+                <button
+                  type="button"
+                  onClick={handleForgotPassword}
+                  disabled={loading || resetLoading}
+                  className="text-xs font-bold text-app-text-muted hover:text-app-primary underline-offset-4 hover:underline"
+                >
+                  {resetLoading ? t('loading') : t('forgotPassword')}
+                </button>
               </div>
 
               <button

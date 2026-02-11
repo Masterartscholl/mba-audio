@@ -55,7 +55,7 @@ export const CategoryBar: React.FC<CategoryBarProps> = ({ filters, onFilterChang
     return (
         <div className="px-10 pt-6 pb-4 border-b border-app-border bg-app-bg/90 shrink-0">
             <div className="flex flex-wrap items-center gap-3">
-                <span className="text-[11px] font-black text-app-text-muted uppercase tracking-wider mr-1">
+                <span className="text-[11px] font-black text-[#ede066] uppercase tracking-wider mr-1">
                     {t('categories')}
                 </span>
                 {loading ? (

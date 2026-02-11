@@ -307,6 +307,10 @@
         "loginSubtitle": "Sign in to your account",
         "loginButton": "Log in",
         "loginError": "An error occurred while signing in.",
+        "forgotPassword": "Forgot password?",
+        "forgotPasswordEmailRequired": "Please enter your email address.",
+        "forgotPasswordEmailSent": "If an account exists with this email, we've sent a password reset link.",
+        "forgotPasswordError": "An error occurred while sending the reset link.",
         "loginWithGoogle": "Sign in with Google",
         "loginGoogleError": "Could not sign in with Google.",
         "signupTitle": "Sign up",
@@ -346,6 +350,8 @@
         "completeProfileTitle": "Complete your profile",
         "completeProfileHint": "Please enter your first and last name. This is used for billing and account management.",
         "setPassword": "Set password",
-        "setPasswordHint": "You signed in with Google, so your account has no password yet. You can set one here to also sign in with email and password."
+        "setPasswordHint": "You signed in with Google, so your account has no password yet. You can set one here to also sign in with email and password.",
+        "resetPasswordTitle": "Set your new password",
+        "resetPasswordHint": "You arrived via the reset link. Please choose and confirm a new password."
     }
 }
