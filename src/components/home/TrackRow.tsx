@@ -124,6 +124,7 @@ export const TrackRow: React.FC<TrackRowProps> = ({ track, currency, queue, purc
                     isPlaying={isActive && isPlaying}
                     progress={isActive ? progress : undefined}
                     duration={isActive ? duration : undefined}
+                    enabled={true}
                 />
             </div>
 

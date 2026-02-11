@@ -83,6 +83,12 @@ body {
   @apply transition-colors duration-300;
 }
 
+/* Select dropdown option renkleri */
+select option {
+  background-color: var(--app-input-bg);
+  color: var(--app-text);
+}
+
 /* Scroll çalışır, çubuk gizli */
 .custom-scrollbar {
   scrollbar-width: none;

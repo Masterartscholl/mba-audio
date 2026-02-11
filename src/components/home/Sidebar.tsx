@@ -148,7 +148,7 @@ export const Sidebar: React.FC<FilterProps> = ({ filters, onFilterChange }) => {
                             <select
                                 value={selectedMode || ''}
                                 onChange={(e) => onFilterChange({ ...filters, modeId: e.target.value ? Number(e.target.value) : null })}
-                                className="w-full bg-app-input-bg border border-app-border rounded-xl px-4 py-2.5 text-xs text-app-text font-bold appearance-none focus:outline-none focus:border-app-primary/50 transition-all cursor-pointer hover:bg-[#141414]">
+                                className="w-full bg-app-input-bg border border-app-border rounded-xl px-4 py-2.5 text-xs text-app-text font-bold appearance-none focus:outline-none focus:border-app-primary/50 transition-all cursor-pointer hover:bg-app-card">
                                 <option value="">{t('selectMood')}</option>
                                 {(selectedCategory ? modes.filter((m: any) => m.category_id === selectedCategory) : modes).map((mode: any) => {
                                     const label = locale === 'en' ? (mode.name_en || mode.name) : mode.name;

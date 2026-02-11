@@ -106,15 +106,8 @@ export const TrackList: React.FC<TrackListProps> = ({ filters, currency, selecte
             const trimmed = searchQuery.trim();
             if (trimmed.length > 0) {
                 const pattern = `%${trimmed}%`;
-                // Parça adı veya sanatçı adına göre ara
-                q = q.or(
-                    `title.ilike.${pattern},artist_name.ilike.${pattern}`
-                );
-                // Tür adına göre arama (genres.name)
-                q = q.or(
-                    `name.ilike.${pattern}`,
-                    { foreignTable: 'genres' }
-                );
+                // Parça adı veya sanatçı adına göre sunucu tarafı filtre
+                q = q.or(`title.ilike.${pattern},artist_name.ilike.${pattern}`);
             }
 
             if (sortBy === 'newest' || sortBy === 'relevance') {
@@ -126,7 +119,7 @@ export const TrackList: React.FC<TrackListProps> = ({ filters, currency, selecte
             }
 
             // İlk etapta sadece belirli bir aralıktaki kayıtları al (performans için)
-            const { data, error: queryError, count } = await q.range(0, 99);
+            const { data, error: queryError } = await q.range(0, 99);
 
             if (queryError) {
                 console.error('Tracks query error:', queryError);
@@ -153,12 +146,40 @@ export const TrackList: React.FC<TrackListProps> = ({ filters, currency, selecte
                     .order('created_at', { ascending: false })
                     .range(0, 99);
                 if (fallback.data) {
-                    setTracks(fallback.data);
-                    setTotalCount(fallback.count ?? 0);
+                    const trimmedInner = searchQuery.trim().toLowerCase();
+                    const filtered = trimmedInner
+                        ? fallback.data.filter((track) => {
+                              const genreName = track.genres?.name ? String(track.genres.name).toLowerCase() : '';
+                              const title = track.title ? String(track.title).toLowerCase() : '';
+                              const artist = track.artist_name ? String(track.artist_name).toLowerCase() : '';
+                              return (
+                                  title.includes(trimmedInner) ||
+                                  artist.includes(trimmedInner) ||
+                                  genreName.includes(trimmedInner)
+                              );
+                          })
+                        : fallback.data;
+
+                    setTracks(filtered);
+                    setTotalCount(filtered.length);
                 }
             } else if (data) {
-                setTracks(data);
-                setTotalCount(count ?? 0);
+                const trimmedInner = searchQuery.trim().toLowerCase();
+                const filtered = trimmedInner
+                    ? data.filter((track) => {
+                          const genreName = track.genres?.name ? String(track.genres.name).toLowerCase() : '';
+                          const title = track.title ? String(track.title).toLowerCase() : '';
+                          const artist = track.artist_name ? String(track.artist_name).toLowerCase() : '';
+                          return (
+                              title.includes(trimmedInner) ||
+                              artist.includes(trimmedInner) ||
+                              genreName.includes(trimmedInner)
+                          );
+                      })
+                    : data;
+
+                setTracks(filtered);
+                setTotalCount(filtered.length);
             }
         } catch (err) {
             console.error('Error fetching tracks:', err);
