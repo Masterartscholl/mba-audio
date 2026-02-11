@@ -15,7 +15,11 @@ export function ProfileCompleteGuard() {
 
   useEffect(() => {
     if (loading || !user) return;
-    const name = profile?.full_name?.trim();
+    // Profil tablosundaki ad-soyad veya Google metadata'dan gelen isim
+    const nameFromProfile = profile?.full_name?.trim() || '';
+    const nameFromMetadata =
+      (user.user_metadata?.full_name || user.user_metadata?.name || '').trim();
+    const name = nameFromProfile || nameFromMetadata;
     if (name) return;
     if (pathname === "/settings") return;
     router.replace("/settings?complete=1");
