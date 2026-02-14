@@ -442,6 +442,21 @@ export const SidebarMobileDrawer: React.FC<SidebarMobileDrawerProps> = ({ filter
         priceRange,
     } = useSidebarData(filters, onFilterChange);
 
+    // Handle mobile back button to close drawer
+    useEffect(() => {
+        window.history.pushState({ drawer: 'sidebar' }, '');
+        const handlePopState = () => {
+            onClose?.();
+        };
+        window.addEventListener('popstate', handlePopState);
+        return () => {
+            window.removeEventListener('popstate', handlePopState);
+            if (window.history.state?.drawer === 'sidebar') {
+                window.history.back();
+            }
+        };
+    }, [onClose]);
+
     return (
         <div className="flex h-full flex-col bg-app-bg border-r border-app-border">
             {/* Logo + Close - mobile */}

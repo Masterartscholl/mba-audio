@@ -35,6 +35,21 @@ export const Header: React.FC<HeaderProps> = ({ onOpenMobileSidebar }) => {
         return () => document.removeEventListener('click', handleClickOutside);
     }, []);
 
+    // Handle mobile back button for user menu drawer
+    useEffect(() => {
+        if (userMenuOpen) {
+            window.history.pushState({ menu: 'user' }, '');
+            const handlePopState = () => setUserMenuOpen(false);
+            window.addEventListener('popstate', handlePopState);
+            return () => {
+                window.removeEventListener('popstate', handlePopState);
+                if (window.history.state?.menu === 'user') {
+                    window.history.back();
+                }
+            };
+        }
+    }, [userMenuOpen]);
+
     const navClass = (path: string) =>
         `text-sm font-black uppercase tracking-widest transition-colors ${pathname === path ? 'text-app-primary' : 'text-app-text-muted hover:text-app-text'}`;
 

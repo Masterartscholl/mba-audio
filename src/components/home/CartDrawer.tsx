@@ -11,6 +11,28 @@ export const CartDrawer: React.FC = () => {
     const t = useTranslations('App');
     const { items, isOpen, closeCart, removeItem, clearCart, totalCount } = useCart();
 
+    // Handle mobile back button to close drawer
+    React.useEffect(() => {
+        if (isOpen) {
+            // Push a fake state to history
+            window.history.pushState({ drawer: 'cart' }, '');
+
+            const handlePopState = () => {
+                closeCart();
+            };
+
+            window.addEventListener('popstate', handlePopState);
+
+            return () => {
+                window.removeEventListener('popstate', handlePopState);
+                // If closing manually (not via back button), clear the pushed state
+                if (window.history.state?.drawer === 'cart') {
+                    window.history.back();
+                }
+            };
+        }
+    }, [isOpen, closeCart]);
+
     return (
         <>
             {/* Backdrop */}
