@@ -410,6 +410,14 @@ export const Sidebar: React.FC<FilterProps> = ({ filters, onFilterChange }) => {
                         {t('resetFiltering')}
                     </button>
                 </div>
+
+                {/* Support - Desktop */}
+                <div className="mt-auto px-6 py-6 border-t border-app-border bg-app-bg/50">
+                    <p className="text-[9px] font-black text-app-text-muted uppercase tracking-[0.2em] mb-1">{t('support')}</p>
+                    <a href="mailto:destek@muzikburada.net" className="text-[11px] font-bold text-app-text hover:text-app-primary transition-colors">
+                        destek@muzikburada.net
+                    </a>
+                </div>
             </div>
         </aside>
     );
@@ -692,10 +700,10 @@ export const SidebarMobileDrawer: React.FC<SidebarMobileDrawerProps> = ({ filter
             <div className="h-16 shrink-0 border-t border-app-border px-4 flex items-center justify-between bg-app-bg/95 backdrop-blur-md">
                 <div>
                     <p className="text-[9px] font-black text-app-text-muted uppercase tracking-[0.2em] mb-0.5">{t('support')}</p>
-                    <p className="text-[11px] font-bold text-app-text">support@musicbank.com</p>
+                    <a href="mailto:destek@muzikburada.net" className="text-[11px] font-bold text-app-text">destek@muzikburada.net</a>
                 </div>
                 <p className="text-[10px] font-bold text-app-text-muted uppercase tracking-[0.2em]">
-                    MBA AUDIO
+                    MÜZİKBANK
                 </p>
             </div>
         </div>

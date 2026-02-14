@@ -53,6 +53,7 @@
             "popularCategory": "En Popüler Kategori",
             "activeDrafts": "Aktif Taslaklar"
         },
+        "support": "destek@muzikburada.net",
         "salesChart": "Son 7 Günlük Satış Grafiği",
         "recentSales": "Son Satış İşlemleri",
         "table": {
@@ -301,6 +302,7 @@
         "price": "Fiyat",
         "filters": "Filtreler",
         "audioLibrary": "Ses Kütüphanesi",
+        "support": "Destek",
         "reset": "Sıfırla",
         "bpmRangeHint": "aralık",
         "categories": "Kategoriler",

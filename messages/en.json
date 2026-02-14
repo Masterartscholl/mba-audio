@@ -299,6 +299,7 @@
         "price": "Price",
         "filters": "Filters",
         "audioLibrary": "Audio Library",
+        "support": "Support",
         "reset": "Reset",
         "bpmRangeHint": "range",
         "categories": "Categories",
