@@ -19,55 +19,73 @@ export function useAuth() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    let mounted = true;
+
+    // Safety timeout: stop spinner after 10s no matter what
+    const timer = setTimeout(() => {
+      if (mounted) {
+        console.warn('useAuth: Loading safety timeout reached');
+        setLoading(false);
+      }
+    }, 10000);
+
+    const fetchProfile = async (u: User | null) => {
+      if (!u) return null;
+      try {
+        const { data: p } = await supabase
+          .from('profiles')
+          .select('id, email, full_name, avatar_url, is_admin, created_at')
+          .eq('id', u.id)
+          .single();
+        return p;
+      } catch (err) {
+        console.error('useAuth: profile fetch error', err);
+        return null;
+      }
+    };
+
     const load = async () => {
       try {
         const { data: { user: u } } = await supabase.auth.getUser();
+        if (!mounted) return;
+
         setUser(u);
-        if (u) {
-          const { data: p } = await supabase
-            .from('profiles')
-            .select('id, email, full_name, avatar_url, is_admin, created_at')
-            .eq('id', u.id)
-            .single();
-          setProfile(p ?? null);
-        } else {
-          setProfile(null);
-        }
+        const p = await fetchProfile(u);
+        if (mounted) setProfile(p);
       } catch (error) {
-        console.error('useAuth getUser error:', error);
-        setUser(null);
-        setProfile(null);
+        console.error('useAuth: getUser error', error);
       } finally {
-        setLoading(false);
+        if (mounted) {
+          clearTimeout(timer);
+          setLoading(false);
+        }
       }
     };
     load();
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
-        try {
-          const u = session?.user ?? null;
-          setUser(u);
-          if (u) {
-            const { data: p } = await supabase
-              .from('profiles')
-              .select('id, email, full_name, avatar_url, is_admin, created_at')
-              .eq('id', u.id)
-              .single();
-            setProfile(p ?? null);
-          } else {
-            setProfile(null);
-          }
-        } catch (error) {
-          console.error('useAuth onAuthStateChange error:', error);
-          setUser(null);
+        if (!mounted) return;
+
+        const u = session?.user ?? null;
+        setUser(u);
+        if (u) {
+          const p = await fetchProfile(u);
+          if (mounted) setProfile(p);
+        } else {
           setProfile(null);
-        } finally {
-          setLoading(false);
         }
+
+        // Ensure loading is false after first state change or check
+        setLoading(false);
       }
     );
-    return () => subscription.unsubscribe();
+
+    return () => {
+      mounted = false;
+      clearTimeout(timer);
+      subscription.unsubscribe();
+    };
   }, []);
 
   const displayName =
