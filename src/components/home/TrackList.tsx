@@ -157,11 +157,11 @@ export const TrackList: React.FC<TrackListProps> = ({ filters, currency, selecte
                     const trimmedInner = searchQuery.trim().toLowerCase();
                     const filtered = trimmedInner
                         ? fallback.data.filter((track: any) => {
-                              const genreName = track.genres?.name ? String(track.genres.name).toLowerCase() : '';
-                              const title = track.title ? String(track.title).toLowerCase() : '';
-                              const artist = track.artist_name ? String(track.artist_name).toLowerCase() : '';
-                              return title.includes(trimmedInner) || artist.includes(trimmedInner) || genreName.includes(trimmedInner);
-                          })
+                            const genreName = track.genres?.name ? String(track.genres.name).toLowerCase() : '';
+                            const title = track.title ? String(track.title).toLowerCase() : '';
+                            const artist = track.artist_name ? String(track.artist_name).toLowerCase() : '';
+                            return title.includes(trimmedInner) || artist.includes(trimmedInner) || genreName.includes(trimmedInner);
+                        })
                         : fallback.data;
 
                     setTracks(filtered);
@@ -171,11 +171,11 @@ export const TrackList: React.FC<TrackListProps> = ({ filters, currency, selecte
                 const trimmedInner = searchQuery.trim().toLowerCase();
                 const filtered = trimmedInner
                     ? data.filter((track: any) => {
-                          const genreName = track.genres?.name ? String(track.genres.name).toLowerCase() : '';
-                          const title = track.title ? String(track.title).toLowerCase() : '';
-                          const artist = track.artist_name ? String(track.artist_name).toLowerCase() : '';
-                          return title.includes(trimmedInner) || artist.includes(trimmedInner) || genreName.includes(trimmedInner);
-                      })
+                        const genreName = track.genres?.name ? String(track.genres.name).toLowerCase() : '';
+                        const title = track.title ? String(track.title).toLowerCase() : '';
+                        const artist = track.artist_name ? String(track.artist_name).toLowerCase() : '';
+                        return title.includes(trimmedInner) || artist.includes(trimmedInner) || genreName.includes(trimmedInner);
+                    })
                     : data;
 
                 setTracks(filtered);
@@ -221,10 +221,10 @@ export const TrackList: React.FC<TrackListProps> = ({ filters, currency, selecte
 
     return (
         <div className="flex-1 overflow-y-auto custom-scrollbar flex flex-col">
-            <div className="px-10 py-10 flex items-end justify-between">
+            <div className="px-4 lg:px-10 py-6 lg:py-10 flex flex-col lg:flex-row lg:items-end justify-between gap-4">
                 <div>
-                    <h2 className="text-4xl font-black text-app-text tracking-tighter uppercase leading-none">{headingTitle}</h2>
-                    <p className="text-app-text-muted text-sm font-bold mt-4 uppercase tracking-widest">
+                    <h2 className="text-2xl lg:text-4xl font-black text-app-text tracking-tighter uppercase leading-none">{headingTitle}</h2>
+                    <p className="text-app-text-muted text-xs lg:text-sm font-bold mt-2 lg:mt-4 uppercase tracking-widest">
                         {totalCount} {t('resultsFound')}
                     </p>
                 </div>
@@ -246,7 +246,7 @@ export const TrackList: React.FC<TrackListProps> = ({ filters, currency, selecte
                 </div>
             </div>
 
-            <div className="px-10 py-4 flex text-[11px] font-black text-app-text-muted uppercase tracking-[0.2em] border-b border-app-border bg-app-surface">
+            <div className="hidden lg:flex px-10 py-4 text-[11px] font-black text-app-text-muted uppercase tracking-[0.2em] border-b border-app-border bg-app-surface">
                 <div className="w-12"></div>
                 <div className="flex-1 pr-8">{t('titleArtist')}</div>
                 <div className="w-32">{t('genre')}</div>
@@ -268,7 +268,7 @@ export const TrackList: React.FC<TrackListProps> = ({ filters, currency, selecte
                 )}
             </div>
 
-            <div className="h-32 shrink-0" />
+            <div className="h-40 lg:h-32 shrink-0" />
         </div>
     );
 };

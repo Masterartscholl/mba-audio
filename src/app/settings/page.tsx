@@ -4,7 +4,7 @@ import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { useTranslations } from 'next-intl';
-import { useSearchParams } from 'next/navigation';
+import { useSearchParams, useRouter } from 'next/navigation';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/lib/supabase';
 import { ThemeSwitcher } from '@/components/home/ThemeSwitcher';
@@ -15,6 +15,7 @@ import { toast } from 'sonner';
 export default function SettingsPage() {
   const t = useTranslations('App');
   const searchParams = useSearchParams();
+  const router = useRouter();
   const { user, profile, loading: authLoading } = useAuth();
   const [fullName, setFullName] = useState('');
   const [newPassword, setNewPassword] = useState('');
@@ -48,6 +49,11 @@ export default function SettingsPage() {
         .eq('id', user.id);
       if (error) throw error;
       toast.success(t('profileUpdated'));
+
+      // If we are in the complete profile flow, redirect to home after saving
+      if (isCompleteProfile) {
+        router.push('/');
+      }
     } catch (err) {
       toast.error(t('settingsError'));
     } finally {
@@ -74,6 +80,11 @@ export default function SettingsPage() {
       setNewPassword('');
       setConfirmPassword('');
       toast.success(t('passwordChanged'));
+
+      // If this was a reset flow, redirect to home
+      if (isPasswordReset) {
+        router.push('/');
+      }
     } catch (err) {
       toast.error(t('settingsError'));
     } finally {
@@ -85,6 +96,74 @@ export default function SettingsPage() {
     return (
       <div className="min-h-screen bg-app-bg flex items-center justify-center">
         <span className="w-8 h-8 border-2 border-app-primary/30 border-t-app-primary rounded-full animate-spin" />
+      </div>
+    );
+  }
+
+  // Handle Password Reset Screen
+  if (isPasswordReset) {
+    if (!user) {
+      return (
+        <div className="min-h-screen bg-app-bg flex flex-col items-center justify-center gap-4 p-4">
+          <p className="text-app-text-muted">{t('settingsError')}</p>
+          <Link href="/login" className="text-app-primary font-bold hover:underline">
+            {t('login')}
+          </Link>
+        </div>
+      );
+    }
+
+    return (
+      <div className="min-h-screen bg-app-bg flex flex-col items-center justify-center p-4">
+        <div className="w-full max-w-md bg-app-card border border-app-border rounded-3xl p-8 shadow-xl">
+          <div className="flex flex-col items-center mb-8">
+            <Image src={logoImg} alt="MüzikBank" width={48} height={48} className="rounded-xl object-contain mb-4" />
+            <h1 className="text-xl font-black text-app-text uppercase tracking-widest text-center">{t('resetPasswordTitle')}</h1>
+            <p className="text-xs text-app-text-muted text-center mt-2 max-w-[250px] leading-relaxed">
+              {t('resetPasswordHint')}
+            </p>
+            {user.email && (
+              <span className="mt-4 px-3 py-1 bg-app-surface rounded-full text-[10px] font-bold text-app-text-muted border border-app-border">
+                {user.email}
+              </span>
+            )}
+          </div>
+
+          <form onSubmit={handleChangePassword} className="space-y-4">
+            <div>
+              <label className="block text-xs uppercase font-bold text-app-text-muted tracking-wider mb-1.5 ml-1">{t('newPassword')}</label>
+              <input
+                type="password"
+                value={newPassword}
+                onChange={(e) => setNewPassword(e.target.value)}
+                placeholder="••••••••"
+                minLength={6}
+                className="w-full bg-app-input-bg border border-app-border rounded-xl px-4 py-3 text-sm text-app-text placeholder:text-app-text-muted focus:outline-none focus:border-app-primary/50 transition-all font-medium"
+                required
+              />
+            </div>
+            <div>
+              <label className="block text-xs uppercase font-bold text-app-text-muted tracking-wider mb-1.5 ml-1">{t('confirmPassword')}</label>
+              <input
+                type="password"
+                value={confirmPassword}
+                onChange={(e) => setConfirmPassword(e.target.value)}
+                placeholder="••••••••"
+                minLength={6}
+                className="w-full bg-app-input-bg border border-app-border rounded-xl px-4 py-3 text-sm text-app-text placeholder:text-app-text-muted focus:outline-none focus:border-app-primary/50 transition-all font-medium"
+                required
+              />
+            </div>
+
+            <button
+              type="submit"
+              disabled={changingPassword || !newPassword || !confirmPassword}
+              className="w-full mt-2 py-4 rounded-xl bg-app-primary text-app-primary-foreground font-black text-sm uppercase tracking-wider hover:opacity-90 transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-lg shadow-app-primary/20"
+            >
+              {changingPassword ? '...' : t('passwordUpdate')}
+            </button>
+          </form>
+        </div>
       </div>
     );
   }
@@ -124,13 +203,6 @@ export default function SettingsPage() {
           </div>
         )}
 
-        {isPasswordReset && (
-          <div className="bg-app-primary/10 border border-app-primary/30 text-app-text rounded-2xl p-4 mb-6">
-            <p className="text-sm font-medium">{t('resetPasswordTitle')}</p>
-            <p className="text-xs text-app-text-muted mt-1">{t('resetPasswordHint')}</p>
-          </div>
-        )}
-
         <section className="bg-app-card border border-app-border rounded-2xl p-6 mb-6">
           <h2 className="text-sm font-black text-app-text uppercase tracking-widest mb-4">{t('profileSection')}</h2>
           <form onSubmit={handleSaveProfile} className="space-y-4">
@@ -141,7 +213,7 @@ export default function SettingsPage() {
                 value={fullName}
                 onChange={(e) => setFullName(e.target.value)}
                 placeholder={t('fullNamePlaceholder')}
-                className="w-full bg-app-input-bg border border-app-border rounded-xl px-4 py-3 text-sm text-app-text placeholder:text-app-text-muted focus:outline-none focus:border-app-primary/50 transition-all"
+                className="w-full bg-app-input-bg border border-app-border rounded-xl px-4 py-3 text-sm text-app-text placeholder:text-app-text-muted focus:outline-none focus:border-app-primary/50 transition-all font-medium"
               />
             </div>
             <div>
@@ -150,7 +222,7 @@ export default function SettingsPage() {
                 type="email"
                 value={user.email ?? ''}
                 disabled
-                className="w-full bg-app-surface border border-app-border rounded-xl px-4 py-3 text-sm text-app-text-muted cursor-not-allowed"
+                className="w-full bg-app-surface border border-app-border rounded-xl px-4 py-3 text-sm text-app-text-muted cursor-not-allowed font-medium"
               />
               <p className="text-xs text-app-text-muted mt-1">{t('emailChangeHint')}</p>
             </div>
@@ -178,7 +250,7 @@ export default function SettingsPage() {
                   onChange={(e) => setNewPassword(e.target.value)}
                   placeholder="••••••••"
                   minLength={6}
-                  className="w-full bg-app-input-bg border border-app-border rounded-xl px-4 py-3 text-sm text-app-text placeholder:text-app-text-muted focus:outline-none focus:border-app-primary/50 transition-all"
+                  className="w-full bg-app-input-bg border border-app-border rounded-xl px-4 py-3 text-sm text-app-text placeholder:text-app-text-muted focus:outline-none focus:border-app-primary/50 transition-all font-medium"
                 />
               </div>
               <div>
@@ -189,7 +261,7 @@ export default function SettingsPage() {
                   onChange={(e) => setConfirmPassword(e.target.value)}
                   placeholder="••••••••"
                   minLength={6}
-                  className="w-full bg-app-input-bg border border-app-border rounded-xl px-4 py-3 text-sm text-app-text placeholder:text-app-text-muted focus:outline-none focus:border-app-primary/50 transition-all"
+                  className="w-full bg-app-input-bg border border-app-border rounded-xl px-4 py-3 text-sm text-app-text placeholder:text-app-text-muted focus:outline-none focus:border-app-primary/50 transition-all font-medium"
                 />
               </div>
               <button
