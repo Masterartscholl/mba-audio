@@ -20,10 +20,7 @@ export default function Home() {
 
   const fetchSettings = async () => {
     try {
-      const { data, error } = await Promise.race([
-        Promise.resolve(supabase.from('settings').select('currency').eq('id', 1).single()),
-        new Promise<never>((_, rej) => setTimeout(() => rej(new Error('Settings timeout')), 10000)),
-      ]);
+      const { data, error } = await supabase.from('settings').select('currency').eq('id', 1).single();
       if (error) console.error('Settings fetch error:', error);
       if (data) setCurrency(data.currency);
     } catch (err) {

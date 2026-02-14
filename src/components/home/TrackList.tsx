@@ -16,16 +16,7 @@ interface TrackListProps {
     selectedCategoryName?: string | null;
 }
 
-/** Verilen promise/thenable'a timeout uygular */
-function withTimeout<T>(promiseLike: PromiseLike<T>, ms: number, label = 'Query'): Promise<T> {
-    return new Promise<T>((resolve, reject) => {
-        const timer = setTimeout(() => reject(new Error(`${label} timed out after ${ms}ms`)), ms);
-        Promise.resolve(promiseLike).then(
-            (v) => { clearTimeout(timer); resolve(v); },
-            (e) => { clearTimeout(timer); reject(e); }
-        );
-    });
-}
+
 
 export const TrackList: React.FC<TrackListProps> = ({ filters, currency, selectedCategoryName }) => {
     const t = useTranslations('App');
@@ -126,33 +117,25 @@ export const TrackList: React.FC<TrackListProps> = ({ filters, currency, selecte
                 q = q.order('price', { ascending: false });
             }
 
-            // 15 saniye timeout ile sorgu yap
-            const { data, error: queryError } = await withTimeout(
-                q.range(0, 99),
-                15000,
-                'Tracks query'
-            );
+            // Sorgu yap (Timeout kaldırıldı)
+            const { data, error: queryError } = await q.range(0, 99);
 
             if (queryError) {
                 console.error('Tracks query error:', queryError);
                 // Fallback sorgu
-                const fallback = await withTimeout(
-                    supabase
-                        .from('tracks')
-                        .select(
-                            [
-                                'id', 'title', 'artist_name', 'preview_url', 'image_url',
-                                'price', 'bpm', 'category_id', 'genre_id', 'status', 'created_at',
-                                'genres(name)',
-                            ].join(','),
-                            { count: 'exact' }
-                        )
-                        .eq('status', 'published')
-                        .order('created_at', { ascending: false })
-                        .range(0, 99),
-                    15000,
-                    'Tracks fallback query'
-                );
+                const fallback = await supabase
+                    .from('tracks')
+                    .select(
+                        [
+                            'id', 'title', 'artist_name', 'preview_url', 'image_url',
+                            'price', 'bpm', 'category_id', 'genre_id', 'status', 'created_at',
+                            'genres(name)',
+                        ].join(','),
+                        { count: 'exact' }
+                    )
+                    .eq('status', 'published')
+                    .order('created_at', { ascending: false })
+                    .range(0, 99);
                 if (fallback.data) {
                     const trimmedInner = searchQuery.trim().toLowerCase();
                     const filtered = trimmedInner
