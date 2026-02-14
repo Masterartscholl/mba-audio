@@ -116,7 +116,7 @@ export const Header: React.FC<HeaderProps> = ({ onOpenMobileSidebar }) => {
                                 <button
                                     type="button"
                                     onClick={() => setUserMenuOpen((o) => !o)}
-                                    className="flex items-center gap-2 w-9 h-9 lg:w-10 lg:h-10 rounded-xl bg-app-surface border border-app-border overflow-hidden hover:border-app-primary/30 transition-all shrink-0"
+                                    className="flex items-center gap-2 w-10 h-10 rounded-xl bg-app-surface border border-app-border overflow-hidden hover:border-app-primary/30 transition-all shrink-0"
                                     aria-label={t('accountSettings')}
                                 >
                                     {avatarUrl ? (
@@ -128,31 +128,90 @@ export const Header: React.FC<HeaderProps> = ({ onOpenMobileSidebar }) => {
                                     )}
                                 </button>
                                 {userMenuOpen && (
-                                    <div className="absolute right-0 top-full mt-1 py-1 min-w-[180px] rounded-xl bg-app-card border border-app-border shadow-xl z-[200]">
-                                        <div className="px-4 py-2 border-b border-app-border">
-                                            <p className="text-sm font-bold text-app-text truncate max-w-[150px]">{displayName || user.email}</p>
-                                            <p className="text-xs text-app-text-muted truncate max-w-[150px]">{user.email}</p>
-                                        </div>
-                                        <div className="lg:hidden px-4 py-2 border-b border-app-border">
-                                            <Link href="/" className="block py-1 text-sm font-bold text-app-text-muted">{t('discover')}</Link>
-                                            <Link href="/library" className="block py-1 text-sm font-bold text-app-text-muted">{t('myLibrary')}</Link>
-                                            <Link href="/favorites" className="block py-1 text-sm font-bold text-app-text-muted">{t('myFavorites')}</Link>
-                                        </div>
-                                        <Link
-                                            href="/settings"
+                                    <>
+                                        {/* Mobile Backdrop */}
+                                        <div
+                                            className="lg:hidden fixed inset-0 bg-black/50 z-[190]"
                                             onClick={() => setUserMenuOpen(false)}
-                                            className="block px-4 py-2.5 text-sm font-bold text-app-text-muted hover:text-app-text hover:bg-app-surface transition-colors"
-                                        >
-                                            {t('accountSettings')}
-                                        </Link>
-                                        <button
-                                            type="button"
-                                            onClick={handleLogout}
-                                            className="w-full text-left px-4 py-2.5 text-sm font-bold text-app-text-muted hover:text-app-text hover:bg-app-surface transition-colors"
-                                        >
-                                            {t('logout')}
-                                        </button>
-                                    </div>
+                                        />
+
+                                        {/* Dropdown / Drawer */}
+                                        <div className="
+                                            fixed inset-x-0 top-0 p-6 bg-app-bg border-b border-app-border shadow-2xl z-[200] animate-in slide-in-from-top duration-300
+                                            lg:absolute lg:inset-auto lg:right-0 lg:top-full lg:mt-2 lg:p-0 lg:min-w-[240px] lg:rounded-2xl lg:bg-app-card lg:border lg:shadow-xl lg:animate-in lg:fade-in lg:zoom-in-95
+                                        ">
+                                            {/* Mobile Header with Close Button */}
+                                            <div className="lg:hidden flex items-center justify-between mb-6">
+                                                <span className="text-sm font-black text-app-text-muted uppercase tracking-widest">{t('account')}</span>
+                                                <button
+                                                    onClick={() => setUserMenuOpen(false)}
+                                                    className="w-8 h-8 flex items-center justify-center rounded-full bg-app-surface text-app-text-muted hover:text-app-text"
+                                                >
+                                                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" /></svg>
+                                                </button>
+                                            </div>
+
+                                            <div className="flex items-center gap-3 px-0 lg:px-4 py-0 lg:py-3 border-b-0 lg:border-b border-app-border mb-4 lg:mb-0">
+                                                <div className="w-10 h-10 rounded-full bg-app-primary/10 text-app-primary flex items-center justify-center font-black text-lg shrink-0">
+                                                    {avatarUrl ? (
+                                                        <img src={avatarUrl} alt="" className="w-full h-full object-cover rounded-full" />
+                                                    ) : (
+                                                        (displayName || 'U')[0].toUpperCase()
+                                                    )}
+                                                </div>
+                                                <div className="min-w-0">
+                                                    <p className="text-sm font-bold text-app-text truncate">{displayName || user.email}</p>
+                                                    <p className="text-xs text-app-text-muted truncate">{user.email}</p>
+                                                </div>
+                                            </div>
+
+                                            <div className="lg:hidden space-y-1 mb-4">
+                                                <Link
+                                                    href="/"
+                                                    onClick={() => setUserMenuOpen(false)}
+                                                    className="flex items-center gap-3 px-3 py-3 rounded-xl hover:bg-app-surface text-sm font-bold text-app-text-muted hover:text-app-text transition-colors"
+                                                >
+                                                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" /></svg>
+                                                    {t('discover')}
+                                                </Link>
+                                                <Link
+                                                    href="/library"
+                                                    onClick={() => setUserMenuOpen(false)}
+                                                    className="flex items-center gap-3 px-3 py-3 rounded-xl hover:bg-app-surface text-sm font-bold text-app-text-muted hover:text-app-text transition-colors"
+                                                >
+                                                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 7v8m0 0l3-3m-3 3L5 8m0 0h8M5 8V7" /></svg>
+                                                    {t('myLibrary')}
+                                                </Link>
+                                                <Link
+                                                    href="/favorites"
+                                                    onClick={() => setUserMenuOpen(false)}
+                                                    className="flex items-center gap-3 px-3 py-3 rounded-xl hover:bg-app-surface text-sm font-bold text-app-text-muted hover:text-app-text transition-colors"
+                                                >
+                                                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" /></svg>
+                                                    {t('myFavorites')}
+                                                </Link>
+                                            </div>
+
+                                            <div className="pt-2 lg:pt-1 pb-1">
+                                                <Link
+                                                    href="/settings"
+                                                    onClick={() => setUserMenuOpen(false)}
+                                                    className="flex items-center gap-3 w-full px-3 lg:px-4 py-3 lg:py-2.5 text-sm font-bold text-app-text-muted hover:text-app-text hover:bg-app-surface transition-colors rounded-xl lg:rounded-none"
+                                                >
+                                                    <svg className="w-5 h-5 lg:w-4 lg:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
+                                                    {t('accountSettings')}
+                                                </Link>
+                                                <button
+                                                    type="button"
+                                                    onClick={handleLogout}
+                                                    className="flex items-center gap-3 w-full text-left px-3 lg:px-4 py-3 lg:py-2.5 text-sm font-bold text-red-500 hover:text-red-600 hover:bg-red-500/10 transition-colors rounded-xl lg:rounded-none"
+                                                >
+                                                    <svg className="w-5 h-5 lg:w-4 lg:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" /></svg>
+                                                    {t('logout')}
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </>
                                 )}
                             </div>
                         ) : (
