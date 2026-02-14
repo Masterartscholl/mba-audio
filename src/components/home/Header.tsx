@@ -25,6 +25,7 @@ export const Header: React.FC<HeaderProps> = ({ onOpenMobileSidebar }) => {
     const { query, setQuery } = useSearch();
     const { user, loading, displayName, avatarUrl } = useAuth();
     const [userMenuOpen, setUserMenuOpen] = useState(false);
+    const [isMobileSearchOpen, setIsMobileSearchOpen] = useState(false);
     const userMenuRef = useRef<HTMLDivElement>(null);
 
     useEffect(() => {
@@ -50,6 +51,21 @@ export const Header: React.FC<HeaderProps> = ({ onOpenMobileSidebar }) => {
         }
     }, [userMenuOpen]);
 
+    // Handle mobile back button for search overlay
+    useEffect(() => {
+        if (isMobileSearchOpen) {
+            window.history.pushState({ action: 'search' }, '');
+            const handlePopState = () => setIsMobileSearchOpen(false);
+            window.addEventListener('popstate', handlePopState);
+            return () => {
+                window.removeEventListener('popstate', handlePopState);
+                if (window.history.state?.action === 'search') {
+                    window.history.back();
+                }
+            };
+        }
+    }, [isMobileSearchOpen]);
+
     const navClass = (path: string) =>
         `text-sm font-black uppercase tracking-widest transition-colors ${pathname === path ? 'text-app-primary' : 'text-app-text-muted hover:text-app-text'}`;
 
@@ -61,6 +77,34 @@ export const Header: React.FC<HeaderProps> = ({ onOpenMobileSidebar }) => {
     return (
         <>
             <header className="h-16 lg:h-20 border-b border-app-border px-4 lg:px-10 flex items-center justify-between sticky top-0 bg-app-bg/90 backdrop-blur-xl z-50 transition-all">
+                {/* Mobile Search Overlay */}
+                {isMobileSearchOpen && (
+                    <div className="absolute inset-0 bg-app-bg flex items-center px-4 animate-in fade-in slide-in-from-top-2 duration-200 z-[60]">
+                        <button
+                            onClick={() => setIsMobileSearchOpen(false)}
+                            className="w-10 h-10 flex items-center justify-center text-app-text-muted hover:text-app-text"
+                        >
+                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 19l-7-7 7-7" /></svg>
+                        </button>
+                        <input
+                            autoFocus
+                            type="search"
+                            value={query}
+                            onChange={(e) => setQuery(e.target.value)}
+                            placeholder={t('searchPlaceholder')}
+                            className="flex-1 bg-transparent border-none px-2 py-2 text-sm text-app-text focus:outline-none placeholder:text-app-text-muted font-bold"
+                        />
+                        {query && (
+                            <button
+                                onClick={() => setQuery('')}
+                                className="w-8 h-8 flex items-center justify-center text-app-text-muted"
+                            >
+                                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" /></svg>
+                            </button>
+                        )}
+                    </div>
+                )}
+
                 <div className="flex items-center gap-3 lg:gap-6 flex-1 min-w-0">
                     {/* Mobile sidebar toggle */}
                     <button
@@ -98,8 +142,11 @@ export const Header: React.FC<HeaderProps> = ({ onOpenMobileSidebar }) => {
                     </nav>
 
                     <div className="flex items-center gap-2 lg:gap-4 border-l-0 lg:border-l border-app-border pl-0 lg:pl-8">
-                        {/* Mobile Search Button (Visible only on very small screens if input is hidden) */}
-                        <button className="sm:hidden w-9 h-9 rounded-xl bg-app-surface border border-app-border flex items-center justify-center text-app-text-muted">
+                        {/* Mobile Search Button */}
+                        <button
+                            onClick={() => setIsMobileSearchOpen(true)}
+                            className="sm:hidden w-9 h-9 rounded-xl bg-app-surface border border-app-border flex items-center justify-center text-app-text-muted"
+                        >
                             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
                         </button>
 
