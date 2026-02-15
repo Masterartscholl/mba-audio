@@ -76,7 +76,8 @@ export const TrackList: React.FC<TrackListProps> = ({ filters, currency, selecte
                         'genre_id',
                         'status',
                         'created_at',
-                        'genres(name)',
+                        'genres(name, name_en)',
+                        'modes(name, name_en)',
                     ].join(','),
                     { count: 'exact' }
                 )
@@ -88,6 +89,9 @@ export const TrackList: React.FC<TrackListProps> = ({ filters, currency, selecte
             }
             if (filters.genres?.length > 0) {
                 q = q.in('genre_id', filters.genres);
+            }
+            if (filters.modeId) {
+                q = q.eq('mode_id', filters.modeId);
             }
             const priceMin = filters.priceRange?.[0], priceMax = filters.priceRange?.[1];
             const [boundsMin, boundsMax] = [filters.priceBounds?.[0] ?? 0, filters.priceBounds?.[1] ?? 10000];
@@ -104,10 +108,9 @@ export const TrackList: React.FC<TrackListProps> = ({ filters, currency, selecte
             }
 
             const trimmed = searchQuery.trim();
-            if (trimmed.length > 0) {
-                const pattern = `%${trimmed}%`;
-                q = q.or(`title.ilike.${pattern},artist_name.ilike.${pattern}`);
-            }
+            // If searching, we fetch a larger range to filter client-side
+            // for title, artist, genre, and mood names.
+            const fetchLimit = trimmed.length > 0 ? 499 : 99;
 
             if (sortBy === 'newest' || sortBy === 'relevance') {
                 q = q.order('created_at', { ascending: false });
@@ -117,8 +120,7 @@ export const TrackList: React.FC<TrackListProps> = ({ filters, currency, selecte
                 q = q.order('price', { ascending: false });
             }
 
-            // Sorgu yap (Timeout kaldırıldı)
-            const { data, error: queryError } = await q.range(0, 99);
+            const { data, error: queryError } = await q.range(0, fetchLimit);
 
             if (queryError) {
                 console.error('Tracks query error:', queryError);
@@ -129,21 +131,29 @@ export const TrackList: React.FC<TrackListProps> = ({ filters, currency, selecte
                         [
                             'id', 'title', 'artist_name', 'preview_url', 'image_url',
                             'price', 'bpm', 'category_id', 'genre_id', 'status', 'created_at',
-                            'genres(name)',
+                            'genres(name, name_en)', 'modes(name, name_en)',
                         ].join(','),
                         { count: 'exact' }
                     )
                     .eq('status', 'published')
                     .order('created_at', { ascending: false })
-                    .range(0, 99);
+                    .range(0, fetchLimit);
                 if (fallback.data) {
                     const trimmedInner = searchQuery.trim().toLowerCase();
                     const filtered = trimmedInner
                         ? fallback.data.filter((track: any) => {
                             const genreName = track.genres?.name ? String(track.genres.name).toLowerCase() : '';
+                            const genreNameEn = track.genres?.name_en ? String(track.genres.name_en).toLowerCase() : '';
+                            const moodName = track.modes?.name ? String(track.modes.name).toLowerCase() : '';
+                            const moodNameEn = track.modes?.name_en ? String(track.modes.name_en).toLowerCase() : '';
                             const title = track.title ? String(track.title).toLowerCase() : '';
                             const artist = track.artist_name ? String(track.artist_name).toLowerCase() : '';
-                            return title.includes(trimmedInner) || artist.includes(trimmedInner) || genreName.includes(trimmedInner);
+                            return title.includes(trimmedInner) ||
+                                artist.includes(trimmedInner) ||
+                                genreName.includes(trimmedInner) ||
+                                genreNameEn.includes(trimmedInner) ||
+                                moodName.includes(trimmedInner) ||
+                                moodNameEn.includes(trimmedInner);
                         })
                         : fallback.data;
 
@@ -155,9 +165,17 @@ export const TrackList: React.FC<TrackListProps> = ({ filters, currency, selecte
                 const filtered = trimmedInner
                     ? data.filter((track: any) => {
                         const genreName = track.genres?.name ? String(track.genres.name).toLowerCase() : '';
+                        const genreNameEn = track.genres?.name_en ? String(track.genres.name_en).toLowerCase() : '';
+                        const moodName = track.modes?.name ? String(track.modes.name).toLowerCase() : '';
+                        const moodNameEn = track.modes?.name_en ? String(track.modes.name_en).toLowerCase() : '';
                         const title = track.title ? String(track.title).toLowerCase() : '';
                         const artist = track.artist_name ? String(track.artist_name).toLowerCase() : '';
-                        return title.includes(trimmedInner) || artist.includes(trimmedInner) || genreName.includes(trimmedInner);
+                        return title.includes(trimmedInner) ||
+                            artist.includes(trimmedInner) ||
+                            genreName.includes(trimmedInner) ||
+                            genreNameEn.includes(trimmedInner) ||
+                            moodName.includes(trimmedInner) ||
+                            moodNameEn.includes(trimmedInner);
                     })
                     : data;
 

@@ -3,7 +3,7 @@
 import React from 'react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
-import { useTranslations } from 'next-intl';
+import { useTranslations, useLocale } from 'next-intl';
 import { toast } from 'sonner';
 import { useAuth } from '@/hooks/useAuth';
 import { useAudio } from '@/context/AudioContext';
@@ -21,6 +21,7 @@ interface TrackRowProps {
 
 export const TrackRow: React.FC<TrackRowProps> = ({ track, currency, queue, purchasedTrackIds = [] }) => {
     const t = useTranslations('App');
+    const locale = useLocale();
     const pathname = usePathname();
     const router = useRouter();
     const { user } = useAuth();
@@ -123,7 +124,7 @@ export const TrackRow: React.FC<TrackRowProps> = ({ track, currency, queue, purc
             {/* ORTA SATIR: Genre + BPM pill'leri (mobil) */}
             <div className="w-full flex items-center gap-2 mt-2 lg:hidden">
                 <span className="px-3 py-1 bg-app-surface border border-app-border rounded-lg text-[10px] font-black text-app-text-muted uppercase tracking-widest">
-                    {track.genres?.name || track.genre?.name || 'Vocal'}
+                    {(locale === 'en' ? (track.genres?.name_en || track.genres?.name) : track.genres?.name) || 'Vocal'}
                 </span>
                 <span className="px-2 py-1 rounded-lg bg-app-surface text-[10px] font-black text-app-text uppercase tracking-widest">
                     {track.bpm || '-'} BPM
@@ -133,7 +134,7 @@ export const TrackRow: React.FC<TrackRowProps> = ({ track, currency, queue, purc
             {/* Masaüstü için ayrı Genre sütunu */}
             <div className="hidden lg:block w-32">
                 <span className="px-3 py-1 bg-app-surface border border-app-border rounded-lg text-[10px] font-black text-app-text-muted uppercase tracking-widest">
-                    {track.genres?.name || track.genre?.name || 'Vocal'}
+                    {(locale === 'en' ? (track.genres?.name_en || track.genres?.name) : track.genres?.name) || 'Vocal'}
                 </span>
             </div>
 
