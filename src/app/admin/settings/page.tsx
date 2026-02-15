@@ -104,6 +104,7 @@ export default function SettingsPage() {
             } else if (data) {
                 setSettings({
                     ...data,
+                    default_lang: data.default_lang || 'tr',
                     link_privacy_policy: data.link_privacy_policy ?? '',
                     link_distance_selling: data.link_distance_selling ?? '',
                     link_delivery_return: data.link_delivery_return ?? '',

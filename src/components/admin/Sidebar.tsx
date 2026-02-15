@@ -120,7 +120,7 @@ export const Sidebar = () => {
                                 )}
                             </div>
                             <span className="text-sm font-medium text-admin-text">
-                                {theme === 'dark' ? t('lightMode') : t('darkMode')}
+                                {theme === 'dark' ? t('darkMode') : t('lightMode')}
                             </span>
                         </div>
                         <div className={`w-10 h-5 rounded-full relative transition-colors ${theme === 'dark' ? 'bg-admin-primary' : 'bg-admin-border'}`}>
