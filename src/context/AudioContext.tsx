@@ -23,6 +23,7 @@ interface AudioContextType {
     queue: Track[];
     currentIndex: number;
     repeatMode: RepeatMode;
+    loadingTrackId: string | number | null; // NEW: Track which audio is currently loading
     playTrack: (track: Track, queue?: Track[]) => void;
     togglePlay: () => void;
     setVolume: (volume: number) => void;
@@ -31,6 +32,9 @@ interface AudioContextType {
     previousTrack: () => void;
     cycleRepeat: () => void;
 }
+
+// Global cache for loaded audio blobs (session-based, cleared on page refresh)
+const audioBlobCache: Map<string, string> = new Map();
 
 const AudioContext = createContext<AudioContextType | undefined>(undefined);
 
@@ -43,19 +47,46 @@ export const AudioProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     const [queue, setQueue] = useState<Track[]>([]);
     const [currentIndex, setCurrentIndex] = useState(0);
     const [repeatMode, setRepeatMode] = useState<RepeatMode>('off');
+    const [loadingTrackId, setLoadingTrackId] = useState<string | number | null>(null);
 
     const audioRef = useRef<HTMLAudioElement | null>(null);
     const queueRef = useRef<Track[]>([]);
     const currentIndexRef = useRef(0);
     const repeatModeRef = useRef<RepeatMode>('off');
 
-    const playTrackAt = useCallback((track: Track) => {
+    const playTrackAt = useCallback(async (track: Track) => {
         setCurrentTrack(track);
-        if (audioRef.current) {
-            audioRef.current.src = track.preview_url;
+
+        if (!audioRef.current) return;
+
+        try {
+            // Check if we have this audio in cache
+            let blobUrl = audioBlobCache.get(track.preview_url);
+
+            if (!blobUrl) {
+                // Not in cache, need to fetch it
+                setLoadingTrackId(track.id);
+
+                const response = await fetch(track.preview_url);
+                if (!response.ok) throw new Error('Failed to load audio');
+
+                const blob = await response.blob();
+                blobUrl = URL.createObjectURL(blob);
+
+                // Cache the blob URL
+                audioBlobCache.set(track.preview_url, blobUrl);
+            }
+
+            setLoadingTrackId(null);
+
+            audioRef.current.src = blobUrl;
             audioRef.current.currentTime = 0;
-            audioRef.current.play().catch(() => {});
+            await audioRef.current.play();
             setIsPlaying(true);
+        } catch (error) {
+            console.error('Error loading/playing audio:', error);
+            setLoadingTrackId(null);
+            setIsPlaying(false);
         }
     }, []);
 
@@ -95,7 +126,7 @@ export const AudioProvider: React.FC<{ children: React.ReactNode }> = ({ childre
             if (mode === 'one') {
                 if (audioRef.current) {
                     audioRef.current.currentTime = 0;
-                    audioRef.current.play().catch(() => {});
+                    audioRef.current.play().catch(() => { });
                 }
                 return;
             }
@@ -152,7 +183,7 @@ export const AudioProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         if (isPlaying) {
             audioRef.current.pause();
         } else {
-            audioRef.current.play().catch(() => {});
+            audioRef.current.play().catch(() => { });
         }
         setIsPlaying(!isPlaying);
     }, [currentTrack, isPlaying]);
@@ -177,7 +208,7 @@ export const AudioProvider: React.FC<{ children: React.ReactNode }> = ({ childre
             playTrackAt(queue[0]);
         } else {
             seek(0);
-            if (audioRef.current) audioRef.current.play().catch(() => {});
+            if (audioRef.current) audioRef.current.play().catch(() => { });
         }
     }, [queue, currentIndex, repeatMode, playTrackAt, seek]);
 
@@ -209,6 +240,7 @@ export const AudioProvider: React.FC<{ children: React.ReactNode }> = ({ childre
             queue,
             currentIndex,
             repeatMode,
+            loadingTrackId,
             playTrack,
             togglePlay,
             setVolume,

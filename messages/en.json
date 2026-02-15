@@ -195,6 +195,7 @@
         "description": "Find the perfect track for your project from thousands of items."
     },
     "App": {
+        "account": "Account",
         "searchPlaceholder": "Search tracks, artists, moods...",
         "discover": "Discover",
         "myLibrary": "My Library",

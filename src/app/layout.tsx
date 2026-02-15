@@ -23,6 +23,7 @@ export const metadata: Metadata = {
 };
 
 import { ThemeProvider } from "@/components/ThemeProvider";
+import { AuthProvider } from "@/context/AuthContext";
 import { AudioProvider } from "@/context/AudioContext";
 import { CartProvider } from "@/context/CartContext";
 import { FavoritesProvider } from "@/context/FavoritesContext";
@@ -49,20 +50,22 @@ export default async function RootLayout({
             enableSystem
             disableTransitionOnChange
           >
-            <AudioProvider>
-              <CartProvider>
-                <FavoritesProvider>
-                  <SearchProvider>
-                    <Suspense fallback={null}>
-                      <AuthRefreshSync />
-                    </Suspense>
-                    <ProfileCompleteGuard />
-                    {children}
-                    <Toaster position="top-right" richColors theme="dark" />
-                  </SearchProvider>
-                </FavoritesProvider>
-              </CartProvider>
-            </AudioProvider>
+            <AuthProvider>
+              <AudioProvider>
+                <CartProvider>
+                  <FavoritesProvider>
+                    <SearchProvider>
+                      <Suspense fallback={null}>
+                        <AuthRefreshSync />
+                      </Suspense>
+                      <ProfileCompleteGuard />
+                      {children}
+                      <Toaster position="top-right" richColors theme="dark" />
+                    </SearchProvider>
+                  </FavoritesProvider>
+                </CartProvider>
+              </AudioProvider>
+            </AuthProvider>
           </ThemeProvider>
         </NextIntlClientProvider>
       </body>

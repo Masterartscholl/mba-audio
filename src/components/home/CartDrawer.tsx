@@ -13,24 +13,30 @@ export const CartDrawer: React.FC = () => {
 
     // Handle mobile back button to close drawer
     React.useEffect(() => {
-        if (isOpen) {
-            // Push a fake state to history
-            window.history.pushState({ drawer: 'cart' }, '');
+        if (!isOpen) return;
 
-            const handlePopState = () => {
+        // Push a fake state to history
+        window.history.pushState({ drawer: 'cart' }, '');
+
+        const handlePopState = (e: PopStateEvent) => {
+            if (e.state?.drawer === 'cart' || !e.state) {
                 closeCart();
-            };
+            }
+        };
 
-            window.addEventListener('popstate', handlePopState);
+        window.addEventListener('popstate', handlePopState);
 
-            return () => {
-                window.removeEventListener('popstate', handlePopState);
-                // If closing manually (not via back button), clear the pushed state
+        return () => {
+            window.removeEventListener('popstate', handlePopState);
+            // Only manipulate history if we're still in cart state
+            try {
                 if (window.history.state?.drawer === 'cart') {
                     window.history.back();
                 }
-            };
-        }
+            } catch (err) {
+                // Ignore history errors
+            }
+        };
     }, [isOpen, closeCart]);
 
     return (

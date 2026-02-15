@@ -20,11 +20,24 @@ export default function Home() {
 
   const fetchSettings = async () => {
     try {
-      const { data, error } = await supabase.from('settings').select('currency').eq('id', 1).single();
-      if (error) console.error('Settings fetch error:', error);
-      if (data) setCurrency(data.currency);
+      const { data, error } = await supabase
+        .from('settings')
+        .select('currency')
+        .eq('id', 1)
+        .maybeSingle(); // Use maybeSingle instead of single to avoid 406 errors
+
+      if (error) {
+        console.warn('Settings fetch error:', error.message);
+        // Keep default currency (TL)
+        return;
+      }
+
+      if (data?.currency) {
+        setCurrency(data.currency);
+      }
     } catch (err) {
-      console.error('Settings fetch failed:', err);
+      console.warn('Settings fetch failed, using default currency');
+      // Keep default currency (TL)
     }
   };
 

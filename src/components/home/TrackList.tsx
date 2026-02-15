@@ -230,12 +230,12 @@ export const TrackList: React.FC<TrackListProps> = ({ filters, currency, selecte
             </div>
 
             <div className="hidden lg:flex px-10 py-4 text-[11px] font-black text-app-text-muted uppercase tracking-[0.2em] border-b border-app-border bg-app-surface">
-                <div className="w-12"></div>
-                <div className="flex-1 pr-8">{t('titleArtist')}</div>
+                <div className="w-12 flex-shrink-0"></div>
+                <div className="flex-1 min-w-0 pr-8">{t('titleArtist')}</div>
                 <div className="w-32">{t('genre')}</div>
                 <div className="w-64 px-8">{t('waveform')}</div>
                 <div className="w-20 text-center">BPM</div>
-                <div className="w-40 text-right">{t('action')}</div>
+                <div className="w-48 text-right pr-4">{t('action')}</div>
             </div>
 
             <div className="flex-1">

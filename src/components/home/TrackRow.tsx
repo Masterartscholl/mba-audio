@@ -24,10 +24,11 @@ export const TrackRow: React.FC<TrackRowProps> = ({ track, currency, queue, purc
     const pathname = usePathname();
     const router = useRouter();
     const { user } = useAuth();
-    const { currentTrack, isPlaying, playTrack, togglePlay, progress, duration } = useAudio();
+    const { currentTrack, isPlaying, playTrack, togglePlay, progress, duration, loadingTrackId } = useAudio();
     const { addItem } = useCart();
     const { isFavorite, toggleFavorite } = useFavorites();
     const isActive = currentTrack?.id === track.id;
+    const isLoading = loadingTrackId === track.id;
     const fav = isFavorite(track.id);
     const isPurchased = purchasedTrackIds.includes(Number(track.id));
 
@@ -42,6 +43,7 @@ export const TrackRow: React.FC<TrackRowProps> = ({ track, currency, queue, purc
 
     // Misafir kullanıcılar da müzik dinleyebilsin; diğer aksiyonlar hâlâ login ister
     const handlePlay = () => {
+        if (isLoading) return; // Prevent clicking while loading
         if (isActive) {
             togglePlay();
         } else {
@@ -88,11 +90,19 @@ export const TrackRow: React.FC<TrackRowProps> = ({ track, currency, queue, purc
             <div className="w-12 flex-shrink-0">
                 <button
                     onClick={handlePlay}
-                    className={`w-10 h-10 rounded-full flex items-center justify-center transition-all ${isActive && isPlaying
-                        ? 'bg-app-primary text-app-primary-foreground scale-110 shadow-lg shadow-app-primary/20'
-                        : 'bg-app-surface text-app-text hover:bg-app-primary hover:text-app-primary-foreground group-hover:scale-105'
+                    disabled={isLoading}
+                    className={`w-10 h-10 rounded-full flex items-center justify-center transition-all ${isLoading
+                        ? 'bg-app-surface text-app-text-muted cursor-wait'
+                        : isActive && isPlaying
+                            ? 'bg-app-primary text-app-primary-foreground scale-110 shadow-lg shadow-app-primary/20'
+                            : 'bg-app-surface text-app-text hover:bg-app-primary hover:text-app-primary-foreground group-hover:scale-105'
                         }`}>
-                    {isActive && isPlaying ? (
+                    {isLoading ? (
+                        <svg className="w-5 h-5 animate-spin" fill="none" viewBox="0 0 24 24">
+                            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="3"></circle>
+                            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                        </svg>
+                    ) : isActive && isPlaying ? (
                         <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z" /></svg>
                     ) : (
                         <svg className="w-4 h-4 ml-0.5" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z" /></svg>
@@ -139,48 +149,91 @@ export const TrackRow: React.FC<TrackRowProps> = ({ track, currency, queue, purc
             </div>
 
             {/* BPM sütunu sadece desktop'ta */}
-            <div className="hidden lg:flex w-24 justify-center">
+            <div className="hidden lg:flex w-20 justify-center items-center">
                 <span className="text-xs font-black text-app-text">{track.bpm || '-'}</span>
             </div>
 
-            {/* Favori + Action */}
-            <div className="w-full lg:w-52 flex items-center justify-between lg:justify-end gap-3 mt-3 lg:mt-0 lg:ml-6">
-                <button
-                    onClick={handleFavorite}
-                    className={`w-9 h-9 rounded-lg flex items-center justify-center transition-all ${fav ? 'text-app-primary' : 'text-app-text-muted hover:text-app-primary/80'}`}
-                    aria-label={fav ? 'Favorilerden çıkar' : 'Favorilere ekle'}
-                >
-                    <svg className="w-5 h-5" fill={fav ? 'currentColor' : 'none'} stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" /></svg>
-                </button>
-                {isPurchased ? (
-                    <span className="flex flex-col items-end gap-1 text-[11px] font-black text-app-text-muted uppercase tracking-widest">
-                        <span className="text-xs">{t('purchased')}</span>
-                        <Link href="/library" className="text-app-primary hover:underline text-[10px]">
-                            {t('downloadInLibrary')}
-                        </Link>
-                    </span>
-                ) : (
-                    <div className="flex-1 lg:flex-none flex flex-col items-end gap-1 w-full lg:w-auto">
-                        <span className="text-[11px] font-black text-[#3b82f6] uppercase tracking-widest">
-                            {formatPrice(track.price, currency)}
+            {/* Favori + Action - Desktop için yeniden yapılandırıldı */}
+            <div className="w-full lg:w-48 flex flex-col lg:flex-row items-start lg:items-center gap-3 mt-3 lg:mt-0 lg:pr-4">
+                {/* Mobil: Favori solda, fiyat ve butonlar sağda */}
+                <div className="w-full lg:hidden flex items-start justify-between gap-3">
+                    <button
+                        onClick={handleFavorite}
+                        className={`w-9 h-9 rounded-lg flex items-center justify-center transition-all flex-shrink-0 ${fav ? 'text-app-primary' : 'text-app-text-muted hover:text-app-primary/80'}`}
+                        aria-label={fav ? 'Favorilerden çıkar' : 'Favorilere ekle'}
+                    >
+                        <svg className="w-5 h-5" fill={fav ? 'currentColor' : 'none'} stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" /></svg>
+                    </button>
+
+                    {isPurchased ? (
+                        <span className="flex flex-col items-end gap-1 text-[11px] font-black text-app-text-muted uppercase tracking-widest">
+                            <span className="text-xs">{t('purchased')}</span>
+                            <Link href="/library" className="text-app-primary hover:underline text-[10px]">
+                                {t('downloadInLibrary')}
+                            </Link>
                         </span>
-                        {/* Mobilde tam genişlikli iki buton, desktop'ta yan yana küçük butonlar */}
-                        <div className="flex flex-col sm:flex-row w-full lg:w-auto gap-2">
-                            <button
-                                onClick={handleAddToCart}
-                                className="w-full sm:w-auto px-3 py-2 rounded-xl border border-app-border text-[10px] font-black text-app-text-muted uppercase tracking-widest hover:border-app-primary hover:text-app-primary transition-all bg-app-surface/60"
-                            >
-                                {t('addToCartShort')}
-                            </button>
-                            <button
-                                onClick={handleQuickBuy}
-                                className="w-full sm:w-auto px-3 py-2 rounded-xl bg-app-primary text-[10px] font-black text-app-primary-foreground uppercase tracking-widest hover:bg-app-primary/90 transition-all"
-                            >
-                                {t('quickBuy')}
-                            </button>
+                    ) : (
+                        <div className="flex-1 flex flex-col items-end gap-2">
+                            <span className="text-sm font-black text-[#3b82f6] uppercase tracking-wider">
+                                {formatPrice(track.price, currency)}
+                            </span>
+                            <div className="flex flex-col w-full gap-2">
+                                <button
+                                    onClick={handleAddToCart}
+                                    className="w-full px-4 py-2 rounded-xl border border-app-border text-[10px] font-black text-app-text-muted uppercase tracking-widest hover:border-app-primary hover:text-app-primary transition-all bg-app-surface/60"
+                                >
+                                    {t('addToCartShort')}
+                                </button>
+                                <button
+                                    onClick={handleQuickBuy}
+                                    className="w-full px-4 py-2 rounded-xl bg-app-primary text-[10px] font-black text-app-primary-foreground uppercase tracking-widest hover:bg-app-primary/90 transition-all"
+                                >
+                                    {t('quickBuy')}
+                                </button>
+                            </div>
                         </div>
-                    </div>
-                )}
+                    )}
+                </div>
+
+                {/* Desktop: Favori + Fiyat + Butonlar alt alta */}
+                <div className="hidden lg:flex w-full items-center justify-end gap-3">
+                    <button
+                        onClick={handleFavorite}
+                        className={`w-9 h-9 rounded-lg flex items-center justify-center transition-all flex-shrink-0 ${fav ? 'text-app-primary' : 'text-app-text-muted hover:text-app-primary/80'}`}
+                        aria-label={fav ? 'Favorilerden çıkar' : 'Favorilere ekle'}
+                    >
+                        <svg className="w-5 h-5" fill={fav ? 'currentColor' : 'none'} stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" /></svg>
+                    </button>
+
+                    {isPurchased ? (
+                        <span className="flex flex-col items-end gap-1 text-[11px] font-black text-app-text-muted uppercase tracking-widest">
+                            <span className="text-xs">{t('purchased')}</span>
+                            <Link href="/library" className="text-app-primary hover:underline text-[10px]">
+                                {t('downloadInLibrary')}
+                            </Link>
+                        </span>
+                    ) : (
+                        <div className="flex flex-col items-end gap-2">
+                            <span className="text-sm font-black text-[#3b82f6] uppercase tracking-wider">
+                                {formatPrice(track.price, currency)}
+                            </span>
+                            <div className="flex flex-col gap-1.5">
+                                <button
+                                    onClick={handleAddToCart}
+                                    className="px-4 py-1.5 rounded-xl border border-app-border text-[10px] font-black text-app-text-muted uppercase tracking-widest hover:border-app-primary hover:text-app-primary transition-all bg-app-surface/60 whitespace-nowrap"
+                                >
+                                    {t('addToCartShort')}
+                                </button>
+                                <button
+                                    onClick={handleQuickBuy}
+                                    className="px-4 py-1.5 rounded-xl bg-app-primary text-[10px] font-black text-app-primary-foreground uppercase tracking-widest hover:bg-app-primary/90 transition-all whitespace-nowrap"
+                                >
+                                    {t('quickBuy')}
+                                </button>
+                            </div>
+                        </div>
+                    )}
+                </div>
             </div>
         </div>
     );

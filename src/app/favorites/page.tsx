@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import Link from 'next/link';
 import { useTranslations } from 'next-intl';
 import { Sidebar } from '@/components/home/Sidebar';
@@ -14,9 +14,16 @@ export default function FavoritesPage() {
     const { favorites } = useFavorites();
     const [currency, setCurrency] = useState('TL');
 
+    // Filter out deleted/unpublished tracks
+    const publishedFavorites = useMemo(() => {
+        return favorites.filter(track =>
+            !track.status || track.status === 'published'
+        );
+    }, [favorites]);
+
     return (
         <div className="flex flex-col min-h-screen lg:flex-row lg:h-screen lg:overflow-hidden bg-app-bg selection:bg-[#3b82f6]/30">
-            <Sidebar filters={{}} onFilterChange={() => {}} />
+            <Sidebar filters={{}} onFilterChange={() => { }} />
             <div className="flex-1 flex flex-col min-w-0">
                 <Header />
                 <main className="flex-1 flex flex-col overflow-hidden">
@@ -25,24 +32,24 @@ export default function FavoritesPage() {
                             <div>
                                 <h2 className="text-2xl lg:text-4xl font-black text-white tracking-tighter uppercase leading-none">{t('favoritesTitle')}</h2>
                                 <p className="text-[#64748b] text-xs lg:text-sm font-bold mt-3 lg:mt-4 uppercase tracking-widest">
-                                    {favorites.length} {t('tracksCount')}
+                                    {publishedFavorites.length} {t('tracksCount')}
                                 </p>
                             </div>
                         </div>
 
                         <div className="hidden lg:flex px-10 py-4 text-[11px] font-black text-[#64748b] uppercase tracking-[0.2em] border-b border-white/5 bg-white/[0.01]">
-                            <div className="w-12"></div>
-                            <div className="flex-1 pr-8">{t('titleArtist')}</div>
+                            <div className="w-12 flex-shrink-0"></div>
+                            <div className="flex-1 min-w-0 pr-8">{t('titleArtist')}</div>
                             <div className="w-32">{t('genre')}</div>
                             <div className="w-64 px-8">{t('waveform')}</div>
                             <div className="w-20 text-center">BPM</div>
-                            <div className="w-40 text-right">{t('action')}</div>
+                            <div className="w-48 text-right pr-4">{t('action')}</div>
                         </div>
 
                         <div className="flex-1">
-                            {favorites.length > 0 ? (
-                                favorites.map(track => (
-                                    <TrackRow key={track.id} track={track} currency={currency} queue={favorites} />
+                            {publishedFavorites.length > 0 ? (
+                                publishedFavorites.map(track => (
+                                    <TrackRow key={track.id} track={track} currency={currency} queue={publishedFavorites} />
                                 ))
                             ) : (
                                 <div className="flex flex-col items-center justify-center py-32 text-[#64748b]">

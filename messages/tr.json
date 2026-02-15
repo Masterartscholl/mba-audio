@@ -196,6 +196,7 @@
         "description": "Binlerce eser arasından projenize en uygun olanı bulun."
     },
     "App": {
+        "account": "Hesap",
         "searchPlaceholder": "Parça, sanatçı, tür ara...",
         "discover": "Keşfet",
         "myLibrary": "Kütüphanem",
