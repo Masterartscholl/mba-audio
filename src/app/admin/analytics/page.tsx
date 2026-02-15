@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { supabase } from '@/lib/supabase';
 import { SkeletonLoader } from '@/components/admin/SkeletonLoader';
-import { useTranslations } from 'next-intl';
+import { useTranslations, useLocale } from 'next-intl';
 import { formatPrice } from '@/utils/format';
 import {
     XAxis,
@@ -32,6 +32,7 @@ export default function AnalyticsPage() {
 
     const t = useTranslations('Analytics');
     const tc = useTranslations('Common');
+    const locale = useLocale();
 
     useEffect(() => {
         fetchAnalytics();
@@ -57,7 +58,7 @@ export default function AnalyticsPage() {
                         id,
                         title,
                         category_id,
-                        categories ( name )
+                        categories ( name, name_en )
                     ),
                     profiles (
                         id,
@@ -79,7 +80,7 @@ export default function AnalyticsPage() {
 
                 const catMap: any = {};
                 orders.forEach((o: any) => {
-                    const catName = o.tracks?.categories?.name || 'Unknown';
+                    const catName = locale === 'en' ? (o.tracks?.categories?.name_en || o.tracks?.categories?.name) : o.tracks?.categories?.name || 'Unknown';
                     catMap[catName] = (catMap[catName] || 0) + 1;
                 });
                 const popularCategory = Object.entries(catMap).sort((a: any, b: any) => b[1] - a[1])[0]?.[0] || '-';
@@ -286,7 +287,7 @@ export default function AnalyticsPage() {
                                         <td className="px-12 py-8 font-black text-admin-text text-sm uppercase leading-tight max-w-[200px] truncate">{order.tracks?.title}</td>
                                         <td className="px-12 py-8">
                                             <span className="px-4 py-2 bg-admin-bg border border-admin-border rounded-xl text-[10px] font-black uppercase tracking-widest text-admin-text-muted shadow-sm group-hover/row:border-admin-primary/30 group-hover/row:text-admin-text transition-all">
-                                                {order.tracks?.categories?.name}
+                                                {locale === 'en' ? (order.tracks?.categories?.name_en || order.tracks?.categories?.name) : order.tracks?.categories?.name}
                                             </span>
                                         </td>
                                         <td className="px-12 py-8 font-black text-admin-primary text-lg tabular-nums">{formatPrice(order.amount, currency)}</td>
@@ -383,7 +384,9 @@ export default function AnalyticsPage() {
                                                 <div>
                                                     <span className="text-[10px] font-black text-admin-primary uppercase tracking-[0.25em] block mb-3">{t('currentOrder')}</span>
                                                     <h4 className="text-2xl font-black text-white uppercase tracking-tight mb-2">{selectedOrder.tracks?.title}</h4>
-                                                    <span className="px-3 py-1 bg-admin-primary/20 rounded-lg text-[10px] font-black text-admin-primary uppercase tracking-[0.2em]">{selectedOrder.tracks?.categories?.name}</span>
+                                                    <span className="px-3 py-1 bg-admin-primary/20 rounded-lg text-[10px] font-black text-admin-primary uppercase tracking-[0.2em]">
+                                                        {locale === 'en' ? (selectedOrder.tracks?.categories?.name_en || selectedOrder.tracks?.categories?.name) : selectedOrder.tracks?.categories?.name}
+                                                    </span>
                                                 </div>
                                                 <div className="text-left sm:text-right">
                                                     <div className="text-3xl font-black text-admin-primary mb-1 tracking-tighter">{formatPrice(selectedOrder.amount, currency)}</div>
@@ -406,7 +409,9 @@ export default function AnalyticsPage() {
                                                         <div className="flex justify-between items-start">
                                                             <div>
                                                                 <h5 className="text-sm font-black text-admin-text-muted uppercase group-hover/item:text-white transition-colors tracking-tight">{h.tracks?.title}</h5>
-                                                                <span className="text-xs font-black text-admin-primary/50 uppercase tracking-[0.1em]">{h.tracks?.categories?.name}</span>
+                                                                <span className="text-xs font-black text-admin-primary/50 uppercase tracking-[0.1em]">
+                                                                    {locale === 'en' ? (h.tracks?.categories?.name_en || h.tracks?.categories?.name) : h.tracks?.categories?.name}
+                                                                </span>
                                                             </div>
                                                             <div className="text-right">
                                                                 <div className="text-sm font-black text-white">{formatPrice(h.amount, currency)}</div>

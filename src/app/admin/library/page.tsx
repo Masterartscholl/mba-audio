@@ -14,9 +14,9 @@ type Track = {
     category_id: number;
     genre_id: number;
     created_at: string;
-    categories: { name: string } | null;
-    genres: { name: string } | null;
-    modes: { name: string } | null;
+    categories: { name: string; name_en?: string } | null;
+    genres: { name: string; name_en?: string } | null;
+    modes: { name: string; name_en?: string } | null;
     status: string;
     price: number | null;
 };
@@ -24,6 +24,7 @@ type Track = {
 type Mode = {
     id: number;
     name: string;
+    name_en?: string;
     category_id: number;
 };
 
@@ -41,54 +42,59 @@ export default function LibraryPage() {
     const [settings, setSettings] = useState({ defaultPrice: 0, currency: 'TL' });
 
     const fetchTracks = async () => {
-        setLoading(true);
-        const { data, error } = await supabase
-            .from('tracks')
-            .select(`
-                id,
-                title,
-                bpm,
-                mode_id,
-                category_id,
-                genre_id,
-                created_at,
-                status,
-                price,
-                categories ( name ),
-                genres ( name ),
-                modes ( name )
-            `)
-            .order('created_at', { ascending: false });
+        try {
+            setLoading(true);
+            const { data, error } = await supabase
+                .from('tracks')
+                .select(`
+                    id,
+                    title,
+                    bpm,
+                    mode_id,
+                    category_id,
+                    genre_id,
+                    created_at,
+                    status,
+                    price,
+                    categories ( name, name_en ),
+                    genres ( name, name_en ),
+                    modes ( name, name_en )
+                `)
+                .order('created_at', { ascending: false });
 
-        const { data: modesData } = await supabase.from('modes').select('*').order('name');
+            const { data: modesData } = await supabase.from('modes').select('*').order('name');
 
-        const { data: settingsData } = await supabase
-            .from('settings')
-            .select('default_price, currency')
-            .eq('id', 1)
-            .maybeSingle();
+            const { data: settingsData } = await supabase
+                .from('settings')
+                .select('default_price, currency')
+                .eq('id', 1)
+                .maybeSingle();
 
-        if (error) {
-            console.error('Error fetching tracks:', error);
-        } else if (data) {
-            const formattedTracks = (data as any[]).map(track => ({
-                ...track,
-                categories: Array.isArray(track.categories) ? track.categories[0] : track.categories,
-                genres: Array.isArray(track.genres) ? track.genres[0] : track.genres,
-                modes: Array.isArray(track.modes) ? track.modes[0] : track.modes
-            }));
-            setTracks(formattedTracks);
+            if (error) {
+                console.error('Error fetching tracks:', error);
+            } else if (data) {
+                const formattedTracks = (data as any[]).map(track => ({
+                    ...track,
+                    categories: Array.isArray(track.categories) ? track.categories[0] : track.categories,
+                    genres: Array.isArray(track.genres) ? track.genres[0] : track.genres,
+                    modes: Array.isArray(track.modes) ? track.modes[0] : track.modes
+                }));
+                setTracks(formattedTracks);
+            }
+
+            if (modesData) setModes(modesData);
+
+            if (settingsData) {
+                setSettings({
+                    defaultPrice: Number(settingsData.default_price),
+                    currency: settingsData.currency || 'TL'
+                });
+            }
+        } catch (err) {
+            console.error('fetchTracks catches:', err);
+        } finally {
+            setLoading(false);
         }
-
-        if (modesData) setModes(modesData);
-
-        if (settingsData) {
-            setSettings({
-                defaultPrice: Number(settingsData.default_price),
-                currency: settingsData.currency || 'TL'
-            });
-        }
-        setLoading(false);
     };
 
     useEffect(() => {
@@ -213,13 +219,13 @@ export default function LibraryPage() {
                                             <div className="font-bold text-admin-text">{track.title}</div>
                                         </td>
                                         <td className="px-8 py-6 text-admin-text-muted">
-                                            {track.categories?.name || '-'}
+                                            {locale === 'en' ? (track.categories?.name_en || track.categories?.name) : track.categories?.name || '-'}
                                         </td>
                                         <td className="px-8 py-6 text-admin-text-muted">
-                                            {track.genres?.name || '-'}
+                                            {locale === 'en' ? (track.genres?.name_en || track.genres?.name) : track.genres?.name || '-'}
                                         </td>
                                         <td className="px-8 py-6 text-admin-primary font-medium">
-                                            {track.modes?.name || '-'}
+                                            {locale === 'en' ? (track.modes?.name_en || track.modes?.name) : track.modes?.name || '-'}
                                         </td>
                                         <td className="px-8 py-6 text-admin-text-muted">
                                             {track.bpm || '-'}
@@ -313,7 +319,9 @@ export default function LibraryPage() {
                                                 {modes
                                                     .filter(m => m.category_id === editingTrack.category_id)
                                                     .map(m => (
-                                                        <option key={m.id} value={m.id}>{m.name}</option>
+                                                        <option key={m.id} value={m.id}>
+                                                            {locale === 'en' ? (m.name_en || m.name) : m.name}
+                                                        </option>
                                                     ))
                                                 }
                                             </select>

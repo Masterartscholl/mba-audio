@@ -4,7 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { supabase } from '@/lib/supabase';
 import { QuickAddModal } from '@/components/admin/QuickAddModal';
 import { SkeletonLoader } from '@/components/admin/SkeletonLoader';
-import { useTranslations } from 'next-intl';
+import { useTranslations, useLocale } from 'next-intl';
 
 type Category = {
     id: number;
@@ -29,6 +29,7 @@ type Mode = {
 export default function CategoriesPage() {
     const t = useTranslations('Categories');
     const tc = useTranslations('Common');
+    const locale = useLocale();
     const [categories, setCategories] = useState<Category[]>([]);
     const [genres, setGenres] = useState<Genre[]>([]);
     const [modes, setModes] = useState<Mode[]>([]);
@@ -39,15 +40,20 @@ export default function CategoriesPage() {
     const [activeCategoryId, setActiveCategoryId] = useState<number | string>("");
 
     const fetchData = async () => {
-        setLoading(true);
-        const { data: catData } = await supabase.from('categories').select('*').order('name');
-        const { data: genData } = await supabase.from('genres').select('*').order('name');
-        const { data: modeData } = await supabase.from('modes').select('*').order('name');
+        try {
+            setLoading(true);
+            const { data: catData } = await supabase.from('categories').select('*').order('name');
+            const { data: genData } = await supabase.from('genres').select('*').order('name');
+            const { data: modeData } = await supabase.from('modes').select('*').order('name');
 
-        if (catData) setCategories(catData);
-        if (genData) setGenres(genData);
-        if (modeData) setModes(modeData);
-        setLoading(false);
+            if (catData) setCategories(catData);
+            if (genData) setGenres(genData);
+            if (modeData) setModes(modeData);
+        } catch (err) {
+            console.error('fetchData catches:', err);
+        } finally {
+            setLoading(false);
+        }
     };
 
     useEffect(() => {
@@ -126,7 +132,9 @@ export default function CategoriesPage() {
                                             <td className="px-8 py-6 align-top border-r border-admin-border/50">
                                                 <div className="flex items-center justify-between">
                                                     <div>
-                                                        <div className="font-bold text-admin-text text-lg">{cat.name}</div>
+                                                        <div className="font-bold text-admin-text text-lg">
+                                                            {locale === 'en' ? (cat.name_en || cat.name) : cat.name}
+                                                        </div>
                                                         <div className="text-[10px] text-admin-text-muted mt-1 uppercase tracking-widest">{catGenres.length} {t('genres')} / {catModes.length} {t('modes')}</div>
                                                     </div>
                                                     <button
@@ -142,7 +150,7 @@ export default function CategoriesPage() {
                                                 <div className="flex flex-wrap gap-2 items-start">
                                                     {catGenres.length > 0 ? catGenres.map(g => (
                                                         <span key={g.id} className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg bg-admin-bg border border-admin-border text-sm text-admin-text-muted group hover:border-admin-primary/50 transition-all">
-                                                            {g.name}
+                                                            {locale === 'en' ? (g.name_en || g.name) : g.name}
                                                             <button
                                                                 onClick={() => handleDeleteGenre(g.id)}
                                                                 className="text-admin-text-muted hover:text-red-400 transition-colors p-0.5" title="Sil">
@@ -168,7 +176,7 @@ export default function CategoriesPage() {
                                                 <div className="flex flex-wrap gap-2 items-start">
                                                     {catModes.length > 0 ? catModes.map(m => (
                                                         <span key={m.id} className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg bg-admin-primary/5 border border-admin-primary/20 text-sm text-admin-primary group hover:border-admin-primary/50 transition-all">
-                                                            {m.name}
+                                                            {locale === 'en' ? (m.name_en || m.name) : m.name}
                                                             <button
                                                                 onClick={() => handleDeleteMode(m.id)}
                                                                 className="text-admin-primary/60 hover:text-red-400 transition-colors p-0.5" title="Sil">

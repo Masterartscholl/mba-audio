@@ -9,17 +9,20 @@ import { formatPrice } from '@/utils/format';
 type Category = {
     id: number;
     name: string;
+    name_en?: string;
 };
 
 type Genre = {
     id: number;
     name: string;
+    name_en?: string;
     category_id: number;
 };
 
 type Mode = {
     id: number;
     name: string;
+    name_en?: string;
     category_id: number;
 };
 
@@ -62,12 +65,12 @@ export default function AdminDashboard() {
     const fetchData = async () => {
         setLoading(true);
         try {
-            const { data: catData } = await supabase.from('categories').select('*').order('name');
-            const { data: genData } = await supabase.from('genres').select('*').order('name');
-            const { data: modeData } = await supabase.from('modes').select('*').order('name');
+            const { data: catData } = await supabase.from('categories').select('id, name, name_en').order('name');
+            const { data: genData } = await supabase.from('genres').select('id, name, name_en, category_id').order('name');
+            const { data: modeData } = await supabase.from('modes').select('id, name, name_en, category_id').order('name');
             const { data: trackData } = await supabase
                 .from('tracks')
-                .select('*, categories(name), genres(name), modes(name)')
+                .select('*, categories(name, name_en), genres(name, name_en), modes(name, name_en)')
                 .order('created_at', { ascending: false })
                 .limit(5);
 
@@ -312,7 +315,11 @@ export default function AdminDashboard() {
                                             onChange={handleChange}
                                             className="w-full bg-admin-bg border border-admin-border rounded-xl px-4 py-3.5 text-admin-text appearance-none focus:outline-none focus:border-admin-primary/50 focus:ring-1 focus:ring-admin-primary/50 cursor-pointer font-medium">
                                             <option value="">{t('selectFile')}</option>
-                                            {categories.map(cat => <option key={cat.id} value={cat.id}>{cat.name}</option>)}
+                                            {categories.map(cat => (
+                                                <option key={cat.id} value={cat.id}>
+                                                    {locale === 'en' ? (cat.name_en || cat.name) : cat.name}
+                                                </option>
+                                            ))}
                                         </select>
                                         <svg className="w-4 h-4 text-admin-text-muted absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" /></svg>
                                     </div>
@@ -329,7 +336,11 @@ export default function AdminDashboard() {
                                                 disabled={!formData.categoryId}
                                                 className="w-full bg-admin-bg border border-admin-border rounded-xl px-4 py-3.5 text-admin-text appearance-none focus:outline-none focus:border-admin-primary/50 focus:ring-1 focus:ring-admin-primary/50 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed font-medium">
                                                 <option value="">{t('selectFile')}</option>
-                                                {availableGenres.map(g => <option key={g.id} value={g.id}>{g.name}</option>)}
+                                                {availableGenres.map(g => (
+                                                    <option key={g.id} value={g.id}>
+                                                        {locale === 'en' ? (g.name_en || g.name) : g.name}
+                                                    </option>
+                                                ))}
                                             </select>
                                             <svg className="w-4 h-4 text-admin-text-muted absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" /></svg>
                                         </div>
@@ -344,7 +355,11 @@ export default function AdminDashboard() {
                                                 disabled={!formData.categoryId}
                                                 className="w-full bg-admin-bg border border-admin-border rounded-xl px-4 py-3.5 text-admin-text appearance-none focus:outline-none focus:border-admin-primary/50 focus:ring-1 focus:ring-admin-primary/50 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed font-medium">
                                                 <option value="">{t('selectFile')}</option>
-                                                {availableModes.map(m => <option key={m.id} value={m.id}>{m.name}</option>)}
+                                                {availableModes.map(m => (
+                                                    <option key={m.id} value={m.id}>
+                                                        {locale === 'en' ? (m.name_en || m.name) : m.name}
+                                                    </option>
+                                                ))}
                                             </select>
                                             <svg className="w-4 h-4 text-admin-text-muted absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" /></svg>
                                         </div>
@@ -550,12 +565,16 @@ export default function AdminDashboard() {
                                         <div className="text-[10px] text-admin-text-muted font-bold uppercase tracking-widest">{track.artist_name || '-'}</div>
                                     </td>
                                     <td className="px-8 py-5">
-                                        <span className="text-admin-text-muted">{track.categories?.name}</span>
+                                        <span className="text-admin-text-muted">
+                                            {locale === 'en' ? (track.categories?.name_en || track.categories?.name) : track.categories?.name}
+                                        </span>
                                         <span className="text-admin-text-muted/30 mx-2">/</span>
-                                        <span className="text-admin-text-muted text-sm">{track.genres?.name}</span>
+                                        <span className="text-admin-text-muted text-sm">
+                                            {locale === 'en' ? (track.genres?.name_en || track.genres?.name) : track.genres?.name}
+                                        </span>
                                     </td>
                                     <td className="px-8 py-5 text-admin-text-muted">
-                                        {track.modes?.name || '-'}
+                                        {locale === 'en' ? (track.modes?.name_en || track.modes?.name) : track.modes?.name || '-'}
                                     </td>
                                     <td className="px-8 py-5 text-admin-text-muted">{track.bpm || '-'}</td>
                                     <td className="px-8 py-5 font-bold text-admin-primary">
