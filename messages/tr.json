@@ -363,6 +363,7 @@
         "setPassword": "Şifre belirle",
         "setPasswordHint": "Google ile giriş yaptığınız için hesabınızda şu an şifre yok. İsterseniz bir şifre belirleyerek e-posta ve şifre ile de giriş yapabilirsiniz.",
         "resetPasswordTitle": "Şifrenizi belirleyin",
-        "resetPasswordHint": "E-postadaki bağlantı ile geldiniz. Lütfen yeni şifrenizi belirleyip onaylayın."
+        "resetPasswordHint": "E-postadaki bağlantı ile geldiniz. Lütfen yeni şifrenizi belirleyip onaylayın.",
+        "passwordUpdate": "Şifreyi Güncelle"
     }
 }

@@ -37,11 +37,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
         // Safety timeout
         const timer = setTimeout(() => {
-            if (mounted) {
-                console.warn('AuthProvider: Loading safety timeout reached');
+            if (mounted && loading) {
+                console.warn('AuthProvider: Loading safety timeout reached (20s). Forcefully disabling loading state.');
                 setLoading(false);
             }
-        }, 10000);
+        }, 20000);
 
         const fetchProfile = async (u: User | null): Promise<Profile | null> => {
             if (!u) return null;
@@ -86,7 +86,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
                 setUser(u);
                 const p = await fetchProfile(u);
-                if (mounted) setProfile(p);
+                if (mounted) {
+                    setProfile(p);
+                    console.log('AuthProvider: Initial load complete', { hasUser: !!u, hasProfile: !!p });
+                }
             } catch (error) {
                 console.error('AuthProvider: getUser error', error);
             } finally {

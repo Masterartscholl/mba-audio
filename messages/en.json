@@ -360,6 +360,7 @@
         "setPassword": "Set password",
         "setPasswordHint": "You signed in with Google, so your account has no password yet. You can set one here to also sign in with email and password.",
         "resetPasswordTitle": "Set your new password",
-        "resetPasswordHint": "You arrived via the reset link. Please choose and confirm a new password."
+        "resetPasswordHint": "You arrived via the reset link. Please choose and confirm a new password.",
+        "passwordUpdate": "Update Password"
     }
 }
