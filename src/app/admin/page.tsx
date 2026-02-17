@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { supabase } from '@/lib/supabase';
+import { supabaseAdmin as supabase } from '@/lib/supabase-admin';
 import { SkeletonLoader } from '@/components/admin/SkeletonLoader';
 import { useTranslations, useLocale } from 'next-intl';
 import { formatPrice } from '@/utils/format';

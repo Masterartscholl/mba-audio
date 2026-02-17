@@ -1,8 +1,8 @@
 "use client";
 
 import React, { useEffect } from 'react';
-import { useRouter } from 'next/navigation';
-import { useAuth } from '@/context/AuthContext';
+import { usePathname, useRouter } from 'next/navigation';
+import { useAdminAuth } from '@/context/AdminAuthContext';
 import { SkeletonLoader } from './SkeletonLoader';
 
 /**
@@ -10,20 +10,25 @@ import { SkeletonLoader } from './SkeletonLoader';
  * It checks if the user is logged in and is an administrator.
  */
 export const AdminGuard = ({ children }: { children: React.ReactNode }) => {
-    const { user, profile, loading } = useAuth();
+    const { user, profile, loading } = useAdminAuth();
+    const pathname = usePathname();
     const router = useRouter();
 
     useEffect(() => {
+        if (pathname === '/admin/login') return;
+
         if (!loading) {
             if (!user) {
-                console.log('AdminGuard: No user, redirecting to login');
-                router.replace('/login');
+                console.log('AdminGuard: No user, redirecting to admin login');
+                router.replace('/admin/login');
             } else if (!profile || !profile.is_admin) {
                 console.log('AdminGuard: Not an admin, redirecting to home', { hasProfile: !!profile, isAdmin: profile?.is_admin });
                 router.replace('/');
             }
         }
-    }, [user, profile, loading, router]);
+    }, [user, profile, loading, router, pathname]);
+
+    if (pathname === '/admin/login') return <>{children}</>;
 
     // Show loading skeleton while checking
     if (loading) {

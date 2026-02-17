@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from 'react';
-import { supabase } from '@/lib/supabase';
+import { supabaseAdmin as supabase } from '@/lib/supabase-admin';
 import { QuickAddModal } from '@/components/admin/QuickAddModal';
 import { SkeletonLoader } from '@/components/admin/SkeletonLoader';
 import { useTranslations, useLocale } from 'next-intl';

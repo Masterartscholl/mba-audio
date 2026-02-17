@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import { useTheme } from 'next-themes';
-import { supabase } from '@/lib/supabase';
+import { supabaseAdmin } from '@/lib/supabase-admin';
 
 export const Sidebar = () => {
     const pathname = usePathname();
@@ -15,8 +15,8 @@ export const Sidebar = () => {
     const [mounted, setMounted] = React.useState(false);
 
     const handleLogout = async () => {
-        await supabase.auth.signOut();
-        router.push('/login');
+        await supabaseAdmin.auth.signOut();
+        router.push('/admin/login');
     };
 
     // useEffect only runs on the client, so now we can safely show the UI
