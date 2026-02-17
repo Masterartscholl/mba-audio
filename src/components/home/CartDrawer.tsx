@@ -12,6 +12,11 @@ export const CartDrawer: React.FC = () => {
     const { items, isOpen, closeCart, removeItem, clearCart, totalCount } = useCart();
     const isNavigating = React.useRef(false);
 
+    const closeRef = React.useRef(closeCart);
+    React.useEffect(() => {
+        closeRef.current = closeCart;
+    }, [closeCart]);
+
     // Handle mobile back button to close drawer
     React.useEffect(() => {
         if (!isOpen) {
@@ -24,7 +29,7 @@ export const CartDrawer: React.FC = () => {
 
         const handlePopState = () => {
             // hardware back button pressed
-            closeCart();
+            closeRef.current?.();
         };
 
         window.addEventListener('popstate', handlePopState);
@@ -39,7 +44,7 @@ export const CartDrawer: React.FC = () => {
                 }
             }
         };
-    }, [isOpen, closeCart]);
+    }, [isOpen]);
 
     return (
         <>

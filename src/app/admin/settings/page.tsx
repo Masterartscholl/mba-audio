@@ -64,12 +64,22 @@ export default function SettingsPage() {
 
     useEffect(() => {
         const init = async () => {
-            const { data: { user } } = await supabase.auth.getUser();
-            if (user) {
-                setUser(user);
-                fetchProfile(user.id);
+            try {
+                const [
+                    { data: { user } },
+                    settingsRes
+                ] = await Promise.all([
+                    supabase.auth.getUser(),
+                    fetchSettings()
+                ]);
+
+                if (user) {
+                    setUser(user);
+                    fetchProfile(user.id);
+                }
+            } catch (err) {
+                console.error('Init error:', err);
             }
-            fetchSettings();
         };
         init();
     }, []);

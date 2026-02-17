@@ -44,31 +44,34 @@ export default function LibraryPage() {
     const fetchTracks = async () => {
         try {
             setLoading(true);
-            const { data, error } = await supabase
-                .from('tracks')
-                .select(`
-                    id,
-                    title,
-                    bpm,
-                    mode_id,
-                    category_id,
-                    genre_id,
-                    created_at,
-                    status,
-                    price,
-                    categories ( name, name_en ),
-                    genres ( name, name_en ),
-                    modes ( name, name_en )
-                `)
-                .order('created_at', { ascending: false });
-
-            const { data: modesData } = await supabase.from('modes').select('*').order('name');
-
-            const { data: settingsData } = await supabase
-                .from('settings')
-                .select('default_price, currency')
-                .eq('id', 1)
-                .maybeSingle();
+            const [
+                { data, error },
+                { data: modesData },
+                { data: settingsData }
+            ] = await Promise.all([
+                supabase
+                    .from('tracks')
+                    .select(`
+                        id,
+                        title,
+                        bpm,
+                        mode_id,
+                        category_id,
+                        genre_id,
+                        created_at,
+                        status,
+                        price,
+                        categories ( name, name_en ),
+                        genres ( name, name_en ),
+                        modes ( name, name_en )
+                    `)
+                    .order('created_at', { ascending: false }),
+                supabase.from('modes').select('*').order('name'),
+                supabase.from('settings')
+                    .select('default_price, currency')
+                    .eq('id', 1)
+                    .maybeSingle()
+            ]);
 
             if (error) {
                 console.error('Error fetching tracks:', error);

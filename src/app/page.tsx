@@ -13,6 +13,7 @@ export default function Home() {
   const [currency, setCurrency] = useState('TL');
   const [selectedCategoryName, setSelectedCategoryName] = useState<string | null>(null);
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
+  const closeMobileSidebar = React.useCallback(() => setIsMobileSidebarOpen(false), []);
 
   useEffect(() => {
     fetchSettings();
@@ -66,17 +67,20 @@ export default function Home() {
       {/* Mobile Sidebar Drawer */}
       {isMobileSidebarOpen && (
         <div className="fixed inset-0 z-[120] lg:hidden">
-          <button
-            type="button"
+          <div
             className="absolute inset-0 bg-black/60 backdrop-blur-sm"
-            onClick={() => setIsMobileSidebarOpen(false)}
+            onClick={(e) => {
+              if (e.target === e.currentTarget) {
+                setIsMobileSidebarOpen(false);
+              }
+            }}
             aria-label="Close filters"
           />
           <div className="absolute left-0 top-0 h-full w-full max-w-sm sm:w-4/5 sm:max-w-xs bg-app-bg shadow-2xl border-r border-app-border">
             <SidebarMobileDrawer
               filters={filters}
               onFilterChange={setFilters}
-              onClose={() => setIsMobileSidebarOpen(false)}
+              onClose={closeMobileSidebar}
             />
           </div>
         </div>

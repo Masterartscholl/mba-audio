@@ -445,13 +445,18 @@ export const SidebarMobileDrawer: React.FC<SidebarMobileDrawerProps> = ({ filter
     const isNavigating = React.useRef(false);
 
     // Handle mobile back button to close drawer
+    const closeRef = React.useRef(onClose);
+    useEffect(() => {
+        closeRef.current = onClose;
+    }, [onClose]);
+
     useEffect(() => {
         isNavigating.current = false;
         const stateKey = 'drawer_sidebar';
         window.history.pushState({ [stateKey]: true }, '');
 
         const handlePopState = () => {
-            onClose?.();
+            closeRef.current?.();
         };
         window.addEventListener('popstate', handlePopState);
         return () => {
@@ -460,7 +465,7 @@ export const SidebarMobileDrawer: React.FC<SidebarMobileDrawerProps> = ({ filter
                 window.history.back();
             }
         };
-    }, [onClose]);
+    }, []);
 
     return (
         <div className="flex h-full flex-col bg-app-bg border-r border-app-border">

@@ -42,9 +42,15 @@ export default function CategoriesPage() {
     const fetchData = async () => {
         try {
             setLoading(true);
-            const { data: catData } = await supabase.from('categories').select('*').order('name');
-            const { data: genData } = await supabase.from('genres').select('*').order('name');
-            const { data: modeData } = await supabase.from('modes').select('*').order('name');
+            const [
+                { data: catData },
+                { data: genData },
+                { data: modeData }
+            ] = await Promise.all([
+                supabase.from('categories').select('*').order('name'),
+                supabase.from('genres').select('*').order('name'),
+                supabase.from('modes').select('*').order('name')
+            ]);
 
             if (catData) setCategories(catData);
             if (genData) setGenres(genData);

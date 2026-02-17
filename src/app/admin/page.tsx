@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from 'react';
+import Link from 'next/link';
 import { supabase } from '@/lib/supabase';
 import { SkeletonLoader } from '@/components/admin/SkeletonLoader';
 import { useTranslations, useLocale } from 'next-intl';
@@ -65,20 +66,25 @@ export default function AdminDashboard() {
     const fetchData = async () => {
         setLoading(true);
         try {
-            const { data: catData } = await supabase.from('categories').select('id, name, name_en').order('name');
-            const { data: genData } = await supabase.from('genres').select('id, name, name_en, category_id').order('name');
-            const { data: modeData } = await supabase.from('modes').select('id, name, name_en, category_id').order('name');
-            const { data: trackData } = await supabase
-                .from('tracks')
-                .select('*, categories(name, name_en), genres(name, name_en), modes(name, name_en)')
-                .order('created_at', { ascending: false })
-                .limit(5);
-
-            const { data: settingsData } = await supabase
-                .from('settings')
-                .select('default_price, currency')
-                .eq('id', 1)
-                .maybeSingle();
+            const [
+                { data: catData },
+                { data: genData },
+                { data: modeData },
+                { data: trackData },
+                { data: settingsData }
+            ] = await Promise.all([
+                supabase.from('categories').select('id, name, name_en').order('name'),
+                supabase.from('genres').select('id, name, name_en, category_id').order('name'),
+                supabase.from('modes').select('id, name, name_en, category_id').order('name'),
+                supabase.from('tracks')
+                    .select('*, categories(name, name_en), genres(name, name_en), modes(name, name_en)')
+                    .order('created_at', { ascending: false })
+                    .limit(5),
+                supabase.from('settings')
+                    .select('default_price, currency')
+                    .eq('id', 1)
+                    .maybeSingle()
+            ]);
 
             if (catData) setCategories(catData);
             if (genData) setGenres(genData);
@@ -541,7 +547,7 @@ export default function AdminDashboard() {
             <div className="space-y-6">
                 <div className="flex items-center justify-between">
                     <h2 className="text-2xl font-bold text-admin-text tracking-tight">{t('recentUploads')}</h2>
-                    <button onClick={() => window.location.href = '/admin/library'} className="text-admin-primary text-sm font-bold hover:underline cursor-pointer">{t('viewAll') || 'Tümünü Gör'}</button>
+                    <Link href="/admin/library" className="text-admin-primary text-sm font-bold hover:underline cursor-pointer">{t('viewAll') || 'Tümünü Gör'}</Link>
                 </div>
 
                 <div className="bg-admin-card rounded-3xl border border-admin-border overflow-hidden shadow-xl">

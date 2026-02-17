@@ -42,37 +42,40 @@ export default function AnalyticsPage() {
         try {
             setLoading(true);
 
-            // 1. Fetch Settings
-            const { data: settings } = await supabase.from('settings').select('currency').eq('id', 1).single();
+            const [
+                { data: settings },
+                { data: orders },
+                { count: draftCount }
+            ] = await Promise.all([
+                supabase.from('settings').select('currency').eq('id', 1).single(),
+                supabase
+                    .from('orders')
+                    .select(`
+                        id, 
+                        amount, 
+                        created_at, 
+                        user_id,
+                        tracks (
+                            id,
+                            title,
+                            category_id,
+                            categories ( name, name_en )
+                        ),
+                        profiles (
+                            id,
+                            email,
+                            full_name,
+                            avatar_url,
+                            created_at
+                        )
+                    `),
+                supabase
+                    .from('tracks')
+                    .select('*', { count: 'exact', head: true })
+                    .eq('status', 'draft')
+            ]);
+
             if (settings) setCurrency(settings.currency);
-
-            // 2. Fetch Orders with full relations
-            const { data: orders } = await supabase
-                .from('orders')
-                .select(`
-                    id, 
-                    amount, 
-                    created_at, 
-                    user_id,
-                    tracks (
-                        id,
-                        title,
-                        category_id,
-                        categories ( name, name_en )
-                    ),
-                    profiles (
-                        id,
-                        email,
-                        full_name,
-                        avatar_url,
-                        created_at
-                    )
-                `);
-
-            const { count: draftCount } = await supabase
-                .from('tracks')
-                .select('*', { count: 'exact', head: true })
-                .eq('status', 'draft');
 
             if (orders) {
                 const totalEarnings = orders.reduce((acc, curr) => acc + Number(curr.amount), 0);
