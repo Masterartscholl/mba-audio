@@ -16,32 +16,36 @@ export const AdminGuard = ({ children }: { children: React.ReactNode }) => {
     useEffect(() => {
         if (!loading) {
             if (!user) {
-                // Not logged in, redirect to login
+                console.log('AdminGuard: No user, redirecting to login');
                 router.replace('/login');
             } else if (!profile || !profile.is_admin) {
-                // No profile found OR logged in but not an admin, redirect to home
-                // (Note: If there's no profile record for a user, we treat them as non-admin)
+                console.log('AdminGuard: Not an admin, redirecting to home', { hasProfile: !!profile, isAdmin: profile?.is_admin });
                 router.replace('/');
             }
         }
     }, [user, profile, loading, router]);
 
+    // Show loading skeleton while checking
     if (loading) {
         return (
             <div className="h-screen w-full flex items-center justify-center bg-admin-bg">
-                <SkeletonLoader />
+                <div className="max-w-md w-full p-8 text-center space-y-4">
+                    <SkeletonLoader />
+                    <p className="text-admin-text-muted text-sm animate-pulse">Erişim kontrol ediliyor...</p>
+                </div>
             </div>
         );
     }
 
-    // If not loading, we must either have an admin or we are redirecting
-    if (!user || !profile?.is_admin) {
-        return (
-            <div className="h-screen w-full flex items-center justify-center bg-admin-bg">
-                {/* Empty while redirecting */}
-            </div>
-        );
+    // If we're not loading and user is an admin, show content
+    if (user && profile?.is_admin) {
+        return <>{children}</>;
     }
 
-    return <>{children}</>;
+    // Fallback for redirecting state
+    return (
+        <div className="h-screen w-full bg-admin-bg flex items-center justify-center">
+            <div className="w-10 h-10 border-4 border-admin-primary/20 border-t-admin-primary rounded-full animate-spin"></div>
+        </div>
+    );
 };
