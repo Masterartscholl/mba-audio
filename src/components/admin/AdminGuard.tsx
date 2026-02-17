@@ -18,8 +18,9 @@ export const AdminGuard = ({ children }: { children: React.ReactNode }) => {
             if (!user) {
                 // Not logged in, redirect to login
                 router.replace('/login');
-            } else if (profile && !profile.is_admin) {
-                // Logged in but not an admin, redirect to home
+            } else if (!profile || !profile.is_admin) {
+                // No profile found OR logged in but not an admin, redirect to home
+                // (Note: If there's no profile record for a user, we treat them as non-admin)
                 router.replace('/');
             }
         }
