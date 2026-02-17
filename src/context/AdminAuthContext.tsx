@@ -30,6 +30,14 @@ export function AdminAuthProvider({ children }: { children: ReactNode }) {
     useEffect(() => {
         let mounted = true;
 
+        // Safety timeout to prevent stuck loading - reduced to 8s
+        const timer = setTimeout(() => {
+            if (mounted && loading) {
+                console.warn('AdminAuthProvider: Safety timeout reached (8s). Forcefully disabling loading state.');
+                setLoading(false);
+            }
+        }, 8000);
+
         const fetchProfile = async (u: User | null): Promise<AdminProfile | null> => {
             if (!u) return null;
             try {
@@ -39,21 +47,33 @@ export function AdminAuthProvider({ children }: { children: ReactNode }) {
                     .eq('id', u.id)
                     .single();
 
-                if (error || !p?.is_admin) {
-                    // If not an admin, we don't treat them as logged in for admin panel
+                if (error) {
+                    console.error('AdminAuthProvider: profile fetch database error', error);
+                    return null;
+                }
+
+                if (!p?.is_admin) {
+                    console.warn('AdminAuthProvider: User is not an admin in DB');
                     return null;
                 }
                 return p;
             } catch (err) {
-                console.error('AdminAuthProvider: profile fetch error', err);
+                console.error('AdminAuthProvider: profile fetch exception', err);
                 return null;
             }
         };
 
         const load = async () => {
             try {
-                const { data: { session } } = await supabaseAdmin.auth.getSession();
+                console.log('AdminAuthProvider: Starting initial session load');
+                const { data: { session }, error: sessionError } = await supabaseAdmin.auth.getSession();
+
+                if (sessionError) {
+                    console.error('AdminAuthProvider: getSession error', sessionError);
+                }
+
                 const u = session?.user ?? null;
+                console.log('AdminAuthProvider: Session load result', { hasUser: !!u });
 
                 if (!mounted) return;
 
@@ -61,20 +81,23 @@ export function AdminAuthProvider({ children }: { children: ReactNode }) {
                     const p = await fetchProfile(u);
                     if (mounted) {
                         if (p) {
+                            console.log('AdminAuthProvider: Admin profile verified');
                             setUser(u);
                             setProfile(p);
                         } else {
-                            // If user is logged into supabaseAdmin but is not an admin in DB, sign them out
-                            await supabaseAdmin.auth.signOut();
+                            console.log('AdminAuthProvider: Not an admin, clearing local session state');
+                            // Specifically NOT blocking on signOut here during load
                             setUser(null);
                             setProfile(null);
                         }
                     }
                 }
             } catch (error) {
-                console.error('AdminAuthProvider: session load error', error);
+                console.error('AdminAuthProvider: Unexpected load error', error);
             } finally {
                 if (mounted) {
+                    console.log('AdminAuthProvider: Initial load sequence complete');
+                    clearTimeout(timer);
                     setLoading(false);
                 }
             }
@@ -84,6 +107,7 @@ export function AdminAuthProvider({ children }: { children: ReactNode }) {
         const { data: { subscription } } = supabaseAdmin.auth.onAuthStateChange(
             async (event, session) => {
                 if (!mounted) return;
+                console.log('AdminAuthProvider: Auth state changed', event);
 
                 const u = session?.user ?? null;
                 if (u) {
@@ -108,6 +132,7 @@ export function AdminAuthProvider({ children }: { children: ReactNode }) {
 
         return () => {
             mounted = false;
+            clearTimeout(timer);
             subscription.unsubscribe();
         };
     }, []);

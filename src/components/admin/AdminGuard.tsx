@@ -11,8 +11,19 @@ import { SkeletonLoader } from './SkeletonLoader';
  */
 export const AdminGuard = ({ children }: { children: React.ReactNode }) => {
     const { user, profile, loading } = useAdminAuth();
+    const [showRetry, setShowRetry] = React.useState(false);
     const pathname = usePathname();
     const router = useRouter();
+
+    useEffect(() => {
+        let timer: any;
+        if (loading) {
+            timer = setTimeout(() => setShowRetry(true), 10000);
+        } else {
+            setShowRetry(false);
+        }
+        return () => clearTimeout(timer);
+    }, [loading]);
 
     useEffect(() => {
         if (pathname === '/admin/login') return;
@@ -37,6 +48,14 @@ export const AdminGuard = ({ children }: { children: React.ReactNode }) => {
                 <div className="max-w-md w-full p-8 text-center space-y-4">
                     <SkeletonLoader />
                     <p className="text-admin-text-muted text-sm animate-pulse">Erişim kontrol ediliyor...</p>
+                    {showRetry && (
+                        <button
+                            onClick={() => window.location.reload()}
+                            className="mt-4 px-4 py-2 bg-admin-primary text-admin-primary-foreground rounded-lg text-xs font-bold uppercase tracking-widest hover:opacity-90 transition-all"
+                        >
+                            Sayfayı Yenile
+                        </button>
+                    )}
                 </div>
             </div>
         );
