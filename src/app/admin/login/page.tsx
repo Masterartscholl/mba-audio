@@ -37,7 +37,15 @@ export default function AdminLoginPage() {
         e.preventDefault();
         setLoading(true);
 
+        const loginTimeout = setTimeout(() => {
+            if (loading) {
+                setLoading(false);
+                toast.error('Giriş işlemi zaman aşımına uğradı. Lütfen sayfayı yenileyip tekrar deneyin.');
+            }
+        }, 10000);
+
         try {
+            console.log('AdminLogin: Attempting sign in...');
             const { data, error } = await supabaseAdmin.auth.signInWithPassword({
                 email,
                 password,
@@ -46,9 +54,11 @@ export default function AdminLoginPage() {
             if (error) {
                 toast.error('Giriş hatası: ' + error.message);
                 setLoading(false);
+                clearTimeout(loginTimeout);
                 return;
             }
 
+            console.log('AdminLogin: Sign in successful, checking profile...');
             // Check if user is an admin
             const { data: profile, error: profileError } = await supabaseAdmin
                 .from('profiles')
@@ -60,14 +70,18 @@ export default function AdminLoginPage() {
                 toast.error('Bu alana erişim yetkiniz yok.');
                 await supabaseAdmin.auth.signOut();
                 setLoading(false);
+                clearTimeout(loginTimeout);
                 return;
             }
 
+            console.log('AdminLogin: Admin verified, redirecting...');
             toast.success('Başarıyla giriş yapıldı. Yönetim paneline aktarılıyorsunuz...');
             router.push('/admin');
         } catch (err: any) {
+            console.error('AdminLogin: Unexpected error', err);
             toast.error('Bir hata oluştu: ' + err.message);
         } finally {
+            clearTimeout(loginTimeout);
             setLoading(false);
         }
     };

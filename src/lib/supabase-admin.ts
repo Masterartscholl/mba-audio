@@ -10,6 +10,10 @@ export const supabaseAdmin = createBrowserClient(supabaseUrl, supabaseAnonKey, {
         storageKey: 'sb-admin-auth-token',
         persistSession: true,
         autoRefreshToken: true,
-        detectSessionInUrl: true
+        detectSessionInUrl: true,
+        flowType: 'pkce'
+    },
+    cookieOptions: {
+        name: 'sb-admin-auth'
     }
 })

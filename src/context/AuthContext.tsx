@@ -3,6 +3,7 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { User } from '@supabase/supabase-js';
 import { supabase } from '@/lib/supabase';
+import { usePathname } from 'next/navigation';
 
 export type Profile = {
     id: string;
@@ -31,9 +32,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const [user, setUser] = useState<User | null>(null);
     const [profile, setProfile] = useState<Profile | null>(null);
     const [loading, setLoading] = useState(true);
+    const pathname = usePathname();
 
     useEffect(() => {
         let mounted = true;
+
+        // Skip auth initialization for regular user if we are in admin area
+        // to prevent double-client resource contention and hangs.
+        if (pathname?.startsWith('/admin')) {
+            setLoading(false);
+            return;
+        }
 
         // Safety timeout
         const timer = setTimeout(() => {
@@ -126,7 +135,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             clearTimeout(timer);
             subscription.unsubscribe();
         };
-    }, []);
+    }, [pathname]); // Re-initialize if moving out of admin area
 
     const displayName =
         profile?.full_name?.trim() ||
