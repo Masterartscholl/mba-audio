@@ -442,16 +442,21 @@ export const SidebarMobileDrawer: React.FC<SidebarMobileDrawerProps> = ({ filter
         priceRange,
     } = useSidebarData(filters, onFilterChange);
 
+    const isNavigating = React.useRef(false);
+
     // Handle mobile back button to close drawer
     useEffect(() => {
-        window.history.pushState({ drawer: 'sidebar' }, '');
+        isNavigating.current = false;
+        const stateKey = 'drawer_sidebar';
+        window.history.pushState({ [stateKey]: true }, '');
+
         const handlePopState = () => {
             onClose?.();
         };
         window.addEventListener('popstate', handlePopState);
         return () => {
             window.removeEventListener('popstate', handlePopState);
-            if (window.history.state?.drawer === 'sidebar') {
+            if (!isNavigating.current && window.history.state?.[stateKey]) {
                 window.history.back();
             }
         };
@@ -461,7 +466,14 @@ export const SidebarMobileDrawer: React.FC<SidebarMobileDrawerProps> = ({ filter
         <div className="flex h-full flex-col bg-app-bg border-r border-app-border">
             {/* Logo + Close - mobile */}
             <div className="h-16 flex items-center justify-between px-5 border-b border-app-border shrink-0">
-                <Link href="/" className="flex items-center gap-3" onClick={onClose}>
+                <Link
+                    href="/"
+                    className="flex items-center gap-3"
+                    onClick={() => {
+                        isNavigating.current = true;
+                        onClose?.();
+                    }}
+                >
                     <Image src={logoImg} alt="MüzikBank" width={28} height={28} className="rounded-lg object-contain" />
                     <div>
                         <h1 className="text-lg font-black text-app-text tracking-tight leading-none">MüzikBank</h1>
@@ -488,7 +500,10 @@ export const SidebarMobileDrawer: React.FC<SidebarMobileDrawerProps> = ({ filter
                     <nav className="space-y-1">
                         <Link
                             href="/"
-                            onClick={onClose}
+                            onClick={() => {
+                                isNavigating.current = true;
+                                onClose?.();
+                            }}
                             className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl font-bold text-sm transition-all border ${pathname === '/' ? 'bg-app-surface text-app-primary border-app-border shadow-inner' : 'text-app-text-muted hover:text-app-text hover:bg-app-surface border-transparent'}`}
                         >
                             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" /></svg>
@@ -496,7 +511,10 @@ export const SidebarMobileDrawer: React.FC<SidebarMobileDrawerProps> = ({ filter
                         </Link>
                         <Link
                             href="/favorites"
-                            onClick={onClose}
+                            onClick={() => {
+                                isNavigating.current = true;
+                                onClose?.();
+                            }}
                             className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl font-bold text-sm transition-all border group ${pathname === '/favorites' ? 'bg-app-surface text-app-primary border-app-border shadow-inner' : 'text-app-text-muted hover:text-app-text hover:bg-app-surface border-transparent'}`}
                         >
                             <svg className="w-5 h-5 group-hover:scale-110 transition-transform" fill={pathname === '/favorites' ? 'currentColor' : 'none'} stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" /></svg>
@@ -504,7 +522,10 @@ export const SidebarMobileDrawer: React.FC<SidebarMobileDrawerProps> = ({ filter
                         </Link>
                         <Link
                             href="/library"
-                            onClick={onClose}
+                            onClick={() => {
+                                isNavigating.current = true;
+                                onClose?.();
+                            }}
                             className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl font-bold text-sm transition-all border group ${pathname === '/library' ? 'bg-app-surface text-app-primary border-app-border shadow-inner' : 'text-app-text-muted hover:text-app-text hover:bg-app-surface border-transparent'}`}
                         >
                             <svg className="w-5 h-5 group-hover:scale-110 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 7v8m0 0l3-3m-3 3L5 8m0 0h8M5 8V7" /></svg>
@@ -512,6 +533,7 @@ export const SidebarMobileDrawer: React.FC<SidebarMobileDrawerProps> = ({ filter
                         </Link>
                     </nav>
                 </div>
+
 
                 <div className="space-y-5 min-w-0">
                     <h3 className="text-[11px] font-black text-app-text-muted tracking-[0.2em] mb-2 pl-1 uppercase">{t('filters')}</h3>

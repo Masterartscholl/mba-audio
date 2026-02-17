@@ -10,31 +10,33 @@ import { formatPrice } from '@/utils/format';
 export const CartDrawer: React.FC = () => {
     const t = useTranslations('App');
     const { items, isOpen, closeCart, removeItem, clearCart, totalCount } = useCart();
+    const isNavigating = React.useRef(false);
 
     // Handle mobile back button to close drawer
     React.useEffect(() => {
-        if (!isOpen) return;
+        if (!isOpen) {
+            isNavigating.current = false;
+            return;
+        }
 
-        // Push a fake state to history
-        window.history.pushState({ drawer: 'cart' }, '');
+        const stateKey = 'drawer_cart';
+        window.history.pushState({ [stateKey]: true }, '');
 
-        const handlePopState = (e: PopStateEvent) => {
-            if (e.state?.drawer === 'cart' || !e.state) {
-                closeCart();
-            }
+        const handlePopState = () => {
+            // hardware back button pressed
+            closeCart();
         };
 
         window.addEventListener('popstate', handlePopState);
 
         return () => {
             window.removeEventListener('popstate', handlePopState);
-            // Only manipulate history if we're still in cart state
-            try {
-                if (window.history.state?.drawer === 'cart') {
+            if (!isNavigating.current && window.history.state?.[stateKey]) {
+                try {
                     window.history.back();
+                } catch (err) {
+                    console.warn('CartDrawer history.back failed', err);
                 }
-            } catch (err) {
-                // Ignore history errors
             }
         };
     }, [isOpen, closeCart]);
@@ -126,7 +128,10 @@ export const CartDrawer: React.FC = () => {
                             </button>
                             <Link
                                 href="/checkout"
-                                onClick={closeCart}
+                                onClick={() => {
+                                    isNavigating.current = true;
+                                    closeCart();
+                                }}
                                 className="w-full sm:flex-1 py-4 rounded-xl bg-app-primary text-app-primary-foreground text-center text-sm font-black uppercase tracking-widest hover:opacity-90 active:scale-[0.98] transition-all shadow-lg shadow-app-primary/20"
                             >
                                 {t('checkout')}

@@ -26,7 +26,7 @@ export function ProfileCompleteGuard() {
       (user.user_metadata?.full_name || user.user_metadata?.name || '').trim();
     const name = nameFromProfile || nameFromMetadata;
     if (name) return;
-    if (pathname === "/settings") return;
+    if (pathname === "/settings" || pathname === "/reset-password") return;
     router.replace("/settings?complete=1");
   }, [loading, user, profile?.full_name, pathname, router]);
 

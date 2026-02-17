@@ -27,6 +27,7 @@ export const Header: React.FC<HeaderProps> = ({ onOpenMobileSidebar }) => {
     const [userMenuOpen, setUserMenuOpen] = useState(false);
     const [isMobileSearchOpen, setIsMobileSearchOpen] = useState(false);
     const userMenuRef = useRef<HTMLDivElement>(null);
+    const isNavigating = useRef(false);
 
     useEffect(() => {
         const handleClickOutside = (e: MouseEvent) => {
@@ -43,36 +44,40 @@ export const Header: React.FC<HeaderProps> = ({ onOpenMobileSidebar }) => {
 
     // Handle mobile back button for user menu drawer
     useEffect(() => {
-        if (userMenuOpen) {
-            window.history.pushState({ menu: 'user' }, '');
-            const handlePopState = (e: PopStateEvent) => {
-                if (!e.state || e.state.menu !== 'user') {
-                    setUserMenuOpen(false);
-                }
-            };
-            window.addEventListener('popstate', handlePopState);
-            return () => {
-                window.removeEventListener('popstate', handlePopState);
-                if (window.history.state?.menu === 'user') {
-                    window.history.back();
-                }
-            };
-        }
+        if (!userMenuOpen) return;
+
+        isNavigating.current = false;
+        const stateKey = 'drawer_user_menu';
+        window.history.pushState({ [stateKey]: true }, '');
+
+        const handlePopState = () => setUserMenuOpen(false);
+        window.addEventListener('popstate', handlePopState);
+
+        return () => {
+            window.removeEventListener('popstate', handlePopState);
+            if (!isNavigating.current && window.history.state?.[stateKey]) {
+                window.history.back();
+            }
+        };
     }, [userMenuOpen]);
 
     // Handle mobile back button for search overlay
     useEffect(() => {
-        if (isMobileSearchOpen) {
-            window.history.pushState({ action: 'search' }, '');
-            const handlePopState = () => setIsMobileSearchOpen(false);
-            window.addEventListener('popstate', handlePopState);
-            return () => {
-                window.removeEventListener('popstate', handlePopState);
-                if (window.history.state?.action === 'search') {
-                    window.history.back();
-                }
-            };
-        }
+        if (!isMobileSearchOpen) return;
+
+        isNavigating.current = false;
+        const stateKey = 'search_overlay';
+        window.history.pushState({ [stateKey]: true }, '');
+
+        const handlePopState = () => setIsMobileSearchOpen(false);
+        window.addEventListener('popstate', handlePopState);
+
+        return () => {
+            window.removeEventListener('popstate', handlePopState);
+            if (!isNavigating.current && window.history.state?.[stateKey]) {
+                window.history.back();
+            }
+        };
     }, [isMobileSearchOpen]);
 
     const navClass = (path: string) =>
@@ -118,17 +123,21 @@ export const Header: React.FC<HeaderProps> = ({ onOpenMobileSidebar }) => {
                     {/* Mobile sidebar toggle */}
                     <button
                         type="button"
-                        onClick={onOpenMobileSidebar}
-                        className="lg:hidden w-9 h-9 lg:w-10 lg:h-10 rounded-xl bg-app-surface border border-app-border flex items-center justify-center text-app-text hover:text-app-primary hover:border-app-primary/30 transition-all shrink-0"
-                        aria-label={t('filters')}
+                        onClick={(e) => {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            onOpenMobileSidebar?.();
+                        }}
+                        className="lg:hidden w-10 h-10 rounded-xl bg-app-surface border border-app-border flex items-center justify-center text-app-text hover:text-app-primary hover:border-app-primary/30 transition-all shrink-0 relative z-20"
+                        aria-label={t('menu')}
                     >
-                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6h16M4 12h10M4 18h7" />
                         </svg>
                     </button>
 
                     {/* Mobile Logo */}
-                    <Link href="/" className="lg:hidden block shrink-0">
+                    <Link href="/" className="lg:hidden block shrink-0 relative z-10 ms-1">
                         <Image src={logoImg} alt="MüzikBank" width={32} height={32} className="rounded-lg object-contain" />
                     </Link>
 
@@ -263,6 +272,7 @@ export const Header: React.FC<HeaderProps> = ({ onOpenMobileSidebar }) => {
                                             <div className="pt-2 lg:pt-1 pb-1">
                                                 <Link
                                                     href="/settings"
+                                                    onClick={() => { isNavigating.current = true; setUserMenuOpen(false); }}
                                                     className="flex items-center gap-3 w-full px-3 lg:px-4 py-3 lg:py-2.5 text-sm font-bold text-app-text-muted hover:text-app-text hover:bg-app-surface transition-colors rounded-xl lg:rounded-none"
                                                 >
                                                     <svg className="w-5 h-5 lg:w-4 lg:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
