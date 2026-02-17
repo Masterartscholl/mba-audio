@@ -3,7 +3,7 @@
 import React, { useState, useMemo } from 'react';
 import Link from 'next/link';
 import { useTranslations } from 'next-intl';
-import { Sidebar } from '@/components/home/Sidebar';
+import { Sidebar, SidebarMobileDrawer } from '@/components/home/Sidebar';
 import { Header } from '@/components/home/Header';
 import { GlobalPlayer } from '@/components/home/GlobalPlayer';
 import { useFavorites } from '@/context/FavoritesContext';
@@ -13,6 +13,8 @@ export default function FavoritesPage() {
     const t = useTranslations('App');
     const { favorites } = useFavorites();
     const [currency, setCurrency] = useState('TL');
+    const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
+    const closeMobileSidebar = React.useCallback(() => setIsMobileSidebarOpen(false), []);
 
     // Filter out deleted/unpublished tracks
     const publishedFavorites = useMemo(() => {
@@ -25,7 +27,7 @@ export default function FavoritesPage() {
         <div className="flex flex-col min-h-screen lg:flex-row lg:h-screen lg:overflow-hidden bg-app-bg selection:bg-[#3b82f6]/30">
             <Sidebar filters={{}} onFilterChange={() => { }} />
             <div className="flex-1 flex flex-col min-w-0">
-                <Header />
+                <Header onOpenMobileSidebar={() => setIsMobileSidebarOpen(true)} />
                 <main className="flex-1 flex flex-col overflow-hidden">
                     <div className="flex-1 overflow-y-auto custom-scrollbar flex flex-col">
                         <div className="px-4 lg:px-10 py-6 lg:py-10 flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">
@@ -67,6 +69,28 @@ export default function FavoritesPage() {
                 </main>
             </div>
             <GlobalPlayer />
+
+            {/* Mobile Sidebar Drawer */}
+            {isMobileSidebarOpen && (
+                <div className="fixed inset-0 z-[120] lg:hidden">
+                    <div
+                        className="absolute inset-0 bg-black/60 backdrop-blur-sm"
+                        onClick={(e) => {
+                            if (e.target === e.currentTarget) {
+                                setIsMobileSidebarOpen(false);
+                            }
+                        }}
+                        aria-label="Close menu"
+                    />
+                    <div className="absolute left-0 top-0 h-full w-full max-w-sm sm:w-4/5 sm:max-w-xs bg-app-bg shadow-2xl border-r border-app-border">
+                        <SidebarMobileDrawer
+                            filters={{}}
+                            onFilterChange={() => { }}
+                            onClose={closeMobileSidebar}
+                        />
+                    </div>
+                </div>
+            )}
         </div>
     );
 }
