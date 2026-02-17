@@ -73,20 +73,16 @@ export function AdminAuthProvider({ children }: { children: ReactNode }) {
                 }
 
                 const u = session?.user ?? null;
-                console.log('AdminAuthProvider: Session load result', { hasUser: !!u });
-
                 if (!mounted) return;
 
                 if (u) {
                     const p = await fetchProfile(u);
                     if (mounted) {
                         if (p) {
-                            console.log('AdminAuthProvider: Admin profile verified');
                             setUser(u);
                             setProfile(p);
                         } else {
-                            console.log('AdminAuthProvider: Not an admin, clearing local session state');
-                            // Specifically NOT blocking on signOut here during load
+                            console.log('AdminAuthProvider: No admin profile, clearing local auth');
                             setUser(null);
                             setProfile(null);
                         }
@@ -96,7 +92,6 @@ export function AdminAuthProvider({ children }: { children: ReactNode }) {
                 console.error('AdminAuthProvider: Unexpected load error', error);
             } finally {
                 if (mounted) {
-                    console.log('AdminAuthProvider: Initial load sequence complete');
                     clearTimeout(timer);
                     setLoading(false);
                 }
@@ -109,6 +104,13 @@ export function AdminAuthProvider({ children }: { children: ReactNode }) {
                 if (!mounted) return;
                 console.log('AdminAuthProvider: Auth state changed', event);
 
+                if (event === 'SIGNED_OUT') {
+                    setUser(null);
+                    setProfile(null);
+                    setLoading(false);
+                    return;
+                }
+
                 const u = session?.user ?? null;
                 if (u) {
                     const p = await fetchProfile(u);
@@ -116,7 +118,9 @@ export function AdminAuthProvider({ children }: { children: ReactNode }) {
                         if (p) {
                             setUser(u);
                             setProfile(p);
-                        } else {
+                        } else if (event === 'SIGNED_IN') {
+                            // Only sign out if we definitely just signed in and failed the admin check
+                            console.warn('AdminAuthProvider: Access denied for newly signed in user');
                             await supabaseAdmin.auth.signOut();
                             setUser(null);
                             setProfile(null);
