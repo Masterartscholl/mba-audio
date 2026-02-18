@@ -262,8 +262,8 @@ export default function CheckoutPage() {
                 await new Promise(resolve => setTimeout(resolve, 150));
 
                 // Form div'inin var olduğunu kontrol et
-                const formDiv = document.getElementById('iyzipay-checkout-form');
-                if (!formDiv) {
+                const formDivElement = document.getElementById('iyzipay-checkout-form');
+                if (!formDivElement) {
                     console.error('iyzipay-checkout-form div not found!');
                     return;
                 }
