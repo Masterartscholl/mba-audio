@@ -45,10 +45,35 @@ export default function CheckoutPage() {
     }, []);
 
     const closePaymentForm = useCallback(() => {
+        // Overlay'i kaldır
         const overlay = document.getElementById('iyzipay-overlay');
         if (overlay) {
             overlay.remove();
         }
+
+        // İyzipay'ın enjekte ettiği iframe'leri kaldır
+        document.querySelectorAll('iframe[src*="iyzipay"], iframe[id*="iyzipay"]').forEach((iframe) => {
+            iframe.remove();
+        });
+
+        // İyzipay'ın enjekte ettiği script'leri kaldır
+        document.querySelectorAll('script[src*="iyzipay"]').forEach((script) => {
+            script.remove();
+        });
+
+        // İyzipay'ın eklediği style'ları kaldır
+        document.querySelectorAll('link[href*="iyzipay"]').forEach((link) => {
+            link.remove();
+        });
+
+        // İyzipay global objesini sıfırla (varsa)
+        if ((window as any).iyzipay) {
+            delete (window as any).iyzipay;
+        }
+
+        // Body'den iyzipay class'ını kaldır
+        document.body.classList.remove('iyzipay-checkout-open');
+
         setIsPaymentOpen(false);
     }, []);
 
@@ -131,6 +156,17 @@ export default function CheckoutPage() {
             const data = await res.json();
             console.log('IYZIPAY INIT RESPONSE', data);
             if (data.checkoutFormContent) {
+                // 0) Eski iyzipay form'unu temizle (iptal sonrası yeniden deneme durumu)
+                const existingOverlay = document.getElementById('iyzipay-overlay');
+                if (existingOverlay) {
+                    existingOverlay.remove();
+                }
+                
+                // İyzipay'ın enjekte ettiği iframe'leri önceden kaldır
+                document.querySelectorAll('iframe[src*="iyzipay"], iframe[id*="iyzipay"]').forEach((iframe) => {
+                    iframe.remove();
+                });
+
                 // 1) Sayfanın üzerine basit bir overlay ve hedef div ekle
                 let overlay = document.getElementById('iyzipay-overlay') as HTMLDivElement | null;
                 if (!overlay) {
@@ -192,6 +228,7 @@ export default function CheckoutPage() {
                     const formDiv = document.createElement('div');
                     formDiv.id = 'iyzipay-checkout-form';
                     formDiv.style.minHeight = '520px';
+                    formDiv.innerHTML = ''; // Önceki içeriği temizle
 
                     panel.appendChild(closeButton);
                     panel.appendChild(formDiv);
