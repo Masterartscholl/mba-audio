@@ -1,8 +1,9 @@
 "use client";
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
+import { useRouter } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import { useCart } from '@/context/CartContext';
 import { formatPrice } from '@/utils/format';
@@ -18,6 +19,7 @@ const DEFAULT_LINKS = {
 };
 
 export default function CheckoutPage() {
+    const router = useRouter();
     const t = useTranslations('App');
     const { items } = useCart();
     const [billingName, setBillingName] = useState('');
@@ -26,6 +28,7 @@ export default function CheckoutPage() {
     const [acceptTerms, setAcceptTerms] = useState(false);
     const [billingErrors, setBillingErrors] = useState<{ billingName?: string; billingTcId?: string; billingAddress?: string }>({});
     const [legalLinks, setLegalLinks] = useState<typeof DEFAULT_LINKS>(DEFAULT_LINKS);
+    const [isPaymentOpen, setIsPaymentOpen] = useState(false);
 
     useEffect(() => {
         fetch('/api/settings/links')
@@ -40,6 +43,32 @@ export default function CheckoutPage() {
             })
             .catch(() => {});
     }, []);
+
+    const closePaymentForm = useCallback(() => {
+        const overlay = document.getElementById('iyzipay-overlay');
+        if (overlay) {
+            overlay.remove();
+        }
+        setIsPaymentOpen(false);
+    }, []);
+
+    // Mobil geri tuşu desteği
+    useEffect(() => {
+        if (!isPaymentOpen) return;
+
+        const handlePopState = () => {
+            closePaymentForm();
+            // Geçmişe gitmek yerine, ödeme formunu sadece kapat
+            window.history.pushState(null, '', window.location.href);
+        };
+
+        window.history.pushState(null, '', window.location.href);
+        window.addEventListener('popstate', handlePopState);
+
+        return () => {
+            window.removeEventListener('popstate', handlePopState);
+        };
+    }, [isPaymentOpen, closePaymentForm]);
 
     const total = items.reduce((s, t) => s + (t.price ?? 0), 0);
     const currency = items[0]?.currency || 'TL';
@@ -114,19 +143,57 @@ export default function CheckoutPage() {
                     overlay.style.display = 'flex';
                     overlay.style.alignItems = 'center';
                     overlay.style.justifyContent = 'center';
+                    overlay.style.padding = '16px';
+                    overlay.style.overflowY = 'auto';
 
                     const panel = document.createElement('div');
                     panel.style.background = '#ffffff';
                     panel.style.borderRadius = '16px';
                     panel.style.maxWidth = '480px';
                     panel.style.width = '100%';
-                    panel.style.margin = '16px';
+                    panel.style.margin = 'auto';
                     panel.style.padding = '8px';
+                    panel.style.position = 'relative';
+
+                    // Kapatma butonu
+                    const closeButton = document.createElement('button');
+                    closeButton.innerHTML = '✕';
+                    closeButton.style.position = 'absolute';
+                    closeButton.style.top = '12px';
+                    closeButton.style.right = '12px';
+                    closeButton.style.width = '32px';
+                    closeButton.style.height = '32px';
+                    closeButton.style.borderRadius = '50%';
+                    closeButton.style.border = 'none';
+                    closeButton.style.background = 'rgba(0,0,0,0.1)';
+                    closeButton.style.color = '#000';
+                    closeButton.style.fontSize = '20px';
+                    closeButton.style.cursor = 'pointer';
+                    closeButton.style.display = 'flex';
+                    closeButton.style.alignItems = 'center';
+                    closeButton.style.justifyContent = 'center';
+                    closeButton.style.zIndex = '10001';
+                    closeButton.style.transition = 'background 0.2s';
+                    closeButton.style.fontWeight = 'bold';
+
+                    closeButton.onmouseover = () => {
+                        closeButton.style.background = 'rgba(0,0,0,0.2)';
+                    };
+                    closeButton.onmouseout = () => {
+                        closeButton.style.background = 'rgba(0,0,0,0.1)';
+                    };
+
+                    closeButton.onclick = (e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        closePaymentForm();
+                    };
 
                     const formDiv = document.createElement('div');
                     formDiv.id = 'iyzipay-checkout-form';
                     formDiv.style.minHeight = '520px';
 
+                    panel.appendChild(closeButton);
                     panel.appendChild(formDiv);
                     overlay.appendChild(panel);
                     document.body.appendChild(overlay);
@@ -142,6 +209,9 @@ export default function CheckoutPage() {
                 scriptTag.type = 'text/javascript';
                 scriptTag.innerHTML = scriptContent;
                 document.body.appendChild(scriptTag);
+
+                // State'i güncelle
+                setIsPaymentOpen(true);
 
                 // Formun görünmesi için sayfanın üstüne kaydır
                 window.scrollTo({ top: 0, behavior: 'smooth' });
