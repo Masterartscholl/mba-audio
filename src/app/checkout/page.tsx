@@ -259,12 +259,28 @@ export default function CheckoutPage() {
                     .replace(/<\/script>\s*$/i, '');
 
                 // Biraz gecikme ekleyerek DOM'un hazır olmasını sağla
-                await new Promise(resolve => setTimeout(resolve, 100));
+                await new Promise(resolve => setTimeout(resolve, 150));
 
-                const scriptTag = document.createElement('script');
-                scriptTag.type = 'text/javascript';
-                scriptTag.innerHTML = scriptContent;
-                document.body.appendChild(scriptTag);
+                // Form div'inin var olduğunu kontrol et
+                const formDiv = document.getElementById('iyzipay-checkout-form');
+                if (!formDiv) {
+                    console.error('iyzipay-checkout-form div not found!');
+                    return;
+                }
+
+                try {
+                    const scriptTag = document.createElement('script');
+                    scriptTag.type = 'text/javascript';
+                    scriptTag.innerHTML = scriptContent;
+                    scriptTag.onerror = (e) => {
+                        console.error('Script injection error:', e);
+                    };
+                    document.body.appendChild(scriptTag);
+                    console.log('iyzipay script injected successfully');
+                } catch (scriptErr) {
+                    console.error('Failed to inject iyzipay script:', scriptErr);
+                    return;
+                }
 
                 // State'i güncelle
                 setIsPaymentOpen(true);
@@ -274,6 +290,12 @@ export default function CheckoutPage() {
             }
         } catch (err) {
             console.error('Payment submit error:', err);
+            // Overlay varsa kapat
+            const overlay = document.getElementById('iyzipay-overlay');
+            if (overlay) {
+                overlay.remove();
+            }
+            setIsPaymentOpen(false);
         }
     };
 
