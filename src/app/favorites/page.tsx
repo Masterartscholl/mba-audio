@@ -75,7 +75,7 @@ export default function FavoritesPage() {
                     <div className="flex-1 overflow-y-auto custom-scrollbar flex flex-col">
                         <div className="px-4 lg:px-10 py-6 lg:py-10 flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">
                             <div>
-                                <h2 className="text-2xl lg:text-4xl font-black text-[#0b1121] dark:text-white tracking-tighter uppercase leading-none">{t('favoritesTitle')}</h2>
+                                <h2 className="text-2xl lg:text-4xl font-black text-white dark:text-[#0b1121] tracking-tighter uppercase leading-none">{t('favoritesTitle')}</h2>
                                 <p className="text-[#64748b] text-xs lg:text-sm font-bold mt-3 lg:mt-4 uppercase tracking-widest">
                                     {filteredFavorites.length} {t('tracksCount')}
                                 </p>
