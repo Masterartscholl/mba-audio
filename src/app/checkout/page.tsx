@@ -56,23 +56,43 @@ export default function CheckoutPage() {
             iframe.remove();
         });
 
-        // İyzipay'ın enjekte ettiği script'leri kaldır
-        document.querySelectorAll('script[src*="iyzipay"]').forEach((script) => {
-            script.remove();
+        // İyzipay'ın enjekte ettiği tüm script'leri kaldır (inline scripts dahil)
+        document.querySelectorAll('script').forEach((script) => {
+            // İyzipay ile ilgili olanları kaldır
+            if (script.src && script.src.includes('iyzipay')) {
+                script.remove();
+            }
+            // Veya innerHTML'de iyzipay referansı varsa
+            if (script.innerHTML && script.innerHTML.includes('iyzipay')) {
+                script.remove();
+            }
         });
 
-        // İyzipay'ın eklediği style'ları kaldır
+        // İyzipay'ın enjekte ettiği style'ları kaldır
         document.querySelectorAll('link[href*="iyzipay"]').forEach((link) => {
             link.remove();
         });
 
-        // İyzipay global objesini sıfırla (varsa)
+        // İyzipay'ın eklediği inline style'ları kaldır
+        document.querySelectorAll('style').forEach((style) => {
+            if (style.innerHTML && style.innerHTML.includes('iyzipay')) {
+                style.remove();
+            }
+        });
+
+        // İyzipay global objesini sıfırla
         if ((window as any).iyzipay) {
             delete (window as any).iyzipay;
         }
 
-        // Body'den iyzipay class'ını kaldır
+        // Diğer iyzipay global referanslarını temizle
+        if ((window as any).iyzipayCheckout) {
+            delete (window as any).iyzipayCheckout;
+        }
+
+        // Body'den iyzipay class'larını kaldır
         document.body.classList.remove('iyzipay-checkout-open');
+        document.body.style.overflow = '';
 
         setIsPaymentOpen(false);
     }, []);
@@ -156,91 +176,90 @@ export default function CheckoutPage() {
             const data = await res.json();
             console.log('IYZIPAY INIT RESPONSE', data);
             if (data.checkoutFormContent) {
-                // 0) Eski iyzipay form'unu temizle (iptal sonrası yeniden deneme durumu)
+                // 0) Eski iyzipay form'unu tamamen temizle
                 const existingOverlay = document.getElementById('iyzipay-overlay');
                 if (existingOverlay) {
                     existingOverlay.remove();
                 }
                 
-                // İyzipay'ın enjekte ettiği iframe'leri önceden kaldır
+                // İyzipay'ın enjekte ettiği tüm iframe'leri kaldır
                 document.querySelectorAll('iframe[src*="iyzipay"], iframe[id*="iyzipay"]').forEach((iframe) => {
                     iframe.remove();
                 });
 
-                // 1) Sayfanın üzerine basit bir overlay ve hedef div ekle
-                let overlay = document.getElementById('iyzipay-overlay') as HTMLDivElement | null;
-                if (!overlay) {
-                    overlay = document.createElement('div');
-                    overlay.id = 'iyzipay-overlay';
-                    overlay.style.position = 'fixed';
-                    overlay.style.inset = '0';
-                    overlay.style.background = 'rgba(0,0,0,0.75)';
-                    overlay.style.zIndex = '9999';
-                    overlay.style.display = 'flex';
-                    overlay.style.alignItems = 'center';
-                    overlay.style.justifyContent = 'center';
-                    overlay.style.padding = '16px';
-                    overlay.style.overflowY = 'auto';
+                // 1) Sayfanın üzerine overlay ve panel oluştur
+                const overlay = document.createElement('div');
+                overlay.id = 'iyzipay-overlay';
+                overlay.style.position = 'fixed';
+                overlay.style.inset = '0';
+                overlay.style.background = 'rgba(0,0,0,0.75)';
+                overlay.style.zIndex = '9999';
+                overlay.style.display = 'flex';
+                overlay.style.alignItems = 'center';
+                overlay.style.justifyContent = 'center';
+                overlay.style.padding = '16px';
+                overlay.style.overflowY = 'auto';
 
-                    const panel = document.createElement('div');
-                    panel.style.background = '#ffffff';
-                    panel.style.borderRadius = '16px';
-                    panel.style.maxWidth = '480px';
-                    panel.style.width = '100%';
-                    panel.style.margin = 'auto';
-                    panel.style.padding = '8px';
-                    panel.style.position = 'relative';
+                const panel = document.createElement('div');
+                panel.style.background = '#ffffff';
+                panel.style.borderRadius = '16px';
+                panel.style.maxWidth = '480px';
+                panel.style.width = '100%';
+                panel.style.margin = 'auto';
+                panel.style.padding = '8px';
+                panel.style.position = 'relative';
 
-                    // Kapatma butonu
-                    const closeButton = document.createElement('button');
-                    closeButton.innerHTML = '✕';
-                    closeButton.style.position = 'absolute';
-                    closeButton.style.top = '12px';
-                    closeButton.style.right = '12px';
-                    closeButton.style.width = '32px';
-                    closeButton.style.height = '32px';
-                    closeButton.style.borderRadius = '50%';
-                    closeButton.style.border = 'none';
+                // Kapatma butonu
+                const closeButton = document.createElement('button');
+                closeButton.innerHTML = '✕';
+                closeButton.style.position = 'absolute';
+                closeButton.style.top = '12px';
+                closeButton.style.right = '12px';
+                closeButton.style.width = '32px';
+                closeButton.style.height = '32px';
+                closeButton.style.borderRadius = '50%';
+                closeButton.style.border = 'none';
+                closeButton.style.background = 'rgba(0,0,0,0.1)';
+                closeButton.style.color = '#000';
+                closeButton.style.fontSize = '20px';
+                closeButton.style.cursor = 'pointer';
+                closeButton.style.display = 'flex';
+                closeButton.style.alignItems = 'center';
+                closeButton.style.justifyContent = 'center';
+                closeButton.style.zIndex = '10001';
+                closeButton.style.transition = 'background 0.2s';
+                closeButton.style.fontWeight = 'bold';
+
+                closeButton.onmouseover = () => {
+                    closeButton.style.background = 'rgba(0,0,0,0.2)';
+                };
+                closeButton.onmouseout = () => {
                     closeButton.style.background = 'rgba(0,0,0,0.1)';
-                    closeButton.style.color = '#000';
-                    closeButton.style.fontSize = '20px';
-                    closeButton.style.cursor = 'pointer';
-                    closeButton.style.display = 'flex';
-                    closeButton.style.alignItems = 'center';
-                    closeButton.style.justifyContent = 'center';
-                    closeButton.style.zIndex = '10001';
-                    closeButton.style.transition = 'background 0.2s';
-                    closeButton.style.fontWeight = 'bold';
+                };
 
-                    closeButton.onmouseover = () => {
-                        closeButton.style.background = 'rgba(0,0,0,0.2)';
-                    };
-                    closeButton.onmouseout = () => {
-                        closeButton.style.background = 'rgba(0,0,0,0.1)';
-                    };
+                closeButton.onclick = (e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    closePaymentForm();
+                };
 
-                    closeButton.onclick = (e) => {
-                        e.preventDefault();
-                        e.stopPropagation();
-                        closePaymentForm();
-                    };
+                const formDiv = document.createElement('div');
+                formDiv.id = 'iyzipay-checkout-form';
+                formDiv.style.minHeight = '520px';
 
-                    const formDiv = document.createElement('div');
-                    formDiv.id = 'iyzipay-checkout-form';
-                    formDiv.style.minHeight = '520px';
-                    formDiv.innerHTML = ''; // Önceki içeriği temizle
-
-                    panel.appendChild(closeButton);
-                    panel.appendChild(formDiv);
-                    overlay.appendChild(panel);
-                    document.body.appendChild(overlay);
-                }
+                panel.appendChild(closeButton);
+                panel.appendChild(formDiv);
+                overlay.appendChild(panel);
+                document.body.appendChild(overlay);
 
                 // 2) checkoutFormContent içindeki <script> kodunu alıp gerçek script tag olarak ekle
                 const raw = String(data.checkoutFormContent);
                 const scriptContent = raw
                     .replace(/^\s*<script[^>]*>/i, '')
                     .replace(/<\/script>\s*$/i, '');
+
+                // Biraz gecikme ekleyerek DOM'un hazır olmasını sağla
+                await new Promise(resolve => setTimeout(resolve, 100));
 
                 const scriptTag = document.createElement('script');
                 scriptTag.type = 'text/javascript';
