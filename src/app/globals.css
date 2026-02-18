@@ -114,3 +114,67 @@ select option {
 .custom-scrollbar::-webkit-scrollbar-thumb:hover {
   background: transparent;
 }
+
+/* ========== RANGE SLIDER ========== */
+
+.slider {
+  appearance: none;
+  -webkit-appearance: none;
+  background: transparent;
+}
+
+/* TRACK */
+.slider::-webkit-slider-runnable-track {
+  height: 6px; /* h-1.5 ile birebir */
+  border-radius: 9999px;
+  background: #9ca3af; /* açık mod koyu gri */
+}
+
+.slider::-moz-range-track {
+  height: 6px;
+  border-radius: 9999px;
+  background: #9ca3af;
+}
+
+/* DARK MODE TRACK */
+.dark .slider::-webkit-slider-runnable-track {
+  background: var(--app-input-bg);
+}
+
+.dark .slider::-moz-range-track {
+  background: var(--app-input-bg);
+}
+
+/* THUMB */
+.slider::-webkit-slider-thumb {
+  appearance: none;
+  -webkit-appearance: none;
+  width: 16px;
+  height: 16px;
+  border-radius: 9999px;
+  background: #ede066; /* site sarısı */
+  margin-top: -5px;
+  cursor: pointer;
+  border: none;
+}
+
+.slider::-moz-range-thumb {
+  width: 16px;
+  height: 16px;
+  border-radius: 9999px;
+  background: #ede066; /* site sarısı */
+  border: none;
+  cursor: pointer;
+}
+
+
+
+.dark .slider-bpm::-moz-range-thumb {
+  background: var(--app-primary);
+}
+
+/* DARK PRICE */
+
+.dark .slider-price::-moz-range-thumb {
+  background: #ede066;
+}

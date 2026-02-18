@@ -318,7 +318,7 @@ export const Sidebar: React.FC<FilterProps> = ({ filters, onFilterChange }) => {
                                     setLocalBpmRange(newRange);
                                     onFilterChange({ ...filters, bpmRange: newRange });
                                 }}
-                                className="flex-1 min-w-0 w-0 accent-gray-400 dark:accent-app-primary h-1.5 bg-gray-300 dark:bg-app-input-bg rounded-full appearance-none cursor-pointer"
+                                className="slider slider-bpm flex-1 min-w-0 w-0 h-1.5 rounded-full cursor-pointer"
                             />
                             <input
                                 type="range"
@@ -331,7 +331,7 @@ export const Sidebar: React.FC<FilterProps> = ({ filters, onFilterChange }) => {
                                     setLocalBpmRange(newRange);
                                     onFilterChange({ ...filters, bpmRange: newRange });
                                 }}
-                                className="flex-1 min-w-0 w-0 accent-gray-400 dark:accent-app-primary h-1.5 bg-gray-300 dark:bg-app-input-bg rounded-full appearance-none cursor-pointer"
+                                className="slider slider-bpm flex-1 min-w-0 w-0 h-1.5 bg-gray-300 dark:bg-app-input-bg rounded-full appearance-none cursor-pointer"
                             />
                         </div>
                         <p className="text-[9px] text-app-text-muted mt-1.5">{BPM_MIN} - {BPM_MAX} {t('bpmRangeHint')}</p>
@@ -409,7 +409,7 @@ export const Sidebar: React.FC<FilterProps> = ({ filters, onFilterChange }) => {
                                     setLocalPriceRange(newRange);
                                     onFilterChange({ ...filters, priceRange: newRange });
                                 }}
-                                className="flex-1 min-w-0 w-0 accent-gray-400 dark:accent-[#ede066] h-1.5 bg-gray-300 dark:bg-[#0a0a0a] rounded-full appearance-none cursor-pointer"
+                                className="slider slider-price flex-1 min-w-0 w-0 h-1.5 bg-gray-300 dark:bg-[#0a0a0a] rounded-full appearance-none cursor-pointer"
                             />
                             <input
                                 type="range"
@@ -422,7 +422,7 @@ export const Sidebar: React.FC<FilterProps> = ({ filters, onFilterChange }) => {
                                     setLocalPriceRange(newRange);
                                     onFilterChange({ ...filters, priceRange: newRange });
                                 }}
-                                className="flex-1 min-w-0 w-0 accent-gray-400 dark:accent-[#ede066] h-1.5 bg-gray-300 dark:bg-[#0a0a0a] rounded-full appearance-none cursor-pointer"
+                                className="slider slider-price flex-1 min-w-0 w-0 h-1.5 bg-gray-300 dark:bg-[#0a0a0a] rounded-full appearance-none cursor-pointer"
                             />
                         </div>
                         <div className="flex justify-between text-[9px] font-bold text-app-text-muted mt-2 px-1">
@@ -692,7 +692,7 @@ export const SidebarMobileDrawer: React.FC<SidebarMobileDrawerProps> = ({ filter
                                     setLocalBpmRange(newRange);
                                     onFilterChange({ ...filters, bpmRange: newRange });
                                 }}
-                                className="flex-1 min-w-0 w-0 accent-gray-400 dark:accent-app-primary h-1.5 bg-gray-300 dark:bg-app-input-bg rounded-full appearance-none cursor-pointer"
+                                className="slider slider-bpm flex-1 min-w-0 w-0 h-1.5 bg-gray-300 dark:bg-app-input-bg rounded-full appearance-none cursor-pointer"
                             />
                             <input
                                 type="range"
@@ -705,7 +705,7 @@ export const SidebarMobileDrawer: React.FC<SidebarMobileDrawerProps> = ({ filter
                                     setLocalBpmRange(newRange);
                                     onFilterChange({ ...filters, bpmRange: newRange });
                                 }}
-                                className="flex-1 min-w-0 w-0 accent-gray-400 dark:accent-app-primary h-1.5 bg-gray-300 dark:bg-app-input-bg rounded-full appearance-none cursor-pointer"
+                                className="slider slider-bpm flex-1 min-w-0 w-0 h-1.5 bg-gray-300 dark:bg-app-input-bg rounded-full appearance-none cursor-pointer"
                             />
                         </div>
                         <p className="text-[9px] text-app-text-muted mt-1.5">{BPM_MIN} - {BPM_MAX} {t('bpmRangeHint')}</p>
@@ -769,7 +769,7 @@ export const SidebarMobileDrawer: React.FC<SidebarMobileDrawerProps> = ({ filter
                                     setLocalPriceRange(newRange);
                                     onFilterChange({ ...filters, priceRange: newRange });
                                 }}
-                                className="flex-1 min-w-0 w-0 accent-gray-400 dark:accent-[#ede066] h-1.5 bg-gray-300 dark:bg-[#0a0a0a] rounded-full appearance-none cursor-pointer"
+                                className="slider slider-price flex-1 min-w-0 w-0 h-1.5 bg-gray-300 dark:bg-[#0a0a0a] rounded-full appearance-none cursor-pointer"
                             />
                             <input
                                 type="range"
@@ -782,7 +782,7 @@ export const SidebarMobileDrawer: React.FC<SidebarMobileDrawerProps> = ({ filter
                                     setLocalPriceRange(newRange);
                                     onFilterChange({ ...filters, priceRange: newRange });
                                 }}
-                                className="flex-1 min-w-0 w-0 accent-gray-400 dark:accent-[#ede066] h-1.5 bg-gray-300 dark:bg-[#0a0a0a] rounded-full appearance-none cursor-pointer"
+                                className="slider slider-price flex-1 min-w-0 w-0 h-1.5 bg-gray-300 dark:bg-[#0a0a0a] rounded-full appearance-none cursor-pointer"
                             />
                         </div>
                         <div className="flex justify-between text-[9px] font-bold text-app-text-muted mt-2 px-1">
