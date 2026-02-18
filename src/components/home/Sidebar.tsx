@@ -149,9 +149,9 @@ export const Sidebar: React.FC<FilterProps> = ({ filters, onFilterChange }) => {
     } = useSidebarData(filters, onFilterChange);
 
     return (
-        <aside className="hidden lg:flex w-80 min-w-[18rem] max-w-[20rem] bg-app-bg border-r-2 border-app-border flex-col h-screen sticky top-0 overflow-hidden shrink-0">
+        <aside className="hidden lg:flex w-80 min-w-[18rem] max-w-[20rem] bg-app-bg border-r-2 border-[#d1d5db] dark:border-app-border flex-col h-screen sticky top-0 overflow-hidden shrink-0">
             {/* Logo Area */}
-            <div className="h-24 flex items-center px-8 border-b border-app-border shrink-0">
+            <div className="h-24 flex items-center px-8 border-b border-[#d1d5db] dark:border-app-border shrink-0">
                 <Link href="/" className="flex items-center gap-3">
                     <Image src={logoImg} alt="MüzikBank" width={32} height={32} className="rounded-lg object-contain" />
                     <div>
@@ -169,21 +169,21 @@ export const Sidebar: React.FC<FilterProps> = ({ filters, onFilterChange }) => {
                     <nav className="space-y-1">
                         <Link
                             href="/"
-                            className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl font-bold text-sm transition-all border ${pathname === '/' ? 'bg-app-surface text-app-primary border-app-border shadow-inner' : 'text-app-text-muted hover:text-app-text hover:bg-app-surface border-transparent'}`}
+                            className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl font-bold text-sm transition-all border ${pathname === '/' ? 'bg-app-surface text-app-primary border-[#d1d5db] dark:border-app-border shadow-inner' : 'text-app-text-muted hover:text-app-text hover:bg-app-surface border-transparent'}`}
                         >
                             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" /></svg>
                             <span>{t('home')}</span>
                         </Link>
                         <Link
                             href="/favorites"
-                            className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl font-bold text-sm transition-all border group ${pathname === '/favorites' ? 'bg-app-surface text-app-primary border-app-border shadow-inner' : 'text-app-text-muted hover:text-app-text hover:bg-app-surface border-transparent'}`}
+                            className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl font-bold text-sm transition-all border group ${pathname === '/favorites' ? 'bg-app-surface text-app-primary border-[#d1d5db] dark:border-app-border shadow-inner' : 'text-app-text-muted hover:text-app-text hover:bg-app-surface border-transparent'}`}
                         >
                             <svg className="w-5 h-5 group-hover:scale-110 transition-transform" fill={pathname === '/favorites' ? 'currentColor' : 'none'} stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" /></svg>
                             <span>{t('myFavorites')}</span>
                         </Link>
                         <Link
                             href="/library"
-                            className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl font-bold text-sm transition-all border group ${pathname === '/library' ? 'bg-app-surface text-app-primary border-app-border shadow-inner' : 'text-app-text-muted hover:text-app-text hover:bg-app-surface border-transparent'}`}
+                            className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl font-bold text-sm transition-all border group ${pathname === '/library' ? 'bg-app-surface text-app-primary border-[#d1d5db] dark:border-app-border shadow-inner' : 'text-app-text-muted hover:text-app-text hover:bg-app-surface border-transparent'}`}
                         >
                             <svg className="w-5 h-5 group-hover:scale-110 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 7v8m0 0l3-3m-3 3L5 8m0 0h8M5 8V7" /></svg>
                             <span>{t('myLibrary')}</span>
@@ -195,7 +195,7 @@ export const Sidebar: React.FC<FilterProps> = ({ filters, onFilterChange }) => {
                     <h3 className="text-xs font-black text-app-text-muted tracking-[0.2em] mb-4 pl-2 uppercase">{t('filters')}</h3>
 
                     {genres.length > 0 && (
-                        <div className="bg-app-card rounded-2xl p-4 border border-app-border">
+                        <div className="bg-app-card rounded-2xl p-4 border border-[#d1d5db] dark:border-app-border">
                             <p className="text-[11px] font-black text-app-text uppercase tracking-wider mb-3 flex items-center gap-2">
                                 <span className="w-1 h-1 rounded-full bg-app-primary"></span>
                                 {t('genre')}
@@ -215,7 +215,7 @@ export const Sidebar: React.FC<FilterProps> = ({ filters, onFilterChange }) => {
                                             }}
                                             className={`px-3 py-1.5 rounded-lg text-[10px] font-bold uppercase tracking-wider transition-all border ${selectedGenres.includes(genre.id)
                                                 ? 'bg-app-primary/20 text-app-primary border-app-primary/40'
-                                                : 'bg-app-surface text-app-text-muted border-transparent hover:border-app-border hover:text-app-text hover:bg-app-card'
+                                                : 'bg-app-surface text-app-text-muted border-transparent hover:border-[#d1d5db] dark:hover:border-app-border hover:text-app-text hover:bg-app-card'
                                                 }`}
                                         >
                                             {label}
@@ -226,7 +226,7 @@ export const Sidebar: React.FC<FilterProps> = ({ filters, onFilterChange }) => {
                         </div>
                     )}
 
-                    <div className="bg-app-card rounded-2xl p-4 border border-app-border">
+                    <div className="bg-app-card rounded-2xl p-4 border border-[#d1d5db] dark:border-app-border">
                         <p className="text-[11px] font-black text-app-text uppercase tracking-wider mb-3 flex items-center gap-2">
                             <span className="w-1 h-1 rounded-full bg-app-primary"></span>
                             {t('mood')}
@@ -235,7 +235,7 @@ export const Sidebar: React.FC<FilterProps> = ({ filters, onFilterChange }) => {
                             <select
                                 value={selectedMode || ''}
                                 onChange={(e) => onFilterChange({ ...filters, modeId: e.target.value ? Number(e.target.value) : null })}
-                                className="w-full bg-app-input-bg border border-app-border rounded-xl px-4 py-2.5 text-xs text-app-text font-bold appearance-none focus:outline-none focus:border-app-primary/50 transition-all cursor-pointer hover:bg-app-card">
+                                className="w-full bg-app-input-bg border border-[#d1d5db] dark:border-app-border rounded-xl px-4 py-2.5 text-xs text-app-text font-bold appearance-none focus:outline-none focus:border-app-primary/50 transition-all cursor-pointer hover:bg-app-card">
                                 <option value="">{t('selectMood')}</option>
                                 {(selectedCategory ? modes.filter((m: any) => m.category_id === selectedCategory) : modes).map((mode: any) => {
                                     const label = locale === 'en' ? (mode.name_en || mode.name) : mode.name;
@@ -249,7 +249,7 @@ export const Sidebar: React.FC<FilterProps> = ({ filters, onFilterChange }) => {
                     </div>
 
                     {/* BPM Range */}
-                    <div className="bg-app-card rounded-2xl p-4 border border-app-border min-w-0">
+                    <div className="bg-app-card rounded-2xl p-4 border border-[#d1d5db] dark:border-app-border min-w-0">
                         <div className="flex justify-between items-center mb-3">
                             <p className="text-[11px] font-black text-app-text uppercase tracking-wider flex items-center gap-2">
                                 <span className="w-1 h-1 rounded-full bg-app-primary"></span>
@@ -286,7 +286,7 @@ export const Sidebar: React.FC<FilterProps> = ({ filters, onFilterChange }) => {
                                         setLocalBpmRange(newRange);
                                         onFilterChange({ ...filters, bpmRange: newRange });
                                     }}
-                                    className="w-full bg-app-input-bg border border-app-border rounded-lg px-3 py-2 text-xs text-app-text font-bold focus:outline-none focus:border-app-primary/50"
+                                    className="w-full bg-app-input-bg border border-[#d1d5db] dark:border-app-border rounded-lg px-3 py-2 text-xs text-app-text font-bold focus:outline-none focus:border-app-primary/50"
                                 />
                             </label>
                             <label className="flex-1 flex flex-col gap-1">
@@ -302,7 +302,7 @@ export const Sidebar: React.FC<FilterProps> = ({ filters, onFilterChange }) => {
                                         setLocalBpmRange(newRange);
                                         onFilterChange({ ...filters, bpmRange: newRange });
                                     }}
-                                    className="w-full bg-app-input-bg border border-app-border rounded-lg px-3 py-2 text-xs text-app-text font-bold focus:outline-none focus:border-app-primary/50"
+                                    className="w-full bg-app-input-bg border border-[#d1d5db] dark:border-app-border rounded-lg px-3 py-2 text-xs text-app-text font-bold focus:outline-none focus:border-app-primary/50"
                                 />
                             </label>
                         </div>
@@ -318,7 +318,7 @@ export const Sidebar: React.FC<FilterProps> = ({ filters, onFilterChange }) => {
                                     setLocalBpmRange(newRange);
                                     onFilterChange({ ...filters, bpmRange: newRange });
                                 }}
-                                className="flex-1 min-w-0 w-0 accent-app-primary h-1.5 bg-app-input-bg rounded-full appearance-none cursor-pointer"
+                                className="flex-1 min-w-0 w-0 accent-app-primary h-1.5 bg-[#e5e7eb] dark:bg-app-input-bg rounded-full appearance-none cursor-pointer"
                             />
                             <input
                                 type="range"
@@ -331,14 +331,14 @@ export const Sidebar: React.FC<FilterProps> = ({ filters, onFilterChange }) => {
                                     setLocalBpmRange(newRange);
                                     onFilterChange({ ...filters, bpmRange: newRange });
                                 }}
-                                className="flex-1 min-w-0 w-0 accent-app-primary h-1.5 bg-app-input-bg rounded-full appearance-none cursor-pointer"
+                                className="flex-1 min-w-0 w-0 accent-app-primary h-1.5 bg-[#e5e7eb] dark:bg-app-input-bg rounded-full appearance-none cursor-pointer"
                             />
                         </div>
                         <p className="text-[9px] text-app-text-muted mt-1.5">{BPM_MIN} - {BPM_MAX} {t('bpmRangeHint')}</p>
                     </div>
 
                     {/* Price Range */}
-                    <div className="bg-app-card rounded-2xl p-4 border border-app-border min-w-0">
+                    <div className="bg-app-card rounded-2xl p-4 border border-[#d1d5db] dark:border-app-border min-w-0">
                         <div className="flex justify-between items-center mb-3">
                             <p className="text-[11px] font-black text-app-text uppercase tracking-wider flex items-center gap-2">
                                 <span className="w-1 h-1 rounded-full bg-app-primary"></span>
@@ -377,7 +377,7 @@ export const Sidebar: React.FC<FilterProps> = ({ filters, onFilterChange }) => {
                                         setLocalPriceRange(newRange);
                                         onFilterChange({ ...filters, priceRange: newRange });
                                     }}
-                                    className="w-full bg-app-input-bg border border-app-border rounded-lg px-3 py-2 text-xs text-app-text font-bold focus:outline-none focus:border-app-primary/50"
+                                    className="w-full bg-app-input-bg border border-[#d1d5db] dark:border-app-border rounded-lg px-3 py-2 text-xs text-app-text font-bold focus:outline-none focus:border-app-primary/50"
                                 />
                             </label>
                             <label className="flex-1 flex flex-col gap-1">
@@ -393,7 +393,7 @@ export const Sidebar: React.FC<FilterProps> = ({ filters, onFilterChange }) => {
                                         setLocalPriceRange(newRange);
                                         onFilterChange({ ...filters, priceRange: newRange });
                                     }}
-                                    className="w-full bg-app-input-bg border border-app-border rounded-lg px-3 py-2 text-xs text-app-text font-bold focus:outline-none focus:border-app-primary/50"
+                                    className="w-full bg-app-input-bg border border-[#d1d5db] dark:border-app-border rounded-lg px-3 py-2 text-xs text-app-text font-bold focus:outline-none focus:border-app-primary/50"
                                 />
                             </label>
                         </div>
@@ -409,7 +409,7 @@ export const Sidebar: React.FC<FilterProps> = ({ filters, onFilterChange }) => {
                                     setLocalPriceRange(newRange);
                                     onFilterChange({ ...filters, priceRange: newRange });
                                 }}
-                                className="flex-1 min-w-0 w-0 accent-[#ede066] h-1.5 bg-[#0a0a0a] rounded-full appearance-none cursor-pointer"
+                                className="flex-1 min-w-0 w-0 accent-[#ede066] h-1.5 bg-[#cbd5e1] dark:bg-[#0a0a0a] rounded-full appearance-none cursor-pointer"
                             />
                             <input
                                 type="range"
@@ -422,7 +422,7 @@ export const Sidebar: React.FC<FilterProps> = ({ filters, onFilterChange }) => {
                                     setLocalPriceRange(newRange);
                                     onFilterChange({ ...filters, priceRange: newRange });
                                 }}
-                                className="flex-1 min-w-0 w-0 accent-[#ede066] h-1.5 bg-[#0a0a0a] rounded-full appearance-none cursor-pointer"
+                                className="flex-1 min-w-0 w-0 accent-[#ede066] h-1.5 bg-[#cbd5e1] dark:bg-[#0a0a0a] rounded-full appearance-none cursor-pointer"
                             />
                         </div>
                         <div className="flex justify-between text-[9px] font-bold text-app-text-muted mt-2 px-1">
@@ -441,14 +441,14 @@ export const Sidebar: React.FC<FilterProps> = ({ filters, onFilterChange }) => {
                             bpmRange: [BPM_MIN, BPM_MAX],
                             priceRange: [priceBounds[0], priceBounds[1]],
                         })}
-                        className="w-full py-3 rounded-xl text-xs font-black uppercase tracking-wider border border-app-border text-app-text-muted hover:text-app-primary hover:border-app-primary/30 hover:bg-app-surface transition-all"
+                        className="w-full py-3 rounded-xl text-xs font-black uppercase tracking-wider border border-[#d1d5db] dark:border-app-border text-app-text-muted hover:text-app-primary hover:border-app-primary/30 hover:bg-app-surface transition-all"
                     >
                         {t('resetFiltering')}
                     </button>
                 </div>
 
                 {/* Support - Desktop */}
-                <div className="mt-auto px-6 py-6 border-t border-app-border bg-app-bg/50">
+                <div className="mt-auto px-6 py-6 border-t border-[#d1d5db] dark:border-app-border bg-app-bg/50">
                     <p className="text-[9px] font-black text-app-text-muted uppercase tracking-[0.2em] mb-1">{t('support')}</p>
                     <a href="mailto:destek@muzikburada.net" className="text-[11px] font-bold text-app-text hover:text-app-primary transition-colors">
                         destek@muzikburada.net
@@ -526,7 +526,7 @@ export const SidebarMobileDrawer: React.FC<SidebarMobileDrawerProps> = ({ filter
                 <button
                     type="button"
                     onClick={onClose}
-                    className="w-9 h-9 rounded-xl bg-app-surface border border-app-border flex items-center justify-center text-app-text-muted hover:text-app-text hover:border-app-primary/40 transition-all"
+                    className="w-9 h-9 rounded-xl bg-app-surface border border-[#d1d5db] dark:border-app-border flex items-center justify-center text-app-text-muted hover:text-app-text hover:border-app-primary/40 transition-all"
                     aria-label={t('close')}
                 >
                     <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -547,7 +547,7 @@ export const SidebarMobileDrawer: React.FC<SidebarMobileDrawerProps> = ({ filter
                                 isNavigating.current = true;
                                 onClose?.();
                             }}
-                            className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl font-bold text-sm transition-all border ${pathname === '/' ? 'bg-app-surface text-app-primary border-app-border shadow-inner' : 'text-app-text-muted hover:text-app-text hover:bg-app-surface border-transparent'}`}
+                            className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl font-bold text-sm transition-all border ${pathname === '/' ? 'bg-app-surface text-app-primary border-[#d1d5db] dark:border-app-border shadow-inner' : 'text-app-text-muted hover:text-app-text hover:bg-app-surface border-transparent'}`}
                         >
                             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" /></svg>
                             <span>{t('home')}</span>
@@ -558,7 +558,7 @@ export const SidebarMobileDrawer: React.FC<SidebarMobileDrawerProps> = ({ filter
                                 isNavigating.current = true;
                                 onClose?.();
                             }}
-                            className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl font-bold text-sm transition-all border group ${pathname === '/favorites' ? 'bg-app-surface text-app-primary border-app-border shadow-inner' : 'text-app-text-muted hover:text-app-text hover:bg-app-surface border-transparent'}`}
+                            className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl font-bold text-sm transition-all border group ${pathname === '/favorites' ? 'bg-app-surface text-app-primary border-[#d1d5db] dark:border-app-border shadow-inner' : 'text-app-text-muted hover:text-app-text hover:bg-app-surface border-transparent'}`}
                         >
                             <svg className="w-5 h-5 group-hover:scale-110 transition-transform" fill={pathname === '/favorites' ? 'currentColor' : 'none'} stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" /></svg>
                             <span>{t('myFavorites')}</span>
@@ -569,7 +569,7 @@ export const SidebarMobileDrawer: React.FC<SidebarMobileDrawerProps> = ({ filter
                                 isNavigating.current = true;
                                 onClose?.();
                             }}
-                            className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl font-bold text-sm transition-all border group ${pathname === '/library' ? 'bg-app-surface text-app-primary border-app-border shadow-inner' : 'text-app-text-muted hover:text-app-text hover:bg-app-surface border-transparent'}`}
+                            className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl font-bold text-sm transition-all border group ${pathname === '/library' ? 'bg-app-surface text-app-primary border-[#d1d5db] dark:border-app-border shadow-inner' : 'text-app-text-muted hover:text-app-text hover:bg-app-surface border-transparent'}`}
                         >
                             <svg className="w-5 h-5 group-hover:scale-110 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 7v8m0 0l3-3m-3 3L5 8m0 0h8M5 8V7" /></svg>
                             <span>{t('myLibrary')}</span>
@@ -582,7 +582,7 @@ export const SidebarMobileDrawer: React.FC<SidebarMobileDrawerProps> = ({ filter
                     <h3 className="text-[11px] font-black text-app-text-muted tracking-[0.2em] mb-2 pl-1 uppercase">{t('filters')}</h3>
 
                     {genres.length > 0 && (
-                        <div className="bg-app-card rounded-2xl p-3 border border-app-border">
+                        <div className="bg-app-card rounded-2xl p-3 border border-[#d1d5db] dark:border-app-border">
                             <p className="text-[11px] font-black text-app-text uppercase tracking-wider mb-2 flex items-center gap-2">
                                 <span className="w-1 h-1 rounded-full bg-app-primary"></span>
                                 {t('genre')}
@@ -602,7 +602,7 @@ export const SidebarMobileDrawer: React.FC<SidebarMobileDrawerProps> = ({ filter
                                             }}
                                             className={`px-3 py-1.5 rounded-lg text-[10px] font-bold uppercase tracking-wider transition-all border ${selectedGenres.includes(genre.id)
                                                 ? 'bg-app-primary/20 text-app-primary border-app-primary/40'
-                                                : 'bg-app-surface text-app-text-muted border-transparent hover:border-app-border hover:text-app-text hover:bg-app-card'
+                                                : 'bg-app-surface text-app-text-muted border-transparent hover:border-[#d1d5db] dark:hover:border-app-border hover:text-app-text hover:bg-app-card'
                                                 }`}
                                         >
                                             {label}
@@ -613,7 +613,7 @@ export const SidebarMobileDrawer: React.FC<SidebarMobileDrawerProps> = ({ filter
                         </div>
                     )}
 
-                    <div className="bg-app-card rounded-2xl p-3 border border-app-border">
+                    <div className="bg-app-card rounded-2xl p-3 border border-[#d1d5db] dark:border-app-border">
                         <p className="text-[11px] font-black text-app-text uppercase tracking-wider mb-2 flex items-center gap-2">
                             <span className="w-1 h-1 rounded-full bg-app-primary"></span>
                             {t('mood')}
@@ -622,7 +622,7 @@ export const SidebarMobileDrawer: React.FC<SidebarMobileDrawerProps> = ({ filter
                             <select
                                 value={selectedMode || ''}
                                 onChange={(e) => onFilterChange({ ...filters, modeId: e.target.value ? Number(e.target.value) : null })}
-                                className="w-full bg-app-input-bg border border-app-border rounded-xl px-3 py-2 text-xs text-app-text font-bold appearance-none focus:outline-none focus:border-app-primary/50 transition-all cursor-pointer hover:bg-app-card">
+                                className="w-full bg-app-input-bg border border-[#d1d5db] dark:border-app-border rounded-xl px-3 py-2 text-xs text-app-text font-bold appearance-none focus:outline-none focus:border-app-primary/50 transition-all cursor-pointer hover:bg-app-card">
                                 <option value="">{t('selectMood')}</option>
                                 {(selectedCategory ? modes.filter((m: any) => m.category_id === selectedCategory) : modes).map((mode: any) => {
                                     const label = locale === 'en' ? (mode.name_en || mode.name) : mode.name;
@@ -636,7 +636,7 @@ export const SidebarMobileDrawer: React.FC<SidebarMobileDrawerProps> = ({ filter
                     </div>
 
                     {/* BPM Range */}
-                    <div className="bg-app-card rounded-2xl p-3 border border-app-border min-w-0">
+                    <div className="bg-app-card rounded-2xl p-3 border border-[#d1d5db] dark:border-app-border min-w-0">
                         <div className="flex justify-between items-center mb-2">
                             <p className="text-[11px] font-black text-app-text uppercase tracking-wider flex items-center gap-2">
                                 <span className="w-1 h-1 rounded-full bg-app-primary"></span>
@@ -660,7 +660,7 @@ export const SidebarMobileDrawer: React.FC<SidebarMobileDrawerProps> = ({ filter
                                         setLocalBpmRange(newRange);
                                         onFilterChange({ ...filters, bpmRange: newRange });
                                     }}
-                                    className="w-full bg-app-input-bg border border-app-border rounded-lg px-3 py-2 text-xs text-app-text font-bold focus:outline-none focus:border-app-primary/50"
+                                    className="w-full bg-app-input-bg border border-[#d1d5db] dark:border-app-border rounded-lg px-3 py-2 text-xs text-app-text font-bold focus:outline-none focus:border-app-primary/50"
                                 />
                             </label>
                             <label className="flex-1 flex flex-col gap-1">
@@ -676,7 +676,7 @@ export const SidebarMobileDrawer: React.FC<SidebarMobileDrawerProps> = ({ filter
                                         setLocalBpmRange(newRange);
                                         onFilterChange({ ...filters, bpmRange: newRange });
                                     }}
-                                    className="w-full bg-app-input-bg border border-app-border rounded-lg px-3 py-2 text-xs text-app-text font-bold focus:outline-none focus:border-app-primary/50"
+                                    className="w-full bg-app-input-bg border border-[#d1d5db] dark:border-app-border rounded-lg px-3 py-2 text-xs text-app-text font-bold focus:outline-none focus:border-app-primary/50"
                                 />
                             </label>
                         </div>
@@ -692,7 +692,7 @@ export const SidebarMobileDrawer: React.FC<SidebarMobileDrawerProps> = ({ filter
                                     setLocalBpmRange(newRange);
                                     onFilterChange({ ...filters, bpmRange: newRange });
                                 }}
-                                className="flex-1 min-w-0 w-0 accent-app-primary h-1.5 bg-app-input-bg rounded-full appearance-none cursor-pointer"
+                                className="flex-1 min-w-0 w-0 accent-app-primary h-1.5 bg-[#e5e7eb] dark:bg-app-input-bg rounded-full appearance-none cursor-pointer"
                             />
                             <input
                                 type="range"
@@ -705,14 +705,15 @@ export const SidebarMobileDrawer: React.FC<SidebarMobileDrawerProps> = ({ filter
                                     setLocalBpmRange(newRange);
                                     onFilterChange({ ...filters, bpmRange: newRange });
                                 }}
-                                className="flex-1 min-w-0 w-0 accent-app-primary h-1.5 bg-app-input-bg rounded-full appearance-none cursor-pointer"
+                                className="flex-1 min-w-0 w-0 accent-app-primary h-1.5 bg-[#e5e7eb] dark:bg-app-input-bg rounded-full appearance-none cursor-pointer"
                             />
                         </div>
+                        <p className="text-[9px] text-app-text-muted mt-1.5">{BPM_MIN} - {BPM_MAX} {t('bpmRangeHint')}</p>
                         <p className="text-[9px] text-app-text-muted mt-1.5">{BPM_MIN} - {BPM_MAX} {t('bpmRangeHint')}</p>
                     </div>
 
                     {/* Price Range */}
-                    <div className="bg-app-card rounded-2xl p-3 border border-app-border min-w-0">
+                    <div className="bg-app-card rounded-2xl p-3 border border-[#d1d5db] dark:border-app-border min-w-0">
                         <div className="flex justify-between items-center mb-2">
                             <p className="text-[11px] font-black text-app-text uppercase tracking-wider flex items-center gap-2">
                                 <span className="w-1 h-1 rounded-full bg-app-primary"></span>
@@ -736,7 +737,7 @@ export const SidebarMobileDrawer: React.FC<SidebarMobileDrawerProps> = ({ filter
                                         setLocalPriceRange(newRange);
                                         onFilterChange({ ...filters, priceRange: newRange });
                                     }}
-                                    className="w-full bg-app-input-bg border border-app-border rounded-lg px-3 py-2 text-xs text-app-text font-bold focus:outline-none focus:border-app-primary/50"
+                                    className="w-full bg-app-input-bg border border-[#d1d5db] dark:border-app-border rounded-lg px-3 py-2 text-xs text-app-text font-bold focus:outline-none focus:border-app-primary/50"
                                 />
                             </label>
                             <label className="flex-1 flex flex-col gap-1">
@@ -752,7 +753,7 @@ export const SidebarMobileDrawer: React.FC<SidebarMobileDrawerProps> = ({ filter
                                         setLocalPriceRange(newRange);
                                         onFilterChange({ ...filters, priceRange: newRange });
                                     }}
-                                    className="w-full bg-app-input-bg border border-app-border rounded-lg px-3 py-2 text-xs text-app-text font-bold focus:outline-none focus:border-app-primary/50"
+                                    className="w-full bg-app-input-bg border border-[#d1d5db] dark:border-app-border rounded-lg px-3 py-2 text-xs text-app-text font-bold focus:outline-none focus:border-app-primary/50"
                                 />
                             </label>
                         </div>
@@ -768,7 +769,7 @@ export const SidebarMobileDrawer: React.FC<SidebarMobileDrawerProps> = ({ filter
                                     setLocalPriceRange(newRange);
                                     onFilterChange({ ...filters, priceRange: newRange });
                                 }}
-                                className="flex-1 min-w-0 w-0 accent-[#ede066] h-1.5 bg-[#0a0a0a] rounded-full appearance-none cursor-pointer"
+                                className="flex-1 min-w-0 w-0 accent-[#ede066] h-1.5 bg-[#cbd5e1] dark:bg-[#0a0a0a] rounded-full appearance-none cursor-pointer"
                             />
                             <input
                                 type="range"
@@ -781,7 +782,7 @@ export const SidebarMobileDrawer: React.FC<SidebarMobileDrawerProps> = ({ filter
                                     setLocalPriceRange(newRange);
                                     onFilterChange({ ...filters, priceRange: newRange });
                                 }}
-                                className="flex-1 min-w-0 w-0 accent-[#ede066] h-1.5 bg-[#0a0a0a] rounded-full appearance-none cursor-pointer"
+                                className="flex-1 min-w-0 w-0 accent-[#ede066] h-1.5 bg-[#cbd5e1] dark:bg-[#0a0a0a] rounded-full appearance-none cursor-pointer"
                             />
                         </div>
                         <div className="flex justify-between text-[9px] font-bold text-app-text-muted mt-2 px-1">
@@ -793,7 +794,7 @@ export const SidebarMobileDrawer: React.FC<SidebarMobileDrawerProps> = ({ filter
                 </div>
             </div>
 
-            <div className="h-16 shrink-0 border-t border-app-border px-4 flex items-center justify-between bg-app-bg/95 backdrop-blur-md">
+            <div className="h-16 shrink-0 border-t border-[#d1d5db] dark:border-app-border px-4 flex items-center justify-between bg-app-bg/95 backdrop-blur-md">
                 <div>
                     <p className="text-[9px] font-black text-app-text-muted uppercase tracking-[0.2em] mb-0.5">{t('support')}</p>
                     <a href="mailto:destek@muzikburada.net" className="text-[11px] font-bold text-app-text">destek@muzikburada.net</a>
