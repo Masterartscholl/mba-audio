@@ -30,6 +30,8 @@ type SidebarData = {
     priceRange: [number, number];
     setGenres: React.Dispatch<React.SetStateAction<any[]>>;
     setModes: React.Dispatch<React.SetStateAction<any[]>>;
+    setLocalBpmRange: React.Dispatch<React.SetStateAction<[number, number]>>;
+    setLocalPriceRange: React.Dispatch<React.SetStateAction<[number, number]>>;
 };
 
 const useSidebarData = (filters: any, onFilterChange: FilterProps['onFilterChange']): SidebarData => {
@@ -38,13 +40,16 @@ const useSidebarData = (filters: any, onFilterChange: FilterProps['onFilterChang
     const pathname = usePathname();
     const [genres, setGenres] = useState<any[]>([]);
     const [modes, setModes] = useState<any[]>([]);
+    const [localPriceBounds, setLocalPriceBounds] = useState<[number, number]>([0, 10000]);
+    const [localBpmRange, setLocalBpmRange] = useState<[number, number]>([BPM_MIN, BPM_MAX]);
+    const [localPriceRange, setLocalPriceRange] = useState<[number, number]>([0, 10000]);
 
     const selectedCategory = filters.categoryId ?? null;
     const selectedGenres = filters.genres ?? [];
     const selectedMode = filters.modeId ?? null;
-    const bpmRange: [number, number] = filters.bpmRange?.[0] != null ? filters.bpmRange : [BPM_MIN, BPM_MAX];
-    const priceBounds: [number, number] = filters.priceBounds?.[0] != null ? filters.priceBounds : [0, 10000];
-    const priceRange: [number, number] = filters.priceRange?.[0] != null ? filters.priceRange : [priceBounds[0], priceBounds[1]];
+    const bpmRange: [number, number] = filters.bpmRange?.[0] != null ? filters.bpmRange : localBpmRange;
+    const priceBounds: [number, number] = filters.priceBounds?.[0] != null ? filters.priceBounds : localPriceBounds;
+    const priceRange: [number, number] = filters.priceRange?.[0] != null ? filters.priceRange : localPriceRange;
 
     useEffect(() => {
         const fetchInitialData = async () => {
@@ -71,11 +76,14 @@ const useSidebarData = (filters: any, onFilterChange: FilterProps['onFilterChang
                 setModes(modeRes.data || []);
                 const minP = minPriceRes.data?.price != null ? Number(minPriceRes.data.price) : 0;
                 const maxP = maxPriceRes.data?.price != null ? Number(maxPriceRes.data.price) : 10000;
+                setLocalPriceBounds([minP, maxP]);
+                setLocalPriceRange([minP, maxP]);
+                setLocalBpmRange([BPM_MIN, BPM_MAX]);
                 onFilterChange((prev: any) => ({
                     ...prev,
                     priceBounds: [minP, maxP],
                     priceRange: [minP, maxP],
-                    bpmRange: prev.bpmRange ?? [BPM_MIN, BPM_MAX],
+                    bpmRange: [BPM_MIN, BPM_MAX],
                 }));
             } catch (err) {
                 console.error('Sidebar fetchInitialData error:', err);
@@ -118,6 +126,8 @@ const useSidebarData = (filters: any, onFilterChange: FilterProps['onFilterChang
         priceRange,
         setGenres,
         setModes,
+        setLocalBpmRange,
+        setLocalPriceRange,
     };
 };
 
@@ -134,6 +144,8 @@ export const Sidebar: React.FC<FilterProps> = ({ filters, onFilterChange }) => {
         bpmRange,
         priceBounds,
         priceRange,
+        setLocalBpmRange,
+        setLocalPriceRange,
     } = useSidebarData(filters, onFilterChange);
 
     return (
@@ -248,7 +260,11 @@ export const Sidebar: React.FC<FilterProps> = ({ filters, onFilterChange }) => {
                                 {(bpmRange[0] !== BPM_MIN || bpmRange[1] !== BPM_MAX) && (
                                     <button
                                         type="button"
-                                        onClick={() => onFilterChange({ ...filters, bpmRange: [BPM_MIN, BPM_MAX] })}
+                                        onClick={() => {
+                                            const newRange: [number, number] = [BPM_MIN, BPM_MAX];
+                                            setLocalBpmRange(newRange);
+                                            onFilterChange({ ...filters, bpmRange: newRange });
+                                        }}
                                         className="text-[9px] font-bold text-app-text-muted hover:text-app-primary uppercase tracking-wider transition-colors"
                                     >
                                         {t('reset')}
@@ -266,7 +282,9 @@ export const Sidebar: React.FC<FilterProps> = ({ filters, onFilterChange }) => {
                                     value={bpmRange[0]}
                                     onChange={(e) => {
                                         const v = Math.min(BPM_MAX, Math.max(BPM_MIN, parseInt(e.target.value, 10) || BPM_MIN));
-                                        onFilterChange({ ...filters, bpmRange: [v, Math.max(v, bpmRange[1])] });
+                                        const newRange: [number, number] = [v, Math.max(v, bpmRange[1])];
+                                        setLocalBpmRange(newRange);
+                                        onFilterChange({ ...filters, bpmRange: newRange });
                                     }}
                                     className="w-full bg-app-input-bg border border-app-border rounded-lg px-3 py-2 text-xs text-app-text font-bold focus:outline-none focus:border-app-primary/50"
                                 />
@@ -280,7 +298,9 @@ export const Sidebar: React.FC<FilterProps> = ({ filters, onFilterChange }) => {
                                     value={bpmRange[1]}
                                     onChange={(e) => {
                                         const v = Math.min(BPM_MAX, Math.max(BPM_MIN, parseInt(e.target.value, 10) || BPM_MAX));
-                                        onFilterChange({ ...filters, bpmRange: [Math.min(v, bpmRange[0]), v] });
+                                        const newRange: [number, number] = [Math.min(v, bpmRange[0]), v];
+                                        setLocalBpmRange(newRange);
+                                        onFilterChange({ ...filters, bpmRange: newRange });
                                     }}
                                     className="w-full bg-app-input-bg border border-app-border rounded-lg px-3 py-2 text-xs text-app-text font-bold focus:outline-none focus:border-app-primary/50"
                                 />
@@ -294,7 +314,9 @@ export const Sidebar: React.FC<FilterProps> = ({ filters, onFilterChange }) => {
                                 value={bpmRange[0]}
                                 onChange={(e) => {
                                     const v = Number(e.target.value);
-                                    onFilterChange({ ...filters, bpmRange: [v, Math.max(v, bpmRange[1])] });
+                                    const newRange: [number, number] = [v, Math.max(v, bpmRange[1])];
+                                    setLocalBpmRange(newRange);
+                                    onFilterChange({ ...filters, bpmRange: newRange });
                                 }}
                                 className="flex-1 min-w-0 w-0 accent-app-primary h-1.5 bg-app-input-bg rounded-full appearance-none cursor-pointer"
                             />
@@ -305,7 +327,9 @@ export const Sidebar: React.FC<FilterProps> = ({ filters, onFilterChange }) => {
                                 value={bpmRange[1]}
                                 onChange={(e) => {
                                     const v = Number(e.target.value);
-                                    onFilterChange({ ...filters, bpmRange: [Math.min(v, bpmRange[0]), v] });
+                                    const newRange: [number, number] = [Math.min(v, bpmRange[0]), v];
+                                    setLocalBpmRange(newRange);
+                                    onFilterChange({ ...filters, bpmRange: newRange });
                                 }}
                                 className="flex-1 min-w-0 w-0 accent-app-primary h-1.5 bg-app-input-bg rounded-full appearance-none cursor-pointer"
                             />
@@ -327,7 +351,11 @@ export const Sidebar: React.FC<FilterProps> = ({ filters, onFilterChange }) => {
                                 {(priceRange[0] !== priceBounds[0] || priceRange[1] !== priceBounds[1]) && (
                                     <button
                                         type="button"
-                                        onClick={() => onFilterChange({ ...filters, priceRange: [priceBounds[0], priceBounds[1]] })}
+                                        onClick={() => {
+                                            const newRange: [number, number] = [priceBounds[0], priceBounds[1]];
+                                            setLocalPriceRange(newRange);
+                                            onFilterChange({ ...filters, priceRange: newRange });
+                                        }}
                                         className="text-[9px] font-bold text-app-text-muted hover:text-app-primary uppercase tracking-wider transition-colors"
                                     >
                                         {t('reset')}
@@ -345,7 +373,9 @@ export const Sidebar: React.FC<FilterProps> = ({ filters, onFilterChange }) => {
                                     value={priceRange[0]}
                                     onChange={(e) => {
                                         const v = Math.min(priceBounds[1], Math.max(priceBounds[0], Number(e.target.value) || priceBounds[0]));
-                                        onFilterChange({ ...filters, priceRange: [v, Math.max(v, priceRange[1])] });
+                                        const newRange: [number, number] = [v, Math.max(v, priceRange[1])];
+                                        setLocalPriceRange(newRange);
+                                        onFilterChange({ ...filters, priceRange: newRange });
                                     }}
                                     className="w-full bg-app-input-bg border border-app-border rounded-lg px-3 py-2 text-xs text-app-text font-bold focus:outline-none focus:border-app-primary/50"
                                 />
@@ -359,7 +389,9 @@ export const Sidebar: React.FC<FilterProps> = ({ filters, onFilterChange }) => {
                                     value={priceRange[1]}
                                     onChange={(e) => {
                                         const v = Math.min(priceBounds[1], Math.max(priceBounds[0], Number(e.target.value) || priceBounds[1]));
-                                        onFilterChange({ ...filters, priceRange: [Math.min(v, priceRange[0]), v] });
+                                        const newRange: [number, number] = [Math.min(v, priceRange[0]), v];
+                                        setLocalPriceRange(newRange);
+                                        onFilterChange({ ...filters, priceRange: newRange });
                                     }}
                                     className="w-full bg-app-input-bg border border-app-border rounded-lg px-3 py-2 text-xs text-app-text font-bold focus:outline-none focus:border-app-primary/50"
                                 />
@@ -373,7 +405,9 @@ export const Sidebar: React.FC<FilterProps> = ({ filters, onFilterChange }) => {
                                 value={priceRange[0]}
                                 onChange={(e) => {
                                     const v = Number(e.target.value);
-                                    onFilterChange({ ...filters, priceRange: [v, Math.max(v, priceRange[1])] });
+                                    const newRange: [number, number] = [v, Math.max(v, priceRange[1])];
+                                    setLocalPriceRange(newRange);
+                                    onFilterChange({ ...filters, priceRange: newRange });
                                 }}
                                 className="flex-1 min-w-0 w-0 accent-[#ede066] h-1.5 bg-[#0a0a0a] rounded-full appearance-none cursor-pointer"
                             />
@@ -384,7 +418,9 @@ export const Sidebar: React.FC<FilterProps> = ({ filters, onFilterChange }) => {
                                 value={priceRange[1]}
                                 onChange={(e) => {
                                     const v = Number(e.target.value);
-                                    onFilterChange({ ...filters, priceRange: [Math.min(v, priceRange[0]), v] });
+                                    const newRange: [number, number] = [Math.min(v, priceRange[0]), v];
+                                    setLocalPriceRange(newRange);
+                                    onFilterChange({ ...filters, priceRange: newRange });
                                 }}
                                 className="flex-1 min-w-0 w-0 accent-[#ede066] h-1.5 bg-[#0a0a0a] rounded-full appearance-none cursor-pointer"
                             />
@@ -440,6 +476,8 @@ export const SidebarMobileDrawer: React.FC<SidebarMobileDrawerProps> = ({ filter
         bpmRange,
         priceBounds,
         priceRange,
+        setLocalBpmRange,
+        setLocalPriceRange,
     } = useSidebarData(filters, onFilterChange);
 
     const isNavigating = React.useRef(false);
@@ -618,7 +656,9 @@ export const SidebarMobileDrawer: React.FC<SidebarMobileDrawerProps> = ({ filter
                                     value={bpmRange[0]}
                                     onChange={(e) => {
                                         const v = Math.min(BPM_MAX, Math.max(BPM_MIN, parseInt(e.target.value, 10) || BPM_MIN));
-                                        onFilterChange({ ...filters, bpmRange: [v, Math.max(v, bpmRange[1])] });
+                                        const newRange: [number, number] = [v, Math.max(v, bpmRange[1])];
+                                        setLocalBpmRange(newRange);
+                                        onFilterChange({ ...filters, bpmRange: newRange });
                                     }}
                                     className="w-full bg-app-input-bg border border-app-border rounded-lg px-3 py-2 text-xs text-app-text font-bold focus:outline-none focus:border-app-primary/50"
                                 />
@@ -632,7 +672,9 @@ export const SidebarMobileDrawer: React.FC<SidebarMobileDrawerProps> = ({ filter
                                     value={bpmRange[1]}
                                     onChange={(e) => {
                                         const v = Math.min(BPM_MAX, Math.max(BPM_MIN, parseInt(e.target.value, 10) || BPM_MAX));
-                                        onFilterChange({ ...filters, bpmRange: [Math.min(v, bpmRange[0]), v] });
+                                        const newRange: [number, number] = [Math.min(v, bpmRange[0]), v];
+                                        setLocalBpmRange(newRange);
+                                        onFilterChange({ ...filters, bpmRange: newRange });
                                     }}
                                     className="w-full bg-app-input-bg border border-app-border rounded-lg px-3 py-2 text-xs text-app-text font-bold focus:outline-none focus:border-app-primary/50"
                                 />
@@ -646,7 +688,9 @@ export const SidebarMobileDrawer: React.FC<SidebarMobileDrawerProps> = ({ filter
                                 value={bpmRange[0]}
                                 onChange={(e) => {
                                     const v = Number(e.target.value);
-                                    onFilterChange({ ...filters, bpmRange: [v, Math.max(v, bpmRange[1])] });
+                                    const newRange: [number, number] = [v, Math.max(v, bpmRange[1])];
+                                    setLocalBpmRange(newRange);
+                                    onFilterChange({ ...filters, bpmRange: newRange });
                                 }}
                                 className="flex-1 min-w-0 w-0 accent-app-primary h-1.5 bg-app-input-bg rounded-full appearance-none cursor-pointer"
                             />
@@ -657,7 +701,9 @@ export const SidebarMobileDrawer: React.FC<SidebarMobileDrawerProps> = ({ filter
                                 value={bpmRange[1]}
                                 onChange={(e) => {
                                     const v = Number(e.target.value);
-                                    onFilterChange({ ...filters, bpmRange: [Math.min(v, bpmRange[0]), v] });
+                                    const newRange: [number, number] = [Math.min(v, bpmRange[0]), v];
+                                    setLocalBpmRange(newRange);
+                                    onFilterChange({ ...filters, bpmRange: newRange });
                                 }}
                                 className="flex-1 min-w-0 w-0 accent-app-primary h-1.5 bg-app-input-bg rounded-full appearance-none cursor-pointer"
                             />
@@ -686,7 +732,9 @@ export const SidebarMobileDrawer: React.FC<SidebarMobileDrawerProps> = ({ filter
                                     value={priceRange[0]}
                                     onChange={(e) => {
                                         const v = Math.min(priceBounds[1], Math.max(priceBounds[0], Number(e.target.value) || priceBounds[0]));
-                                        onFilterChange({ ...filters, priceRange: [v, Math.max(v, priceRange[1])] });
+                                        const newRange: [number, number] = [v, Math.max(v, priceRange[1])];
+                                        setLocalPriceRange(newRange);
+                                        onFilterChange({ ...filters, priceRange: newRange });
                                     }}
                                     className="w-full bg-app-input-bg border border-app-border rounded-lg px-3 py-2 text-xs text-app-text font-bold focus:outline-none focus:border-app-primary/50"
                                 />
@@ -700,7 +748,9 @@ export const SidebarMobileDrawer: React.FC<SidebarMobileDrawerProps> = ({ filter
                                     value={priceRange[1]}
                                     onChange={(e) => {
                                         const v = Math.min(priceBounds[1], Math.max(priceBounds[0], Number(e.target.value) || priceBounds[1]));
-                                        onFilterChange({ ...filters, priceRange: [Math.min(v, priceRange[0]), v] });
+                                        const newRange: [number, number] = [Math.min(v, priceRange[0]), v];
+                                        setLocalPriceRange(newRange);
+                                        onFilterChange({ ...filters, priceRange: newRange });
                                     }}
                                     className="w-full bg-app-input-bg border border-app-border rounded-lg px-3 py-2 text-xs text-app-text font-bold focus:outline-none focus:border-app-primary/50"
                                 />
@@ -714,7 +764,9 @@ export const SidebarMobileDrawer: React.FC<SidebarMobileDrawerProps> = ({ filter
                                 value={priceRange[0]}
                                 onChange={(e) => {
                                     const v = Number(e.target.value);
-                                    onFilterChange({ ...filters, priceRange: [v, Math.max(v, priceRange[1])] });
+                                    const newRange: [number, number] = [v, Math.max(v, priceRange[1])];
+                                    setLocalPriceRange(newRange);
+                                    onFilterChange({ ...filters, priceRange: newRange });
                                 }}
                                 className="flex-1 min-w-0 w-0 accent-[#ede066] h-1.5 bg-[#0a0a0a] rounded-full appearance-none cursor-pointer"
                             />
@@ -725,7 +777,9 @@ export const SidebarMobileDrawer: React.FC<SidebarMobileDrawerProps> = ({ filter
                                 value={priceRange[1]}
                                 onChange={(e) => {
                                     const v = Number(e.target.value);
-                                    onFilterChange({ ...filters, priceRange: [Math.min(v, priceRange[0]), v] });
+                                    const newRange: [number, number] = [Math.min(v, priceRange[0]), v];
+                                    setLocalPriceRange(newRange);
+                                    onFilterChange({ ...filters, priceRange: newRange });
                                 }}
                                 className="flex-1 min-w-0 w-0 accent-[#ede066] h-1.5 bg-[#0a0a0a] rounded-full appearance-none cursor-pointer"
                             />

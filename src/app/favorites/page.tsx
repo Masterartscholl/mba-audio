@@ -13,6 +13,7 @@ export default function FavoritesPage() {
     const t = useTranslations('App');
     const { favorites } = useFavorites();
     const [currency, setCurrency] = useState('TL');
+    const [filters, setFilters] = useState<any>({});
     const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
     const closeMobileSidebar = React.useCallback(() => setIsMobileSidebarOpen(false), []);
 
@@ -23,18 +24,60 @@ export default function FavoritesPage() {
         );
     }, [favorites]);
 
+    // Apply filters to favorites
+    const filteredFavorites = useMemo(() => {
+        let result = publishedFavorites;
+
+        // Category filter
+        const catId = filters.categoryId != null && filters.categoryId !== '' ? Number(filters.categoryId) : null;
+        if (catId != null) {
+            result = result.filter(track => track.category_id === catId);
+        }
+
+        // Genre filter - Note: Favorites may not have genre_id, skip if not available
+        if (filters.genres?.length > 0) {
+            result = result.filter(track => {
+                // Favorites might not have genre_id field, so we skip genre filtering
+                return true;
+            });
+        }
+
+        // Mode filter
+        if (filters.modeId) {
+            result = result.filter(track => track.mode_id === filters.modeId);
+        }
+
+        // BPM filter
+        if (filters.bpmRange?.length === 2) {
+            result = result.filter(track => {
+                const bpm = Number(track.bpm);
+                return bpm >= filters.bpmRange[0] && bpm <= filters.bpmRange[1];
+            });
+        }
+
+        // Price filter
+        if (filters.priceRange?.length === 2) {
+            result = result.filter(track => {
+                const price = Number(track.price);
+                return price >= filters.priceRange[0] && price <= filters.priceRange[1];
+            });
+        }
+
+        return result;
+    }, [publishedFavorites, filters]);
+
     return (
         <div className="flex flex-col min-h-screen lg:flex-row lg:h-screen lg:overflow-hidden bg-app-bg selection:bg-[#3b82f6]/30">
-            <Sidebar filters={{}} onFilterChange={() => { }} />
+            <Sidebar filters={filters} onFilterChange={setFilters} />
             <div className="flex-1 flex flex-col min-w-0">
                 <Header onOpenMobileSidebar={() => setIsMobileSidebarOpen(true)} />
                 <main className="flex-1 flex flex-col overflow-hidden">
                     <div className="flex-1 overflow-y-auto custom-scrollbar flex flex-col">
                         <div className="px-4 lg:px-10 py-6 lg:py-10 flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">
                             <div>
-                                <h2 className="text-2xl lg:text-4xl font-black text-white tracking-tighter uppercase leading-none">{t('favoritesTitle')}</h2>
+                                <h2 className="text-2xl lg:text-4xl font-black text-[#0b1121] tracking-tighter uppercase leading-none">{t('favoritesTitle')}</h2>
                                 <p className="text-[#64748b] text-xs lg:text-sm font-bold mt-3 lg:mt-4 uppercase tracking-widest">
-                                    {publishedFavorites.length} {t('tracksCount')}
+                                    {filteredFavorites.length} {t('tracksCount')}
                                 </p>
                             </div>
                         </div>
@@ -49,9 +92,9 @@ export default function FavoritesPage() {
                         </div>
 
                         <div className="flex-1">
-                            {publishedFavorites.length > 0 ? (
-                                publishedFavorites.map(track => (
-                                    <TrackRow key={track.id} track={track} currency={currency} queue={publishedFavorites} />
+                            {filteredFavorites.length > 0 ? (
+                                filteredFavorites.map(track => (
+                                    <TrackRow key={track.id} track={track} currency={currency} queue={filteredFavorites} />
                                 ))
                             ) : (
                                 <div className="flex flex-col items-center justify-center py-32 text-[#64748b]">
@@ -84,8 +127,8 @@ export default function FavoritesPage() {
                     />
                     <div className="absolute left-0 top-0 h-full w-full max-w-sm sm:w-4/5 sm:max-w-xs bg-app-bg shadow-2xl border-r border-app-border">
                         <SidebarMobileDrawer
-                            filters={{}}
-                            onFilterChange={() => { }}
+                            filters={filters}
+                            onFilterChange={setFilters}
                             onClose={closeMobileSidebar}
                         />
                     </div>

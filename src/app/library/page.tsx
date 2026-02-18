@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import Link from 'next/link';
 import { useTranslations } from 'next-intl';
 import { Sidebar, SidebarMobileDrawer } from '@/components/home/Sidebar';
@@ -13,6 +13,7 @@ export default function LibraryPage() {
     const t = useTranslations('App');
     const [purchasedTracks, setPurchasedTracks] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
+    const [filters, setFilters] = useState<any>({});
     const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
     const closeMobileSidebar = React.useCallback(() => setIsMobileSidebarOpen(false), []);
 
@@ -34,6 +35,10 @@ export default function LibraryPage() {
                             image_url,
                             preview_url,
                             bpm,
+                            price,
+                            category_id,
+                            genre_id,
+                            mode_id,
                             categories ( name ),
                             genres ( name )
                         )
@@ -68,9 +73,48 @@ export default function LibraryPage() {
         run();
     }, []);
 
+    // Apply filters to purchased tracks
+    const filteredTracks = useMemo(() => {
+        let result = purchasedTracks;
+
+        // Category filter
+        const catId = filters.categoryId != null && filters.categoryId !== '' ? Number(filters.categoryId) : null;
+        if (catId != null) {
+            result = result.filter(track => track.category_id === catId);
+        }
+
+        // Genre filter
+        if (filters.genres?.length > 0) {
+            result = result.filter(track => filters.genres.includes(track.genre_id));
+        }
+
+        // Mode filter
+        if (filters.modeId) {
+            result = result.filter(track => track.mode_id === filters.modeId);
+        }
+
+        // BPM filter
+        if (filters.bpmRange?.length === 2) {
+            result = result.filter(track => {
+                const bpm = Number(track.bpm);
+                return bpm >= filters.bpmRange[0] && bpm <= filters.bpmRange[1];
+            });
+        }
+
+        // Price filter
+        if (filters.priceRange?.length === 2) {
+            result = result.filter(track => {
+                const price = Number(track.price);
+                return price >= filters.priceRange[0] && price <= filters.priceRange[1];
+            });
+        }
+
+        return result;
+    }, [purchasedTracks, filters]);
+
     return (
         <div className="flex flex-col min-h-screen lg:flex-row lg:h-screen lg:overflow-hidden bg-app-bg selection:bg-[#3b82f6]/30">
-            <Sidebar filters={{}} onFilterChange={() => { }} />
+            <Sidebar filters={filters} onFilterChange={setFilters} />
             <div className="flex-1 flex flex-col min-w-0">
                 <Header onOpenMobileSidebar={() => setIsMobileSidebarOpen(true)} />
                 <main className="flex-1 flex flex-col overflow-hidden">
@@ -79,7 +123,7 @@ export default function LibraryPage() {
                             <div>
                                 <h2 className="text-2xl lg:text-4xl font-black text-app-text tracking-tighter uppercase leading-none">{t('myLibraryTitle')}</h2>
                                 <p className="text-app-text-muted text-xs lg:text-sm font-bold mt-3 lg:mt-4 uppercase tracking-widest">
-                                    {purchasedTracks.length} {t('purchasedCount')}
+                                    {filteredTracks.length} {t('purchasedCount')}
                                 </p>
                             </div>
                         </div>
@@ -96,8 +140,8 @@ export default function LibraryPage() {
                         <div className="flex-1">
                             {loading ? (
                                 <div className="px-10 py-12 text-app-text-muted text-sm font-bold">{t('loading')}</div>
-                            ) : purchasedTracks.length > 0 ? (
-                                purchasedTracks.map((track: any) => (
+                            ) : filteredTracks.length > 0 ? (
+                                filteredTracks.map((track: any) => (
                                     <LibraryTrackRow key={`${track.id}-${track.order_id}`} track={track} />
                                 ))
                             ) : (
@@ -131,8 +175,8 @@ export default function LibraryPage() {
                     />
                     <div className="absolute left-0 top-0 h-full w-full max-w-sm sm:w-4/5 sm:max-w-xs bg-app-bg shadow-2xl border-r border-app-border">
                         <SidebarMobileDrawer
-                            filters={{}}
-                            onFilterChange={() => { }}
+                            filters={filters}
+                            onFilterChange={setFilters}
                             onClose={closeMobileSidebar}
                         />
                     </div>
