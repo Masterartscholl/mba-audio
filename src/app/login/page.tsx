@@ -58,7 +58,7 @@ export default function LoginPage() {
       // If inside an iframe, navigate the top window to the Vercel login
       // page (it will provide the OAuth buttons and correct redirect target).
       if (typeof window !== 'undefined' && window.self !== window.top && window.top) {
-        window.top.location.href = `${siteUrl}/login`;
+        window.top.location.href = `${siteUrl}/login?returnUrl=${encodeURIComponent(returnUrl)}`;
         return;
       }
 
