@@ -29,6 +29,15 @@ export default function LoginPage() {
     setError(null);
     setResetMessage(null);
     try {
+      // If embedded in an iframe (Wix), redirect the top window to the
+      // Vercel-hosted login page so auth storage (cookies/localStorage)
+      // is created on the top-level origin.
+      const siteUrl = (process.env.NEXT_PUBLIC_SITE_URL as string) || window.location.origin;
+      if (typeof window !== 'undefined' && window.self !== window.top && window.top) {
+        window.top.location.href = `${siteUrl}/login?returnUrl=${encodeURIComponent(returnUrl)}`;
+        return;
+      }
+
       const { error: err } = await supabase.auth.signInWithPassword({ email, password });
       if (err) throw err;
       router.push(returnUrl);
@@ -43,10 +52,20 @@ export default function LoginPage() {
     setLoading(true);
     setError(null);
     try {
+      const siteUrl = (process.env.NEXT_PUBLIC_SITE_URL as string) || window.location.origin;
+      const redirectTarget = `${siteUrl}/auth/callback?next=${encodeURIComponent(returnUrl)}`;
+
+      // If inside an iframe, navigate the top window to the Vercel login
+      // page (it will provide the OAuth buttons and correct redirect target).
+      if (typeof window !== 'undefined' && window.self !== window.top && window.top) {
+        window.top.location.href = `${siteUrl}/login`;
+        return;
+      }
+
       const { error: err } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
-          redirectTo: `${window.location.origin}/auth/callback?next=${encodeURIComponent(returnUrl)}`,
+          redirectTo: redirectTarget,
         },
       });
       if (err) throw err;
