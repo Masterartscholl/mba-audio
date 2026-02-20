@@ -27,7 +27,20 @@ export async function GET(request: NextRequest) {
         return request.cookies.getAll()
       },
       setAll(cookiesToSet) {
-        cookiesToSet.forEach(({ name, value, options }) => response.cookies.set(name, value, options))
+        // Ensure cookies are set with SameSite=None and Secure so they can
+        // be used when the app is embedded (iframe) on another origin
+        // (e.g. Wix). Browsers may still block third-party cookies depending
+        // on user settings / ITP, but this makes cookies usable where
+        // cross-site cookies are permitted.
+        cookiesToSet.forEach(({ name, value, options }) => {
+          const safeOptions = {
+            ...options,
+            sameSite: 'none' as const,
+            secure: true,
+            path: options?.path ?? '/',
+          }
+          response.cookies.set(name, value, safeOptions)
+        })
       },
     },
   })
