@@ -93,6 +93,15 @@ export default function LoginPage() {
             const { access_token, refresh_token } = event.data;
 
             if (access_token && refresh_token && access_token !== 'undefined' && refresh_token !== 'undefined') {
+              // Send explicit ACK so the popup can stop its interval and close itself
+              if (event.source) {
+                try {
+                  (event.source as Window).postMessage({ type: 'oauth_session_ack' }, event.origin || '*');
+                } catch (e) {
+                  console.warn('Could not send ACK to popup', e);
+                }
+              }
+
               const { data, error } = await supabase.auth.setSession({ access_token, refresh_token });
 
               if (!error && data.session) {
