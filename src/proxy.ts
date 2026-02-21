@@ -5,9 +5,28 @@ const PROTECTED_CUSTOMER_ROUTES = ['/library', '/favorites', '/checkout', '/sett
 
 export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl
+  const origin = request.headers.get('origin');
+  const allowedOrigins = ['https://www.muzikburada.net', 'https://mba-audio.vercel.app'];
+
   let response = NextResponse.next({
     request: { headers: request.headers },
   })
+
+  // Set CORS headers if origin is allowed
+  if (origin && allowedOrigins.includes(origin)) {
+    response.headers.set('Access-Control-Allow-Origin', origin);
+    response.headers.set('Access-Control-Allow-Credentials', 'true');
+    response.headers.set('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
+    response.headers.set('Access-Control-Allow-Headers', 'Content-Type, Authorization, x-client-info, apikey');
+  }
+
+  // Handle preflight requests
+  if (request.method === 'OPTIONS') {
+    return new NextResponse(null, {
+      status: 204,
+      headers: response.headers,
+    });
+  }
 
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
   const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
