@@ -12,4 +12,18 @@ if (typeof window !== 'undefined') {
   }
 }
 
-export const supabase = createBrowserClient(supabaseUrl, supabaseAnonKey)
+export const supabase = createBrowserClient(supabaseUrl, supabaseAnonKey, {
+  auth: {
+    persistSession: true,
+    autoRefreshToken: true,
+    detectSessionInUrl: true,
+    storageKey: 'muzikbank-auth-token',
+  },
+  cookieOptions: {
+    name: 'sb-auth-token',
+    sameSite: 'none',
+    secure: true,
+    path: '/',
+    maxAge: 60 * 60 * 24 * 7, // 1 week
+  }
+})

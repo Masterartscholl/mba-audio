@@ -90,17 +90,34 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
         const load = async () => {
             try {
-                const { data: { user: u } } = await supabase.auth.getUser();
+                // Try getUser first (recommended)
+                let { data: { user: u }, error: userError } = await supabase.auth.getUser();
+
+                // Fallback to getSession if getUser fails/returns null
+                // This is helpful in iframes where localStorage might have the session 
+                // but cookies are lagging or restricted.
+                if (!u || userError) {
+                    const { data: { session } } = await supabase.auth.getSession();
+                    if (session?.user) {
+                        u = session.user;
+                        console.log('AuthProvider: Fallback to session user found');
+                    }
+                }
+
                 if (!mounted) return;
 
                 setUser(u);
                 const p = await fetchProfile(u);
                 if (mounted) {
                     setProfile(p);
-                    console.log('AuthProvider: Initial load complete', { hasUser: !!u, hasProfile: !!p });
+                    console.log('AuthProvider: Initial load complete', {
+                        hasUser: !!u,
+                        hasProfile: !!p,
+                        userId: u?.id
+                    });
                 }
             } catch (error) {
-                console.error('AuthProvider: getUser error', error);
+                console.error('AuthProvider: getUser/getSession error', error);
             } finally {
                 if (mounted) {
                     clearTimeout(timer);

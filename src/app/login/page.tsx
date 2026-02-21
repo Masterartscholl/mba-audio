@@ -31,7 +31,14 @@ export default function LoginPage() {
     try {
       const { error: err } = await supabase.auth.signInWithPassword({ email, password });
       if (err) throw err;
-      router.push(returnUrl);
+
+      // If inside an iframe, a full page reload or location replace is safer
+      // than router.push for ensuring the session is picked up.
+      if (typeof window !== 'undefined' && window.self !== window.top) {
+        window.location.replace(returnUrl);
+      } else {
+        router.push(returnUrl);
+      }
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : t('loginError'));
     } finally {

@@ -14,6 +14,9 @@ export const supabaseAdmin = createBrowserClient(supabaseUrl, supabaseAnonKey, {
         flowType: 'pkce'
     },
     cookieOptions: {
-        name: 'sb-admin-auth'
+        name: 'sb-admin-auth',
+        sameSite: 'none',
+        secure: true,
+        path: '/'
     }
 })
