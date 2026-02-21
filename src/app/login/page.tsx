@@ -23,10 +23,18 @@ export default function LoginPage() {
   const [resetMessage, setResetMessage] = useState<string | null>(null);
   const [resetLoading, setResetLoading] = useState(false);
 
-  // Automatically trigger Google login if breaking out of an iframe
+  // Automatically handle popup fallbacks
   React.useEffect(() => {
     if (searchParams.get('auto') === 'google') {
       handleGoogleLogin();
+    } else if (searchParams.get('auto') === 'close_popup') {
+      // This means postMessage failed completely but the popup itself successfully negotiated via URL redirect
+      // So the browser cookie for the popup context (although maybe partitioned) is currently active.
+      // Try asking the parent to refresh.
+      if (window.opener) {
+        window.opener.location.reload();
+      }
+      window.close();
     }
   }, [searchParams]);
 

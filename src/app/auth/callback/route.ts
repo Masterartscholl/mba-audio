@@ -70,24 +70,49 @@ export async function GET(request: NextRequest) {
     const refresh_token = data?.session?.refresh_token || '';
 
     return new NextResponse(
-      `<html><body><script>
-          if (window.opener) {
-            // Sürekli gönder ki herhangi bir anlık kayıpta yakalansın
+      `<html><body>
+      <h2 style="font-family: sans-serif; text-align: center; margin-top: 20px;">Giriş başarılı, yönlendiriliyorsunuz...</h2>
+      <script>
+          let ackReceived = false;
+
+          // Mesajın ulaştığını iframe'den teyit et
+          window.addEventListener('message', (event) => {
+              if (event.data?.type === 'oauth_session_ack') {
+                  ackReceived = true;
+                  window.close();
+              }
+          });
+
+          if (window.opener && !window.opener.closed) {
+            // Sürekli gönder
             const interval = setInterval(() => {
-              window.opener.postMessage({
-                type: 'oauth_session',
-                access_token: '${access_token}',
-                refresh_token: '${refresh_token}'
-              }, '*');
-            }, 500);
+              if (ackReceived) {
+                 clearInterval(interval);
+                 return;
+              }
+              try {
+                window.opener.postMessage({
+                  type: 'oauth_session',
+                  access_token: '${access_token}',
+                  refresh_token: '${refresh_token}'
+                }, '*');
+              } catch(e) {
+                 // Cross-origin yasaklaması (COOP) 
+                 console.error("Opener postMessage access denied", e);
+              }
+            }, 300);
             
-            // 3 saniye sonra pencereyi zorla kapat 
+            // Eğer 3 saniye boyunca teyit alamazsak (Wix engelleyebilir/Safari ITP)
+            // Pencereyi zorla kapatmadan ana sayfamıza fiziksel olarak yönlendirerek session'ın kurtarılmasını dene.
             setTimeout(() => {
-              clearInterval(interval);
-              window.close();
+              if (!ackReceived) {
+                 clearInterval(interval);
+                 // Fallback: popup içinden fiziksel olarak bizim sitemize gidip auth token'ı yazdır
+                 window.location.href = '/login?auto=close_popup';
+              }
             }, 3000);
           } else {
-            window.close();
+             window.location.href = '/login?auto=close_popup';
           }
       </script></body></html>`,
       { headers: { 'Content-Type': 'text/html' } }
