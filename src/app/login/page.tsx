@@ -23,6 +23,13 @@ export default function LoginPage() {
   const [resetMessage, setResetMessage] = useState<string | null>(null);
   const [resetLoading, setResetLoading] = useState(false);
 
+  // Automatically trigger Google login if breaking out of an iframe
+  React.useEffect(() => {
+    if (searchParams.get('auto') === 'google') {
+      handleGoogleLogin();
+    }
+  }, [searchParams]);
+
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
@@ -56,13 +63,18 @@ export default function LoginPage() {
       if (typeof window !== 'undefined' && window.self !== window.top && window.top) {
         // Use the Vercel URL for the breakout login page
         const vercelUrl = 'https://mba-audio.vercel.app';
-        const siteUrl = (process.env.NEXT_PUBLIC_SITE_URL as string) || window.location.origin;
-        window.top.location.href = `${vercelUrl}/login?returnUrl=${encodeURIComponent(siteUrl + returnUrl)}`;
+        let finalReturnUrl = returnUrl;
+
+        // Ensure returning back to the parent URL correctly if not already absolute
+        if (!finalReturnUrl.startsWith('http')) {
+          const siteUrl = (process.env.NEXT_PUBLIC_SITE_URL as string) || window.location.origin;
+          finalReturnUrl = siteUrl + returnUrl;
+        }
+
+        window.top.location.href = `${vercelUrl}/login?returnUrl=${encodeURIComponent(finalReturnUrl)}&auto=google`;
         return;
       }
 
-      const siteUrl = (process.env.NEXT_PUBLIC_SITE_URL as string) || window.location.origin;
-      // The final redirect after exchange must go back to the Wix domain
       const redirectTarget = `${window.location.origin}/auth/callback?next=${encodeURIComponent(returnUrl)}`;
 
       const { error: err } = await supabase.auth.signInWithOAuth({
