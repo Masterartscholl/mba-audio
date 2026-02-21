@@ -29,22 +29,26 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Supabase yapılandırması eksik' }, { status: 500 });
     }
 
-    // Auth için: kullanıcıyı cookie üzerinden oku
+    // Auth için: kullanıcıyı cookie üzerinden oku veya header'dan Bearer token al
     const supabaseAuth = createServerClient(supabaseUrl, supabaseAnonKey, {
       cookies: {
         getAll() {
           return request.cookies.getAll();
         },
         // Bu endpoint kullanıcı oturumu değiştirmediği için cookie yazmaya gerek yok
-        setAll() {},
+        setAll() { },
       },
     });
+
+    // Extract Bearer token from headers (useful for iframe environments where cookies are blocked)
+    const authHeader = request.headers.get('Authorization');
+    const token = authHeader && authHeader.startsWith('Bearer ') ? authHeader.substring(7) : undefined;
 
     // 1) Kullanıcıyı doğrula
     const {
       data: { user },
       error: userError,
-    } = await supabaseAuth.auth.getUser();
+    } = token ? await supabaseAuth.auth.getUser(token) : await supabaseAuth.auth.getUser();
 
     if (userError || !user) {
       return NextResponse.json({ error: 'Oturum bulunamadı' }, { status: 401 });

@@ -10,6 +10,7 @@ import { formatPrice } from '@/utils/format';
 import { ThemeSwitcher } from '@/components/home/ThemeSwitcher';
 import { LanguageSwitcher } from '@/components/home/LanguageSwitcher';
 import logoImg from '@/images/logo.png';
+import { supabase } from '@/lib/supabase';
 
 const DEFAULT_LINKS = {
     link_privacy_policy: 'https://www.muzikburada.net/services-7',
@@ -41,7 +42,7 @@ export default function CheckoutPage() {
                     link_terms_conditions: (data.link_terms_conditions && data.link_terms_conditions.trim()) ? data.link_terms_conditions.trim() : DEFAULT_LINKS.link_terms_conditions
                 });
             })
-            .catch(() => {});
+            .catch(() => { });
     }, []);
 
     const closePaymentForm = useCallback(() => {
@@ -160,9 +161,23 @@ export default function CheckoutPage() {
         setBillingErrors({});
 
         try {
+            // Get the current session to pass the access token manually
+            // This is required because third-party cookies are blocked in Wix iframes,
+            // so the backend won't receive the session cookie automatically.
+            const { data: { session } } = await supabase.auth.getSession();
+            const token = session?.access_token;
+
+            const headers: Record<string, string> = {
+                'Content-Type': 'application/json',
+            };
+
+            if (token) {
+                headers['Authorization'] = `Bearer ${token}`;
+            }
+
             const res = await fetch('/api/payment', {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
+                headers,
                 body: JSON.stringify({
                     items: items.map((t) => t.id),
                 }),
@@ -181,7 +196,7 @@ export default function CheckoutPage() {
                 if (existingOverlay) {
                     existingOverlay.remove();
                 }
-                
+
                 // İyzipay'ın enjekte ettiği tüm iframe'leri kaldır
                 document.querySelectorAll('iframe[src*="iyzipay"], iframe[id*="iyzipay"]').forEach((iframe) => {
                     iframe.remove();
