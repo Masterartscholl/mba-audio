@@ -76,7 +76,7 @@ export async function GET(request: NextRequest) {
               type: 'oauth_session',
               access_token: '${access_token}',
               refresh_token: '${refresh_token}'
-            }, '*');
+            }, window.location.origin);
           }
           window.close();
       </script></body></html>`,
