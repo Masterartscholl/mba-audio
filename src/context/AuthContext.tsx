@@ -97,9 +97,21 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         };
 
         const load = async () => {
-            if (typeof window !== 'undefined' && window.location.pathname.startsWith('/admin')) {
-                setLoading(false);
-                return;
+            let hasSessionInLocalStorage = false;
+            if (typeof window !== 'undefined') {
+                // Aggressive loading state: if a session token exists, assume logged in and set loading to false immediately.
+                // This prevents UI blocking while waiting for Supabase to verify the session.
+                // Supabase stores its session in localStorage under the key defined in cookieOptions.name, default 'sb-auth-token'.
+                hasSessionInLocalStorage = !!localStorage.getItem('sb-auth-token');
+                if (hasSessionInLocalStorage) {
+                    setLoading(false);
+                    clearTimeout(timer); // Clear the safety timeout as we've made a decision
+                }
+
+                if (window.location.pathname.startsWith('/admin')) {
+                    setLoading(false);
+                    return;
+                }
             }
 
             try {
