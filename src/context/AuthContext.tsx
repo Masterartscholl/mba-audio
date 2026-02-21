@@ -37,13 +37,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     useEffect(() => {
         let mounted = true;
 
-        // Skip auth initialization for regular user if we are in admin area
-        // to prevent double-client resource contention and hangs.
-        if (pathname?.startsWith('/admin')) {
-            setLoading(false);
-            return;
-        }
-
         // Safety timeout
         const timer = setTimeout(() => {
             if (mounted && loading) {
@@ -104,19 +97,21 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         };
 
         const load = async () => {
-            try {
-                // Try getUser first (recommended)
-                let { data: { user: u }, error: userError } = await supabase.auth.getUser();
+            // Skip if in admin area - handled by AdminAuthProvider
+            if (typeof window !== 'undefined' && window.location.pathname.startsWith('/admin')) {
+                setLoading(false);
+                return;
+            }
 
-                // Fallback to getSession if getUser fails/returns null
-                // This is helpful in iframes where localStorage might have the session 
-                // but cookies are lagging or restricted.
-                if (!u || userError) {
-                    const { data: { session } } = await supabase.auth.getSession();
-                    if (session?.user) {
-                        u = session.user;
-                        console.log('AuthProvider: Fallback to session user found');
-                    }
+            try {
+                // First try getting session from localStorage (fastest)
+                const { data: { session } } = await supabase.auth.getSession();
+                let u = session?.user ?? null;
+
+                // Then try to verify with server if needed
+                if (u) {
+                    const { data: { user: verifiedUser } } = await supabase.auth.getUser();
+                    if (verifiedUser) u = verifiedUser;
                 }
 
                 if (!mounted) return;
@@ -125,14 +120,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
                 const p = await fetchProfile(u);
                 if (mounted) {
                     setProfile(p);
-                    console.log('AuthProvider: Initial load complete', {
-                        hasUser: !!u,
-                        hasProfile: !!p,
-                        userId: u?.id
-                    });
+                    console.log('AuthProvider: Initial load complete', { hasUser: !!u, hasProfile: !!p });
                 }
             } catch (error) {
-                console.error('AuthProvider: getUser/getSession error', error);
+                console.error('AuthProvider: load error', error);
             } finally {
                 if (mounted) {
                     clearTimeout(timer);
@@ -140,6 +131,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
                 }
             }
         };
+
         load();
 
         const { data: { subscription } } = supabase.auth.onAuthStateChange(
@@ -167,7 +159,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             clearTimeout(timer);
             subscription.unsubscribe();
         };
-    }, [pathname]); // Re-initialize if moving out of admin area
+    }, []); // Run only ONCE on mount
 
     const displayName =
         profile?.full_name?.trim() ||
