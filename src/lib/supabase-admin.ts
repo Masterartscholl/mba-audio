@@ -13,6 +13,9 @@ export const supabaseAdmin = createBrowserClient(supabaseUrl, supabaseAnonKey, {
         detectSessionInUrl: true,
         flowType: 'pkce'
     },
+    global: {
+        fetch: (url, options) => fetch(url, { ...options, credentials: 'include' }),
+    },
     cookieOptions: {
         name: 'sb-admin-auth',
         sameSite: 'none',

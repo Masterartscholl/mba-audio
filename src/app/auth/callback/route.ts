@@ -37,6 +37,7 @@ export async function GET(request: NextRequest) {
             ...options,
             sameSite: 'none' as const,
             secure: true,
+            httpOnly: true,
             path: options?.path ?? '/',
           }
           response.cookies.set(name, value, safeOptions)

@@ -70,17 +70,22 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
                 const dbPromise = (async () => {
                     try {
-                        const { data: p, error } = await supabase
+                        const { data: p, error, status } = await supabase
                             .from('profiles')
                             .select('id, email, full_name, avatar_url, is_admin, created_at')
                             .eq('id', u.id)
                             .single();
 
-                        if (error) throw error;
+                        if (error) {
+                            console.error(`AuthProvider: Profile fetch error (Status: ${status})`, error);
+                            if (status === 401) {
+                                console.warn('AuthProvider: 401 Unauthorized - This usually means cookies are blocked or session is invalid in this iframe.');
+                            }
+                            throw error;
+                        }
                         profileCache[u.id] = p || null;
                         return p || null;
                     } catch (err) {
-                        console.error('AuthProvider: profile fetch error', err);
                         return null;
                     }
                 })();
