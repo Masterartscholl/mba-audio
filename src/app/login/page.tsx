@@ -29,15 +29,6 @@ export default function LoginPage() {
     setError(null);
     setResetMessage(null);
     try {
-      // If embedded in an iframe (Wix), redirect the top window to the
-      // Vercel-hosted login page so auth storage (cookies/localStorage)
-      // is created on the top-level origin.
-      const siteUrl = (process.env.NEXT_PUBLIC_SITE_URL as string) || window.location.origin;
-      if (typeof window !== 'undefined' && window.self !== window.top && window.top) {
-        window.top.location.href = `${siteUrl}/login?returnUrl=${encodeURIComponent(returnUrl)}`;
-        return;
-      }
-
       const { error: err } = await supabase.auth.signInWithPassword({ email, password });
       if (err) throw err;
       router.push(returnUrl);
@@ -52,15 +43,20 @@ export default function LoginPage() {
     setLoading(true);
     setError(null);
     try {
-      const siteUrl = (process.env.NEXT_PUBLIC_SITE_URL as string) || window.location.origin;
-      const redirectTarget = `${siteUrl}/auth/callback?next=${encodeURIComponent(returnUrl)}`;
-
-      // If inside an iframe, navigate the top window to the Vercel login
-      // page (it will provide the OAuth buttons and correct redirect target).
+      // If inside an iframe (e.g. Wix), we MUST break out for OAuth because 
+      // Google doesn't allow iframes. However, we must redirect to the 
+      // Vercel domain's login page, NOT the Wix domain (Wix would 404).
       if (typeof window !== 'undefined' && window.self !== window.top && window.top) {
-        window.top.location.href = `${siteUrl}/login?returnUrl=${encodeURIComponent(returnUrl)}`;
+        // Use the Vercel URL for the breakout login page
+        const vercelUrl = 'https://mba-audio.vercel.app';
+        const siteUrl = (process.env.NEXT_PUBLIC_SITE_URL as string) || window.location.origin;
+        window.top.location.href = `${vercelUrl}/login?returnUrl=${encodeURIComponent(siteUrl + returnUrl)}`;
         return;
       }
+
+      const siteUrl = (process.env.NEXT_PUBLIC_SITE_URL as string) || window.location.origin;
+      // The final redirect after exchange must go back to the Wix domain
+      const redirectTarget = `${window.location.origin}/auth/callback?next=${encodeURIComponent(returnUrl)}`;
 
       const { error: err } = await supabase.auth.signInWithOAuth({
         provider: 'google',
