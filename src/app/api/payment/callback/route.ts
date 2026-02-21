@@ -19,8 +19,10 @@ const resend = resendApiKey ? new Resend(resendApiKey) : null;
 const ADMIN_EMAIL = process.env.ADMIN_NOTIFICATION_EMAIL || '';
 
 export async function POST(request: NextRequest) {
+  const siteUrl = (process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000').replace(/\/$/, '');
+
   if (!supabaseAdmin) {
-    return NextResponse.redirect(new URL('/checkout/failure', request.url), { status: 303 });
+    return NextResponse.redirect(new URL(`${siteUrl}/checkout/failure`), { status: 303 });
   }
 
   const apiKey = process.env.IYZIPAY_API_KEY;
@@ -29,7 +31,7 @@ export async function POST(request: NextRequest) {
 
   if (!apiKey || !secretKey) {
     console.error('Iyzipay callback error: API anahtarları tanımlı değil');
-    return NextResponse.redirect(new URL('/checkout/failure', request.url), { status: 303 });
+    return NextResponse.redirect(new URL(`${siteUrl}/checkout/failure`), { status: 303 });
   }
 
   const iyzipay = new Iyzipay({
@@ -55,7 +57,7 @@ export async function POST(request: NextRequest) {
   }
 
   if (!token) {
-    return NextResponse.redirect(new URL('/checkout/failure', request.url), { status: 303 });
+    return NextResponse.redirect(new URL(`${siteUrl}/checkout/failure`), { status: 303 });
   }
 
   try {
@@ -76,7 +78,7 @@ export async function POST(request: NextRequest) {
     const orderId = basketId ? Number(basketId) : NaN;
 
     if (!Number.isFinite(orderId)) {
-      return NextResponse.redirect(new URL('/checkout/failure', request.url), { status: 303 });
+      return NextResponse.redirect(new URL(`${siteUrl}/checkout/failure`), { status: 303 });
     }
 
     const newStatus = paymentStatus === 'SUCCESS' ? 'success' : 'failed';
@@ -116,10 +118,9 @@ export async function POST(request: NextRequest) {
             ((orderDetail as any).profiles?.full_name as string | null) ||
             userEmail?.split('@')[0] ||
             'Müşteri';
-          const amount = Number((orderDetail as any).amount || 0).toFixed(2);
+          const amountValue = Number((orderDetail as any).amount || 0).toFixed(2);
 
-          const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000';
-          const fromAddress = 'MuzikBank <no-reply@muzikbank.local>';
+          const fromAddress = 'MuzikBank <no-reply@muzikbank.net>';
 
           const userHtml = `
           <html>
@@ -155,7 +156,7 @@ export async function POST(request: NextRequest) {
                             ${trackTitle}
                           </div>
                           <div style="font-size:12px;color:#9ca3af;">
-                            Toplam Tutar: <span style="color:#ede066;font-weight:700;">₺${amount}</span>
+                            Toplam Tutar: <span style="color:#ede066;font-weight:700;">₺${amountValue}</span>
                           </div>
                         </td>
                       </tr>
@@ -192,7 +193,7 @@ export async function POST(request: NextRequest) {
                       </tr>
                       <tr>
                         <td style="font-size:12px;color:#9ca3af;">
-                          Tutar: <span style="color:#ede066;font-weight:700;">₺${amount}</span><br/>
+                          Tutar: <span style="color:#ede066;font-weight:700;">₺${amountValue}</span><br/>
                           Sipariş ID: ${orderId}
                         </td>
                       </tr>
@@ -216,7 +217,7 @@ export async function POST(request: NextRequest) {
             await resend.emails.send({
               from: fromAddress,
               to: ADMIN_EMAIL,
-              subject: `Yeni Satış Yapıldı! ₺${amount} - ${userName}`,
+              subject: `Yeni Satış Yapıldı! ₺${amountValue} - ${userName}`,
               html: adminHtml,
             });
           }
@@ -227,15 +228,14 @@ export async function POST(request: NextRequest) {
     }
 
     if (newStatus === 'success') {
-      const successUrl = new URL('/checkout/success', request.url);
+      const successUrl = new URL(`${siteUrl}/checkout/success`);
       successUrl.searchParams.set('orderId', String(orderId));
       return NextResponse.redirect(successUrl, { status: 303 });
     }
 
-    return NextResponse.redirect(new URL('/checkout/failure', request.url), { status: 303 });
+    return NextResponse.redirect(new URL(`${siteUrl}/checkout/failure`), { status: 303 });
   } catch (err) {
     console.error('Iyzipay callback error:', err);
-    return NextResponse.redirect(new URL('/checkout/failure', request.url), { status: 303 });
+    return NextResponse.redirect(new URL(`${siteUrl}/checkout/failure`), { status: 303 });
   }
 }
-
