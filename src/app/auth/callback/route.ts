@@ -48,8 +48,38 @@ export async function GET(request: NextRequest) {
 
   const { data, error } = await supabase.auth.exchangeCodeForSession(code)
   if (error) {
+    if (next === 'popup') {
+      return new NextResponse(
+        `<html><body><script>
+            // Tell the opener (iframe) that login failed
+            if (window.opener) {
+              window.opener.postMessage({ type: 'oauth_session_error' }, '*');
+            }
+            window.close();
+        </script></body></html>`,
+        { headers: { 'Content-Type': 'text/html' } }
+      )
+    }
     redirectTo.searchParams.delete('auth_refresh')
     return NextResponse.redirect(redirectTo)
+  }
+
+  // If we are in the popup flow, transmit the tokens back to the iframe
+  if (next === 'popup') {
+    const session = data?.session;
+    return new NextResponse(
+      `<html><body><script>
+          if (window.opener) {
+            window.opener.postMessage({
+              type: 'oauth_session',
+              access_token: '${session?.access_token}',
+              refresh_token: '${session?.refresh_token}'
+            }, '*');
+          }
+          window.close();
+      </script></body></html>`,
+      { headers: { 'Content-Type': 'text/html' } }
+    )
   }
 
   // Artık Google kullanıcılarını zorunlu olarak /settings?complete=1 sayfasına yönlendirmiyoruz.

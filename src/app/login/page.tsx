@@ -57,25 +57,61 @@ export default function LoginPage() {
     setLoading(true);
     setError(null);
     try {
-      // If inside an iframe (e.g. Wix), we MUST break out for OAuth because 
-      // Google doesn't allow iframes. However, we must redirect to the 
-      // Vercel domain's login page, NOT the Wix domain (Wix would 404).
-      if (typeof window !== 'undefined' && window.self !== window.top && window.top) {
-        // Use the Vercel URL for the breakout login page
-        const vercelUrl = 'https://mba-audio.vercel.app';
-        let finalReturnUrl = returnUrl;
+      // If inside an iframe (e.g. Wix), open a popup instead of redirecting the top window.
+      // Modifying window.top can break Safari ITP and partitioned cookies.
+      // A popup solves this cleanly by moving the authentication flow out of the iframe
+      // and then transmitting the credentials back via postMessage.
+      if (typeof window !== 'undefined' && window.self !== window.top && !searchParams.get('popup')) {
+        const popupUrl = `${window.location.origin}/login?auto=google&popup=1&returnUrl=${encodeURIComponent(returnUrl)}`;
 
-        // Ensure returning back to the parent URL correctly if not already absolute
-        if (!finalReturnUrl.startsWith('http')) {
-          const siteUrl = (process.env.NEXT_PUBLIC_SITE_URL as string) || window.location.origin;
-          finalReturnUrl = siteUrl + returnUrl;
+        const width = 500;
+        const height = 650;
+        const left = window.screen.width / 2 - width / 2;
+        const top = window.screen.height / 2 - height / 2;
+        const popup = window.open(popupUrl, 'oauth_popup', `width=${width},height=${height},top=${top},left=${left}`);
+
+        if (!popup) {
+          setError('Tarayıcınız açılır pencereleri (popup) engelliyor. Lütfen Google ile giriş yapabilmek için izin verin.');
+          setLoading(false);
+          return;
         }
 
-        window.top.location.href = `${vercelUrl}/login?returnUrl=${encodeURIComponent(finalReturnUrl)}&auto=google`;
+        const messageHandler = async (event: MessageEvent) => {
+          if (event.origin !== window.location.origin) return;
+
+          if (event.data?.type === 'oauth_session') {
+            window.removeEventListener('message', messageHandler);
+            const { access_token, refresh_token } = event.data;
+
+            if (access_token && refresh_token) {
+              await supabase.auth.setSession({ access_token, refresh_token });
+
+              // We are properly authenticated in the partitioned storage now.
+              // We can safely reload or redirect.
+              window.location.replace(returnUrl);
+            } else {
+              setError(t('loginGoogleError'));
+              setLoading(false);
+            }
+          }
+        };
+
+        window.addEventListener('message', messageHandler);
+
+        // Track if popup closes without sending a message
+        const checkClosed = setInterval(() => {
+          if (popup.closed) {
+            clearInterval(checkClosed);
+            window.removeEventListener('message', messageHandler);
+            setLoading(false);
+          }
+        }, 1000);
+
         return;
       }
 
-      const redirectTarget = `${window.location.origin}/auth/callback?next=${encodeURIComponent(returnUrl)}`;
+      const popupParam = searchParams.get('popup') === '1';
+      const redirectTarget = `${window.location.origin}/auth/callback?next=${popupParam ? 'popup' : encodeURIComponent(returnUrl)}`;
 
       const { error: err } = await supabase.auth.signInWithOAuth({
         provider: 'google',
@@ -86,10 +122,10 @@ export default function LoginPage() {
       if (err) throw err;
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : t('loginGoogleError'));
-    } finally {
       setLoading(false);
     }
   };
+
 
   const handleForgotPassword = async (e: React.MouseEvent) => {
     e.preventDefault();
