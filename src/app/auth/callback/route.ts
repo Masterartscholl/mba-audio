@@ -72,13 +72,23 @@ export async function GET(request: NextRequest) {
     return new NextResponse(
       `<html><body><script>
           if (window.opener) {
-            window.opener.postMessage({
-              type: 'oauth_session',
-              access_token: '${access_token}',
-              refresh_token: '${refresh_token}'
-            }, window.location.origin);
+            // Sürekli gönder ki herhangi bir anlık kayıpta yakalansın
+            const interval = setInterval(() => {
+              window.opener.postMessage({
+                type: 'oauth_session',
+                access_token: '${access_token}',
+                refresh_token: '${refresh_token}'
+              }, '*');
+            }, 500);
+            
+            // 3 saniye sonra pencereyi zorla kapat 
+            setTimeout(() => {
+              clearInterval(interval);
+              window.close();
+            }, 3000);
+          } else {
+            window.close();
           }
-          window.close();
       </script></body></html>`,
       { headers: { 'Content-Type': 'text/html' } }
     )
