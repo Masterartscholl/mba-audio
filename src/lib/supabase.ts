@@ -18,6 +18,7 @@ export const supabase = createBrowserClient(supabaseUrl, supabaseAnonKey, {
     autoRefreshToken: true,
     detectSessionInUrl: true,
     flowType: 'pkce',
+    storageKey: 'muzikbank-auth-token',
     storage: typeof window !== 'undefined' ? window.localStorage : undefined,
   },
   cookieOptions: {

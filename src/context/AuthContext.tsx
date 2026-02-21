@@ -97,48 +97,94 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         };
 
         const load = async () => {
-            let hasSessionInLocalStorage = false;
-            if (typeof window !== 'undefined') {
-                // Aggressive loading state: if a session token exists, assume logged in and set loading to false immediately.
-                // This prevents UI blocking while waiting for Supabase to verify the session.
-                // Supabase stores its session in localStorage under the key defined in cookieOptions.name, default 'sb-auth-token'.
-                hasSessionInLocalStorage = !!localStorage.getItem('sb-auth-token');
-                if (hasSessionInLocalStorage) {
-                    setLoading(false);
-                    clearTimeout(timer); // Clear the safety timeout as we've made a decision
-                }
-
-                if (window.location.pathname.startsWith('/admin')) {
-                    setLoading(false);
-                    return;
-                }
-            }
-
-            try {
-                const { data: { session } } = await supabase.auth.getSession();
-                let u = session?.user ?? null;
-
-                if (u) {
-                    const { data: { user: verifiedUser } } = await supabase.auth.getUser();
-                    if (verifiedUser) u = verifiedUser;
-                }
-
-                if (!mounted) return;
-                setUser(u);
-
-                // CRITICAL: Do not wait for profile fetch to turn off loading state.
-                // This allows the UI to show immediately if user is found.
+            if (typeof window !== 'undefined' && window.location.pathname.startsWith('/admin')) {
                 setLoading(false);
-                clearTimeout(timer);
-
-                if (u) {
-                    const p = await fetchProfile(u);
-                    if (mounted) setProfile(p);
-                }
-            } catch (error) {
-                console.error('AuthProvider: load error', error);
-                if (mounted) setLoading(false);
+                return;
             }
+
+            // 1. SYNC CHECK: Fast-path for UI
+            if (typeof window !== 'undefined') {
+                try {
+                    const localSessionRaw = localStorage.getItem('muzikbank-auth-token');
+                    if (localSessionRaw) {
+                        const localSession = JSON.parse(localSessionRaw);
+                        if (localSession?.user) {
+                            setUser(localSession.user);
+                            setLoading(false);
+                            console.log('AuthProvider: Sync session detected, UI unlocked');
+                        }
+                    }
+                } catch (e) {
+                    console.warn('AuthProvider: Sync session parse error', e);
+                }
+            }
+
+            let sessionFinished = false;
+
+            // 2. VERIFICATION: In background or race
+            const checkSession = async () => {
+                try {
+                    console.log('AuthProvider: Starting verification from', window.location.pathname);
+                    const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+                    const u = session?.user ?? null;
+
+                    if (!mounted) return;
+
+                    if (u) {
+                        setUser(u);
+                        setLoading(false);
+                        clearTimeout(timer);
+
+                        // Background tasks
+                        fetchProfile(u).then(p => {
+                            if (mounted) setProfile(p);
+                        });
+
+                        supabase.auth.getUser().then(({ data: { user: verifiedUser } }) => {
+                            if (mounted && verifiedUser) setUser(verifiedUser);
+                        });
+                    } else if (sessionError || !u) {
+                        // If we have a sync user, don't clear it immediately on error/null from getSession
+                        // because getSession can fail for network reasons in an iframe.
+                        const currentUser = (await new Promise<User | null>(resolve => {
+                            setUser(prev => { resolve(prev); return prev; });
+                        }));
+
+                        if (currentUser) {
+                            console.warn('AuthProvider: getSession failed but sync user exists. Retrying with getUser...');
+                            const { data: { user: verifiedUser } } = await supabase.auth.getUser();
+                            if (mounted) {
+                                if (verifiedUser) {
+                                    setUser(verifiedUser);
+                                } else {
+                                    console.log('AuthProvider: No session verified, clearing user');
+                                    setUser(null);
+                                    setProfile(null);
+                                }
+                                setLoading(false);
+                                clearTimeout(timer);
+                            }
+                        } else {
+                            setUser(null);
+                            setLoading(false);
+                            clearTimeout(timer);
+                        }
+                    }
+                } catch (error) {
+                    console.error('AuthProvider: load error', error);
+                } finally {
+                    sessionFinished = true;
+                }
+            };
+
+            checkSession();
+
+            // 3. SAFETY: If nothing happens in 2s and we don't even have a sync user, stop spinning
+            setTimeout(() => {
+                if (mounted && !sessionFinished && !user) {
+                    setLoading(false);
+                }
+            }, 2000);
         };
 
         load();
