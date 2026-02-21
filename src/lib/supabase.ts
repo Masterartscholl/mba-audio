@@ -21,9 +21,6 @@ export const supabase = createBrowserClient(supabaseUrl, supabaseAnonKey, {
     storageKey: 'muzikbank-auth-token',
     storage: typeof window !== 'undefined' ? window.localStorage : undefined,
   },
-  global: {
-    fetch: (url, options) => fetch(url, { ...options, credentials: 'include' }),
-  },
   cookieOptions: {
     name: 'sb-auth-token',
     sameSite: 'none',
