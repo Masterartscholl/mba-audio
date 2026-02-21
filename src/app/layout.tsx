@@ -7,6 +7,7 @@ import { getLocale, getMessages } from 'next-intl/server';
 import { AuthRefreshSync } from "@/components/AuthRefreshSync";
 import { ProfileCompleteGuard } from "@/components/ProfileCompleteGuard";
 import { MaintenanceGuard } from "@/components/MaintenanceGuard";
+import { CustomerGuard } from "@/components/CustomerGuard";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -61,6 +62,7 @@ export default async function RootLayout({
                       </Suspense>
                       <ProfileCompleteGuard />
                       <MaintenanceGuard />
+                      <CustomerGuard />
                       {children}
                       <Toaster position="top-right" richColors theme="dark" />
                     </SearchProvider>

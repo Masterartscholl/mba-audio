@@ -58,9 +58,9 @@ export async function proxy(request: NextRequest) {
       return NextResponse.redirect(new URL(`/login?returnUrl=${encodeURIComponent('/admin')}`, request.url))
     }
 
-    if (isCustomerProtected && !user) {
-      return NextResponse.redirect(new URL(`/login?returnUrl=${encodeURIComponent(pathname)}`, request.url))
-    }
+    // Customer route protection is now handled purely on the client-side
+    // via CustomerGuard to support iframe environments where third-party cookies
+    // might be blocked, rendering server-side authentication checks unreliable.
 
     if ((isLoginRoute || isSignupRoute) && user) {
       const returnUrl = request.nextUrl.searchParams.get('returnUrl') || '/'
