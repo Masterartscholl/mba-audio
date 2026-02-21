@@ -83,8 +83,18 @@ export default function LoginPage() {
             window.removeEventListener('message', messageHandler);
             const { access_token, refresh_token } = event.data;
 
-            if (access_token && refresh_token) {
-              await supabase.auth.setSession({ access_token, refresh_token });
+            if (access_token && refresh_token && access_token !== 'undefined' && refresh_token !== 'undefined') {
+              const { data, error } = await supabase.auth.setSession({ access_token, refresh_token });
+
+              if (!error && data.session) {
+                // Ensure localStorage has the full token synchronously for AuthContext's logic.
+                // This bypasses the cookie problems of @supabase/ssr entirely in the iframe.
+                try {
+                  localStorage.setItem('muzikbank-auth-token', JSON.stringify(data.session));
+                } catch (e) {
+                  console.warn('Could not write to localStorage directly', e);
+                }
+              }
 
               // We are properly authenticated in the partitioned storage now.
               // We can safely reload or redirect.

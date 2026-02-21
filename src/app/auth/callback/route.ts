@@ -66,14 +66,16 @@ export async function GET(request: NextRequest) {
 
   // If we are in the popup flow, transmit the tokens back to the iframe
   if (next === 'popup') {
-    const session = data?.session;
+    const access_token = data?.session?.access_token || '';
+    const refresh_token = data?.session?.refresh_token || '';
+
     return new NextResponse(
       `<html><body><script>
           if (window.opener) {
             window.opener.postMessage({
               type: 'oauth_session',
-              access_token: '${session?.access_token}',
-              refresh_token: '${session?.refresh_token}'
+              access_token: '${access_token}',
+              refresh_token: '${refresh_token}'
             }, '*');
           }
           window.close();
