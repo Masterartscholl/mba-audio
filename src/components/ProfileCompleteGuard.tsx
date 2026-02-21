@@ -25,16 +25,23 @@ export function ProfileCompleteGuard() {
     );
     if (isGoogleUser) return;
 
-    // Profil tablosundaki ad-soyad veya Google metadata'dan gelen isim
-    const nameFromProfile = profile?.full_name?.trim() || '';
-    const nameFromMetadata =
-      (user.user_metadata?.full_name || user.user_metadata?.name || '').trim();
-    const name = nameFromProfile || nameFromMetadata;
+    // Iframe'lerde profil yüklemesi 5 sn sürdüğü için hemen yönlendirme yapma, biraz bekle
+    const checkProfile = () => {
+      const nameFromProfile = profile?.full_name?.trim() || '';
+      const nameFromMetadata =
+        (user.user_metadata?.full_name || user.user_metadata?.name || '').trim();
+      const name = nameFromProfile || nameFromMetadata;
 
-    if (name) return;
-    if (pathname === "/settings" || pathname === "/reset-password" || pathname.startsWith("/admin")) return;
+      if (name) return;
+      if (pathname === "/settings" || pathname === "/reset-password" || pathname.startsWith("/admin")) return;
 
-    router.replace("/settings?complete=1");
+      // SADECE EĞER sayfa açılalı 6 saniye geçtiyse ve hala isim yoksa yönlendir
+      // Bu, AuthContext'teki 5 saniyelik timeout'a izin verir.
+      router.replace("/settings?complete=1");
+    };
+
+    const timer = setTimeout(checkProfile, 6000);
+    return () => clearTimeout(timer);
   }, [loading, user, profile, pathname, router]);
 
   return null;

@@ -97,38 +97,35 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         };
 
         const load = async () => {
-            // Skip if in admin area - handled by AdminAuthProvider
             if (typeof window !== 'undefined' && window.location.pathname.startsWith('/admin')) {
                 setLoading(false);
                 return;
             }
 
             try {
-                // First try getting session from localStorage (fastest)
                 const { data: { session } } = await supabase.auth.getSession();
                 let u = session?.user ?? null;
 
-                // Then try to verify with server if needed
                 if (u) {
                     const { data: { user: verifiedUser } } = await supabase.auth.getUser();
                     if (verifiedUser) u = verifiedUser;
                 }
 
                 if (!mounted) return;
-
                 setUser(u);
-                const p = await fetchProfile(u);
-                if (mounted) {
-                    setProfile(p);
-                    console.log('AuthProvider: Initial load complete', { hasUser: !!u, hasProfile: !!p });
+
+                // CRITICAL: Do not wait for profile fetch to turn off loading state.
+                // This allows the UI to show immediately if user is found.
+                setLoading(false);
+                clearTimeout(timer);
+
+                if (u) {
+                    const p = await fetchProfile(u);
+                    if (mounted) setProfile(p);
                 }
             } catch (error) {
                 console.error('AuthProvider: load error', error);
-            } finally {
-                if (mounted) {
-                    clearTimeout(timer);
-                    setLoading(false);
-                }
+                if (mounted) setLoading(false);
             }
         };
 
