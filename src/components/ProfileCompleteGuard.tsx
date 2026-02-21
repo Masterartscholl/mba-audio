@@ -35,12 +35,12 @@ export function ProfileCompleteGuard() {
       if (name) return;
       if (pathname === "/settings" || pathname === "/reset-password" || pathname.startsWith("/admin")) return;
 
-      // SADECE EĞER sayfa açılalı 6 saniye geçtiyse ve hala isim yoksa yönlendir
-      // Bu, AuthContext'teki 5 saniyelik timeout'a izin verir.
+      // SADECE EĞER sayfa açılalı 12 saniye geçtiyse ve hala isim yoksa yönlendir
+      // Bu, AuthContext'teki 10 saniyelik timeout'a izin verir.
       router.replace("/settings?complete=1");
     };
 
-    const timer = setTimeout(checkProfile, 6000);
+    const timer = setTimeout(checkProfile, 12000);
     return () => clearTimeout(timer);
   }, [loading, user, profile, pathname, router]);
 
