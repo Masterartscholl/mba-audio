@@ -67,18 +67,33 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
             // Start new fetch
             const fetchPromise = (async () => {
-                try {
-                    const { data: p } = await supabase
-                        .from('profiles')
-                        .select('id, email, full_name, avatar_url, is_admin, created_at')
-                        .eq('id', u.id)
-                        .single();
+                // Add a race against a timeout to prevent hanging the whole app
+                const timeoutPromise = new Promise<null>((resolve) =>
+                    setTimeout(() => {
+                        console.warn('AuthProvider: Profile fetch timed out (5s)');
+                        resolve(null);
+                    }, 5000)
+                );
 
-                    profileCache[u.id] = p || null;
-                    return p || null;
-                } catch (err) {
-                    console.error('AuthProvider: profile fetch error', err);
-                    return null;
+                const dbPromise = (async () => {
+                    try {
+                        const { data: p, error } = await supabase
+                            .from('profiles')
+                            .select('id, email, full_name, avatar_url, is_admin, created_at')
+                            .eq('id', u.id)
+                            .single();
+
+                        if (error) throw error;
+                        profileCache[u.id] = p || null;
+                        return p || null;
+                    } catch (err) {
+                        console.error('AuthProvider: profile fetch error', err);
+                        return null;
+                    }
+                })();
+
+                try {
+                    return await Promise.race([dbPromise, timeoutPromise]);
                 } finally {
                     delete pendingFetches[u.id];
                 }

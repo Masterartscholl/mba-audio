@@ -61,6 +61,12 @@ export const TrackList: React.FC<TrackListProps> = ({ filters, currency, selecte
             setLoading(true);
             setError(null);
 
+            // Timeout logic
+            const timeoutId = setTimeout(() => {
+                console.warn('TrackList: tracks fetch timed out (10s)');
+                setLoading(false);
+            }, 10000);
+
             let q = supabase
                 .from('tracks')
                 .select(
@@ -121,6 +127,7 @@ export const TrackList: React.FC<TrackListProps> = ({ filters, currency, selecte
             }
 
             const { data, error: queryError } = await q.range(0, fetchLimit);
+            clearTimeout(timeoutId);
 
             if (queryError) {
                 console.error('Tracks query error:', queryError);

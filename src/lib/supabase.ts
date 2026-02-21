@@ -17,13 +17,13 @@ export const supabase = createBrowserClient(supabaseUrl, supabaseAnonKey, {
     persistSession: true,
     autoRefreshToken: true,
     detectSessionInUrl: true,
-    storageKey: 'muzikbank-auth-token',
+    flowType: 'pkce',
   },
   cookieOptions: {
     name: 'sb-auth-token',
     sameSite: 'none',
     secure: true,
     path: '/',
-    maxAge: 60 * 60 * 24 * 7, // 1 week
+    maxAge: 60 * 60 * 24 * 7,
   }
 })

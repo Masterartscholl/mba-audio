@@ -19,7 +19,16 @@ export const CategoryBar: React.FC<CategoryBarProps> = ({ filters, onFilterChang
     const fetchCategories = useCallback(async () => {
         try {
             setLoading(true);
+
+            // Timeout logic
+            const timeoutId = setTimeout(() => {
+                console.warn('CategoryBar: categories fetch timed out (7s)');
+                setLoading(false);
+            }, 7000);
+
             const { data, error } = await supabase.from('categories').select('id, name, name_en').order('name');
+            clearTimeout(timeoutId);
+
             if (error) {
                 console.error('Categories fetch error:', error);
             }
