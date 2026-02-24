@@ -42,6 +42,21 @@ export default async function RootLayout({
 
   return (
     <html lang={locale} suppressHydrationWarning>
+      <head>
+        <script dangerouslySetInnerHTML={{
+          __html: `
+          (function() {
+            try {
+              var locale = localStorage.getItem('NEXT_LOCALE');
+              var currentUrl = new URL(window.location.href);
+              if (locale && !currentUrl.searchParams.has('locale') && !currentUrl.searchParams.has('lang') && window.self !== window.top) {
+                currentUrl.searchParams.set('locale', locale);
+                window.location.replace(currentUrl.toString());
+              }
+            } catch (e) {}
+          })();
+        ` }} />
+      </head>
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >

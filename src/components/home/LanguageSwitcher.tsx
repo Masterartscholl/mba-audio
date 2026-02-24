@@ -27,8 +27,24 @@ export const LanguageSwitcher: React.FC = () => {
 
     const handleSelect = async (code: string) => {
         setOpen(false);
-        await setUserLocale(code);
-        router.refresh();
+        // Persist local preference
+        if (typeof window !== 'undefined') {
+            localStorage.setItem('NEXT_LOCALE', code);
+
+            // For iframes (Wix), URL-based switching is the most reliable.
+            // We append ?locale=... to the URL and reload.
+            const url = new URL(window.location.href);
+            url.searchParams.set('locale', code);
+
+            // Call the server action to try and set the cookie too
+            await setUserLocale(code);
+
+            // Full reload to ensure middleware picks up the query param
+            window.location.href = url.toString();
+        } else {
+            await setUserLocale(code);
+            router.refresh();
+        }
     };
 
     return (

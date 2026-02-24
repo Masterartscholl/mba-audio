@@ -1,11 +1,15 @@
 'use server';
 
-import { cookies } from 'next/headers';
+import { cookies, headers } from 'next/headers';
 
 const COOKIE_NAME = 'NEXT_LOCALE';
 const DEFAULT_LOCALE = 'tr';
 
 export async function getUserLocale() {
+    const headerList = await headers();
+    const headersLocale = headerList.get('x-next-locale');
+    if (headersLocale) return headersLocale;
+
     const cookieStore = await cookies();
     return cookieStore.get(COOKIE_NAME)?.value || DEFAULT_LOCALE;
 }
