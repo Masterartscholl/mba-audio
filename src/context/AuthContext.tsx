@@ -149,26 +149,23 @@ export function AuthProvider({ children }: { children: ReactNode }) {
                             if (mounted && verifiedUser) setUser(verifiedUser);
                         });
                     } else if (sessionError || !u) {
-                        // If we have a sync user, don't clear it immediately on error/null from getSession
-                        // because getSession can fail for network reasons in an iframe.
+                        // In an iframe (Wix), server-side session (cookies) often fail.
+                        // We must be EXTREMELY careful not to clear a valid sync user from localStorage.
                         const currentUser = (await new Promise<User | null>(resolve => {
                             setUser(prev => { resolve(prev); return prev; });
                         }));
 
                         if (currentUser) {
-                            console.warn('AuthProvider: getSession failed but sync user exists. Retrying with getUser...');
-                            const { data: { user: verifiedUser } } = await supabase.auth.getUser();
-                            if (mounted) {
-                                if (verifiedUser) {
+                            console.warn('AuthProvider: Server-side check failed, but keeping current Sync User for iframe stability.');
+                            // Try one last check with getUser(), which is more robust than getSession() in some SDK versions
+                            supabase.auth.getUser().then(({ data: { user: verifiedUser } }) => {
+                                if (mounted && verifiedUser) {
                                     setUser(verifiedUser);
-                                } else {
-                                    console.log('AuthProvider: No session verified, clearing user');
-                                    setUser(null);
-                                    setProfile(null);
                                 }
-                                setLoading(false);
-                                clearTimeout(timer);
-                            }
+                                // No 'else' here - keep the currentUser as a fallback if getUser() also fails to locate it via cookies
+                            });
+                            setLoading(false);
+                            clearTimeout(timer);
                         } else {
                             setUser(null);
                             setLoading(false);

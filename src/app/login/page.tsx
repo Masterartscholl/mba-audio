@@ -74,9 +74,12 @@ export default function LoginPage() {
 
         const width = 500;
         const height = 650;
-        const left = window.screen.width / 2 - width / 2;
-        const top = window.screen.height / 2 - height / 2;
-        const popup = window.open(popupUrl, 'oauth_popup', `width=${width},height=${height},top=${top},left=${left}`);
+        const left = (window.screen.width / 2) - (width / 2);
+        const top = (window.screen.height / 2) - (height / 2);
+
+        // Try to open a popup. If it opens as a new tab, it's browser-dependent, 
+        // but 'menubar=no,toolbar=no,location=no,status=no' helps hint for a popup window.
+        const popup = window.open(popupUrl, 'auth_popup', `width=${width},height=${height},top=${top},left=${left},menubar=no,toolbar=no,location=no,status=no`);
 
         if (!popup) {
           setError('Tarayıcınız açılır pencereleri (popup) engelliyor. Lütfen Google ile giriş yapabilmek için izin verin.');
@@ -139,8 +142,9 @@ export default function LoginPage() {
       }
 
       const popupParam = searchParams.get('popup') === '1';
-      // When inside the popup, we must ensure 'next' is purely 'popup' to trigger the HTML response
-      const redirectTarget = `${window.location.origin}/auth/callback?next=${popupParam ? 'popup' : encodeURIComponent(returnUrl)}`;
+      // Use /auth/verify (Client Component) instead of /auth/callback (Server Route)
+      // to ensure the session exchange happens in the client-side context for localStorage persistence.
+      const redirectTarget = `${window.location.origin}/auth/verify?next=${popupParam ? 'popup' : encodeURIComponent(returnUrl)}`;
 
       const { error: err } = await supabase.auth.signInWithOAuth({
         provider: 'google',
@@ -212,11 +216,13 @@ export default function LoginPage() {
               )}
 
               <div>
-                <label className="block text-[11px] sm:text-xs uppercase font-bold text-app-text-muted tracking-wider mb-1 sm:mb-1.5">{t('email')}</label>
+                <label htmlFor="email" className="block text-[11px] sm:text-xs uppercase font-bold text-app-text-muted tracking-wider mb-1 sm:mb-1.5">{t('email')}</label>
                 <input
+                  id="email"
                   required
                   type="email"
                   name="email"
+                  autoComplete="email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   placeholder="ornek@email.com"
@@ -225,11 +231,13 @@ export default function LoginPage() {
               </div>
 
               <div>
-                <label className="block text-[11px] sm:text-xs uppercase font-bold text-app-text-muted tracking-wider mb-1 sm:mb-1.5">{t('password')}</label>
+                <label htmlFor="password" className="block text-[11px] sm:text-xs uppercase font-bold text-app-text-muted tracking-wider mb-1 sm:mb-1.5">{t('password')}</label>
                 <input
+                  id="password"
                   required
                   type="password"
                   name="password"
+                  autoComplete="current-password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="••••••••"
