@@ -70,9 +70,9 @@ export const TrackList: React.FC<TrackListProps> = ({ filters, currency, selecte
 
             // Timeout logic
             const timeoutId = setTimeout(() => {
-                console.warn('TrackList: tracks fetch timed out (10s)');
+                console.warn('TrackList: tracks fetch timed out (25s)');
                 setLoading(false);
-            }, 10000);
+            }, 25000);
 
             let q = supabase
                 .from('tracks')

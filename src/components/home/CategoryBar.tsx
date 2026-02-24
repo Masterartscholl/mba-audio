@@ -20,11 +20,25 @@ export const CategoryBar: React.FC<CategoryBarProps> = ({ filters, onFilterChang
         try {
             setLoading(true);
 
-            // Timeout logic
+            // Fast path: Load from cache
+            if (typeof window !== 'undefined') {
+                const cached = localStorage.getItem('mba_categories_cache');
+                if (cached) {
+                    try {
+                        setCategories(JSON.parse(cached));
+                        // If we have cache, we can keep loading in background quietly
+                        // but for UI, we might want to stop the pulse soon
+                    } catch (e) {
+                        console.warn('Categories cache parse error', e);
+                    }
+                }
+            }
+
+            // Timeout logic - increased for Wix compatibility
             const timeoutId = setTimeout(() => {
-                console.warn('CategoryBar: categories fetch timed out (7s)');
+                console.warn('CategoryBar: categories fetch timed out (20s)');
                 setLoading(false);
-            }, 7000);
+            }, 20000);
 
             const { data, error } = await supabase.from('categories').select('id, name, name_en').order('name');
             clearTimeout(timeoutId);
@@ -32,7 +46,14 @@ export const CategoryBar: React.FC<CategoryBarProps> = ({ filters, onFilterChang
             if (error) {
                 console.error('Categories fetch error:', error);
             }
-            setCategories((data as { id: number; name: string }[]) || []);
+            if (data) {
+                const cats = data as { id: number; name: string; name_en?: string }[];
+                setCategories(cats);
+                // Update cache
+                if (typeof window !== 'undefined') {
+                    localStorage.setItem('mba_categories_cache', JSON.stringify(cats));
+                }
+            }
         } catch (err) {
             console.error('Categories fetch failed:', err);
         } finally {

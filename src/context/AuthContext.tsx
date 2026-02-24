@@ -63,9 +63,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
                 // Add a race against a timeout to prevent hanging the whole app
                 const timeoutPromise = new Promise<null>((resolve) =>
                     setTimeout(() => {
-                        console.warn('AuthProvider: Profile fetch timed out (15s)');
+                        console.warn('AuthProvider: Profile fetch timed out (25s)');
                         resolve(null);
-                    }, 15000)
+                    }, 25000)
                 );
 
                 const dbPromise = (async () => {
