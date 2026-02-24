@@ -34,14 +34,12 @@ function VerifyContent() {
                                 const access_token = data.session.access_token;
                                 const refresh_token = data.session.refresh_token;
 
-                                // Send session to parent iframe
                                 window.opener.postMessage({
                                     type: 'oauth_session',
                                     access_token,
                                     refresh_token
                                 }, '*');
 
-                                // Wait for ACK from parent
                                 const handleAck = (event: MessageEvent) => {
                                     if (event.data?.type === 'oauth_session_ack') {
                                         window.removeEventListener('message', handleAck);
@@ -49,27 +47,26 @@ function VerifyContent() {
                                     }
                                 };
                                 window.addEventListener('message', handleAck);
-
-                                // Fallback close if no ACK
-                                setTimeout(() => {
-                                    window.close();
-                                }, 3000);
+                                setTimeout(() => window.close(), 3000);
                             } else {
-                                // If no opener, just redirect to home
                                 window.location.replace('/');
                             }
-                        } else if (next.startsWith('http')) {
-                            // If it's a cross-domain redirect (Wix), pass the tokens in the URL
-                            // because cookies will likely be blocked in the iframe.
-                            setStatus('Giriş başarılı! Wix sayfasına dönülüyor...');
+                        } else if (next.includes('muzikburada.net')) {
+                            // WIX CASE: Redirect to Wix with tokens in the HASH
+                            // This is the most reliable way for the iframe to 'see' the session
+                            setStatus('Oturum hazır! Wix sayfasına güvenli geçiş yapılıyor...');
                             const access_token = data.session.access_token;
                             const refresh_token = data.session.refresh_token;
-                            const targetUrl = new URL(next);
-                            targetUrl.hash = `access_token=${access_token}&refresh_token=${refresh_token}`;
-                            window.location.replace(targetUrl.toString());
+
+                            // Remove any existing codes or tokens from the next URL
+                            const target = new URL(next);
+                            target.searchParams.delete('code');
+
+                            // Append tokens to hash
+                            const finalUrl = `${target.origin}${target.pathname}#access_token=${access_token}&refresh_token=${refresh_token}`;
+                            window.top!.location.href = finalUrl;
                         } else {
                             setStatus('Giriş başarılı! Yönlendiriliyorsunuz...');
-                            // Full page reload to ensure all contexts pick up the new session
                             window.location.replace(next);
                         }
                     }
