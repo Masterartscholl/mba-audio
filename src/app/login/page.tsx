@@ -70,74 +70,28 @@ export default function LoginPage() {
       // A popup solves this cleanly by moving the authentication flow out of the iframe
       // and then transmitting the credentials back via postMessage.
       if (typeof window !== 'undefined' && window.self !== window.top && !searchParams.get('popup')) {
-        const popupUrl = `${window.location.origin}/login?auto=google&popup=1&returnUrl=${encodeURIComponent(returnUrl)}`;
+        setLoading(true);
+        // Direct TOP window redirect instead of popup to fulfill "same tab" request
+        // We redirect the main Wix page to our verify flow which then returns to Wix with tokens
+        const redirectUri = `${window.location.origin}/auth/verify?next=${encodeURIComponent('https://www.muzikburada.net/muzikbank')}`;
 
-        const width = 500;
-        const height = 650;
-        const left = (window.screen.width / 2) - (width / 2);
-        const top = (window.screen.height / 2) - (height / 2);
+        const { data, error: oauthError } = await supabase.auth.signInWithOAuth({
+          provider: 'google',
+          options: {
+            redirectTo: redirectUri,
+            skipBrowserRedirect: true
+          }
+        });
 
-        // Try to open a popup. If it opens as a new tab, it's browser-dependent, 
-        // but 'menubar=no,toolbar=no,location=no,status=no' helps hint for a popup window.
-        const popup = window.open(popupUrl, 'auth_popup', `width=${width},height=${height},top=${top},left=${left},menubar=no,toolbar=no,location=no,status=no`);
-
-        if (!popup) {
-          setError('Tarayıcınız açılır pencereleri (popup) engelliyor. Lütfen Google ile giriş yapabilmek için izin verin.');
+        if (oauthError) {
+          setError(oauthError.message);
           setLoading(false);
           return;
         }
 
-        const messageHandler = async (event: MessageEvent) => {
-          // Relaxing origin check: when embedded in an iframe on Wix, the origin can get
-          // obfuscated or mismatched depending on how the browser interprets the top window vs iframe.
-          // Since the payload has a specific type 'oauth_session', this is an acceptable tradeoff for functionality.
-          if (event.data?.type === 'oauth_session') {
-            window.removeEventListener('message', messageHandler);
-            const { access_token, refresh_token } = event.data;
-
-            if (access_token && refresh_token && access_token !== 'undefined' && refresh_token !== 'undefined') {
-              // Send explicit ACK so the popup can stop its interval and close itself
-              if (event.source) {
-                try {
-                  (event.source as Window).postMessage({ type: 'oauth_session_ack' }, event.origin || '*');
-                } catch (e) {
-                  console.warn('Could not send ACK to popup', e);
-                }
-              }
-
-              const { data, error } = await supabase.auth.setSession({ access_token, refresh_token });
-
-              if (!error && data.session) {
-                // Ensure localStorage has the full token synchronously for AuthContext's logic.
-                // This bypasses the cookie problems of @supabase/ssr entirely in the iframe.
-                try {
-                  localStorage.setItem('muzikbank-auth-token', JSON.stringify(data.session));
-                } catch (e) {
-                  console.warn('Could not write to localStorage directly', e);
-                }
-              }
-
-              // We are properly authenticated in the partitioned storage now.
-              // We can safely reload or redirect.
-              window.location.replace(returnUrl);
-            } else {
-              setError(t('loginGoogleError'));
-              setLoading(false);
-            }
-          }
-        };
-
-        window.addEventListener('message', messageHandler);
-
-        // Track if popup closes without sending a message
-        const checkClosed = setInterval(() => {
-          if (popup.closed) {
-            clearInterval(checkClosed);
-            window.removeEventListener('message', messageHandler);
-            setLoading(false);
-          }
-        }, 1000);
-
+        if (data?.url) {
+          window.top!.location.href = data.url;
+        }
         return;
       }
 

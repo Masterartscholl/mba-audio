@@ -58,6 +58,15 @@ function VerifyContent() {
                                 // If no opener, just redirect to home
                                 window.location.replace('/');
                             }
+                        } else if (next.startsWith('http')) {
+                            // If it's a cross-domain redirect (Wix), pass the tokens in the URL
+                            // because cookies will likely be blocked in the iframe.
+                            setStatus('Giriş başarılı! Wix sayfasına dönülüyor...');
+                            const access_token = data.session.access_token;
+                            const refresh_token = data.session.refresh_token;
+                            const targetUrl = new URL(next);
+                            targetUrl.hash = `access_token=${access_token}&refresh_token=${refresh_token}`;
+                            window.location.replace(targetUrl.toString());
                         } else {
                             setStatus('Giriş başarılı! Yönlendiriliyorsunuz...');
                             // Full page reload to ensure all contexts pick up the new session

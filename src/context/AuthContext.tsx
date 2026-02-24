@@ -107,9 +107,30 @@ export function AuthProvider({ children }: { children: ReactNode }) {
                 return;
             }
 
-            // 1. SYNC CHECK: Fast-path for UI
+            // 1. SYNC CHECK: Fast-path for UI + URL Token extraction
             if (typeof window !== 'undefined') {
                 try {
+                    // Check URL for tokens passed from same-tab redirect (Wix context)
+                    const hash = window.location.hash || '';
+                    if (hash.includes('access_token=') || window.location.search.includes('access_token=')) {
+                        const params = new URLSearchParams(hash.replace('#', '?') || window.location.search);
+                        const at = params.get('access_token');
+                        const rt = params.get('refresh_token');
+
+                        if (at && rt) {
+                            console.log('AuthProvider: Detected tokens in URL, setting session...');
+                            const { data, error } = await supabase.auth.setSession({ access_token: at, refresh_token: rt });
+                            if (!error && data.session) {
+                                localStorage.setItem('muzikbank-auth-token', JSON.stringify(data.session));
+                                // Clean URL
+                                window.history.replaceState(null, '', window.location.pathname);
+                                setUser(data.session.user);
+                                setLoading(false);
+                                return;
+                            }
+                        }
+                    }
+
                     const localSessionRaw = localStorage.getItem('muzikbank-auth-token');
                     if (localSessionRaw) {
                         const localSession = JSON.parse(localSessionRaw);
