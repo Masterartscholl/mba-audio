@@ -79,12 +79,19 @@ const useSidebarData = (filters: any, onFilterChange: FilterProps['onFilterChang
                 setLocalPriceBounds([minP, maxP]);
                 setLocalPriceRange([minP, maxP]);
                 setLocalBpmRange([BPM_MIN, BPM_MAX]);
-                onFilterChange((prev: any) => ({
-                    ...prev,
-                    priceBounds: [minP, maxP],
-                    priceRange: [minP, maxP],
-                    bpmRange: [BPM_MIN, BPM_MAX],
-                }));
+
+                // Only trigger update if filters are currently empty or different
+                onFilterChange((prev: any) => {
+                    if (prev.priceBounds?.[0] === minP && prev.priceBounds?.[1] === maxP) {
+                        return prev;
+                    }
+                    return {
+                        ...prev,
+                        priceBounds: [minP, maxP],
+                        priceRange: [minP, maxP],
+                        bpmRange: [BPM_MIN, BPM_MAX],
+                    };
+                });
             } catch (err) {
                 console.error('Sidebar fetchInitialData error:', err);
             }
@@ -153,7 +160,7 @@ export const Sidebar: React.FC<FilterProps> = ({ filters, onFilterChange }) => {
             {/* Logo Area */}
             <div className="h-24 flex items-center px-8 border-b border-[#d1d5db] dark:border-app-border shrink-0">
                 <Link href="/" className="flex items-center gap-3">
-                    <Image src={logoImg} alt="MüzikBank" width={32} height={32} className="rounded-lg object-contain" />
+                    <Image src={logoImg} alt="MüzikBank" width={32} height={32} className="rounded-lg object-contain" priority />
                     <div>
                         <h1 className="text-xl font-black text-app-text tracking-tight leading-none">MüzikBank</h1>
                         <p className="text-[10px] font-bold text-app-text-muted tracking-widest uppercase">{t('audioLibrary')}</p>
@@ -233,6 +240,9 @@ export const Sidebar: React.FC<FilterProps> = ({ filters, onFilterChange }) => {
                         </p>
                         <div className="relative">
                             <select
+                                id="moodFilter"
+                                name="moodFilter"
+                                aria-label={t('mood')}
                                 value={selectedMode || ''}
                                 onChange={(e) => onFilterChange({ ...filters, modeId: e.target.value ? Number(e.target.value) : null })}
                                 className="w-full bg-app-input-bg border border-[#d1d5db] dark:border-app-border rounded-xl px-4 py-2.5 text-xs text-app-text font-bold appearance-none focus:outline-none focus:border-app-primary/50 transition-all cursor-pointer hover:bg-app-card">
@@ -277,6 +287,7 @@ export const Sidebar: React.FC<FilterProps> = ({ filters, onFilterChange }) => {
                                 <span className="text-[9px] font-bold text-app-text-muted uppercase tracking-wider">Min</span>
                                 <input
                                     type="number"
+                                    name="minBpm"
                                     min={BPM_MIN}
                                     max={BPM_MAX}
                                     value={bpmRange[0]}
@@ -293,6 +304,7 @@ export const Sidebar: React.FC<FilterProps> = ({ filters, onFilterChange }) => {
                                 <span className="text-[9px] font-bold text-app-text-muted uppercase tracking-wider">Max</span>
                                 <input
                                     type="number"
+                                    name="maxBpm"
                                     min={BPM_MIN}
                                     max={BPM_MAX}
                                     value={bpmRange[1]}
@@ -309,6 +321,7 @@ export const Sidebar: React.FC<FilterProps> = ({ filters, onFilterChange }) => {
                         <div className="flex gap-3 items-center min-w-0">
                             <input
                                 type="range"
+                                name="minBpmSlider"
                                 min={BPM_MIN}
                                 max={BPM_MAX}
                                 value={bpmRange[0]}
@@ -322,6 +335,7 @@ export const Sidebar: React.FC<FilterProps> = ({ filters, onFilterChange }) => {
                             />
                             <input
                                 type="range"
+                                name="maxBpmSlider"
                                 min={BPM_MIN}
                                 max={BPM_MAX}
                                 value={bpmRange[1]}
@@ -368,6 +382,7 @@ export const Sidebar: React.FC<FilterProps> = ({ filters, onFilterChange }) => {
                                 <span className="text-[9px] font-bold text-app-text-muted uppercase tracking-wider">Min</span>
                                 <input
                                     type="number"
+                                    name="minPrice"
                                     min={priceBounds[0]}
                                     max={priceBounds[1]}
                                     value={priceRange[0]}
@@ -384,6 +399,7 @@ export const Sidebar: React.FC<FilterProps> = ({ filters, onFilterChange }) => {
                                 <span className="text-[9px] font-bold text-app-text-muted uppercase tracking-wider">Max</span>
                                 <input
                                     type="number"
+                                    name="maxPrice"
                                     min={priceBounds[0]}
                                     max={priceBounds[1]}
                                     value={priceRange[1]}
@@ -400,6 +416,7 @@ export const Sidebar: React.FC<FilterProps> = ({ filters, onFilterChange }) => {
                         <div className="flex gap-3 items-center min-w-0">
                             <input
                                 type="range"
+                                name="minPriceSlider"
                                 min={priceBounds[0]}
                                 max={priceBounds[1]}
                                 value={priceRange[0]}
@@ -413,6 +430,7 @@ export const Sidebar: React.FC<FilterProps> = ({ filters, onFilterChange }) => {
                             />
                             <input
                                 type="range"
+                                name="maxPriceSlider"
                                 min={priceBounds[0]}
                                 max={priceBounds[1]}
                                 value={priceRange[1]}
@@ -490,6 +508,8 @@ export const SidebarMobileDrawer: React.FC<SidebarMobileDrawerProps> = ({ filter
 
     useEffect(() => {
         isNavigating.current = false;
+        // History manipulation disabled temporarily to fix mobile opening issue
+        /*
         const stateKey = 'drawer_sidebar';
         window.history.pushState({ [stateKey]: true }, '');
 
@@ -503,6 +523,7 @@ export const SidebarMobileDrawer: React.FC<SidebarMobileDrawerProps> = ({ filter
                 window.history.back();
             }
         };
+        */
     }, []);
 
     return (
@@ -517,7 +538,7 @@ export const SidebarMobileDrawer: React.FC<SidebarMobileDrawerProps> = ({ filter
                         onClose?.();
                     }}
                 >
-                    <Image src={logoImg} alt="MüzikBank" width={28} height={28} className="rounded-lg object-contain" />
+                    <Image src={logoImg} alt="MüzikBank" width={28} height={28} className="rounded-lg object-contain" priority />
                     <div>
                         <h1 className="text-lg font-black text-app-text tracking-tight leading-none">MüzikBank</h1>
                         <p className="text-[9px] font-bold text-app-text-muted tracking-widest uppercase">{t('audioLibrary')}</p>
@@ -620,6 +641,9 @@ export const SidebarMobileDrawer: React.FC<SidebarMobileDrawerProps> = ({ filter
                         </p>
                         <div className="relative">
                             <select
+                                id="mobileMoodFilter"
+                                name="mobileMoodFilter"
+                                aria-label={t('mood')}
                                 value={selectedMode || ''}
                                 onChange={(e) => onFilterChange({ ...filters, modeId: e.target.value ? Number(e.target.value) : null })}
                                 className="w-full bg-app-input-bg border border-[#d1d5db] dark:border-app-border rounded-xl px-3 py-2 text-xs text-app-text font-bold appearance-none focus:outline-none focus:border-app-primary/50 transition-all cursor-pointer hover:bg-app-card">
@@ -651,6 +675,7 @@ export const SidebarMobileDrawer: React.FC<SidebarMobileDrawerProps> = ({ filter
                                 <span className="text-[9px] font-bold text-app-text-muted uppercase tracking-wider">Min</span>
                                 <input
                                     type="number"
+                                    name="mobileMinBpm"
                                     min={BPM_MIN}
                                     max={BPM_MAX}
                                     value={bpmRange[0]}
@@ -667,6 +692,7 @@ export const SidebarMobileDrawer: React.FC<SidebarMobileDrawerProps> = ({ filter
                                 <span className="text-[9px] font-bold text-app-text-muted uppercase tracking-wider">Max</span>
                                 <input
                                     type="number"
+                                    name="mobileMaxBpm"
                                     min={BPM_MIN}
                                     max={BPM_MAX}
                                     value={bpmRange[1]}
@@ -683,6 +709,7 @@ export const SidebarMobileDrawer: React.FC<SidebarMobileDrawerProps> = ({ filter
                         <div className="flex gap-3 items-center min-w-0">
                             <input
                                 type="range"
+                                name="minBpmSliderMobile"
                                 min={BPM_MIN}
                                 max={BPM_MAX}
                                 value={bpmRange[0]}
@@ -696,6 +723,7 @@ export const SidebarMobileDrawer: React.FC<SidebarMobileDrawerProps> = ({ filter
                             />
                             <input
                                 type="range"
+                                name="mobileMaxBpmSlider"
                                 min={BPM_MIN}
                                 max={BPM_MAX}
                                 value={bpmRange[1]}
@@ -708,7 +736,6 @@ export const SidebarMobileDrawer: React.FC<SidebarMobileDrawerProps> = ({ filter
                                 className="slider slider-bpm flex-1 min-w-0 w-0 h-1.5 bg-gray-300 dark:bg-app-input-bg rounded-full appearance-none cursor-pointer"
                             />
                         </div>
-                        <p className="text-[9px] text-app-text-muted mt-1.5">{BPM_MIN} - {BPM_MAX} {t('bpmRangeHint')}</p>
                         <p className="text-[9px] text-app-text-muted mt-1.5">{BPM_MIN} - {BPM_MAX} {t('bpmRangeHint')}</p>
                     </div>
 
@@ -728,6 +755,7 @@ export const SidebarMobileDrawer: React.FC<SidebarMobileDrawerProps> = ({ filter
                                 <span className="text-[9px] font-bold text-app-text-muted uppercase tracking-wider">Min</span>
                                 <input
                                     type="number"
+                                    name="mobileMinPrice"
                                     min={priceBounds[0]}
                                     max={priceBounds[1]}
                                     value={priceRange[0]}
@@ -744,6 +772,7 @@ export const SidebarMobileDrawer: React.FC<SidebarMobileDrawerProps> = ({ filter
                                 <span className="text-[9px] font-bold text-app-text-muted uppercase tracking-wider">Max</span>
                                 <input
                                     type="number"
+                                    name="mobileMaxPrice"
                                     min={priceBounds[0]}
                                     max={priceBounds[1]}
                                     value={priceRange[1]}
@@ -760,6 +789,7 @@ export const SidebarMobileDrawer: React.FC<SidebarMobileDrawerProps> = ({ filter
                         <div className="flex gap-3 items-center min-w-0">
                             <input
                                 type="range"
+                                name="mobileMinPriceSlider"
                                 min={priceBounds[0]}
                                 max={priceBounds[1]}
                                 value={priceRange[0]}
@@ -773,6 +803,7 @@ export const SidebarMobileDrawer: React.FC<SidebarMobileDrawerProps> = ({ filter
                             />
                             <input
                                 type="range"
+                                name="mobileMaxPriceSlider"
                                 min={priceBounds[0]}
                                 max={priceBounds[1]}
                                 value={priceRange[1]}

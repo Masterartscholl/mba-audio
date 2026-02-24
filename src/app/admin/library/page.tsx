@@ -314,6 +314,8 @@ export default function LibraryPage() {
                                         <label className="text-xs uppercase font-bold text-admin-text-muted tracking-wider">{t('table.mode')}</label>
                                         <div className="relative">
                                             <select
+                                                id="trackMode"
+                                                name="trackMode"
                                                 value={editingTrack.mode_id || ''}
                                                 onChange={(e) => setEditingTrack({ ...editingTrack, mode_id: e.target.value ? Number(e.target.value) : null })}
                                                 className="w-full bg-admin-bg border border-admin-border rounded-xl px-4 py-3 text-admin-text appearance-none focus:outline-none focus:border-admin-primary/50 transition-all font-medium"

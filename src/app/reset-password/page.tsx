@@ -88,7 +88,7 @@ export default function ResetPasswordPage() {
         <div className="min-h-screen bg-app-bg flex flex-col items-center justify-center p-4">
             <header className="fixed top-0 left-0 right-0 border-b border-app-border px-6 py-4 flex items-center justify-between bg-app-bg/80 backdrop-blur-md z-50">
                 <Link href="/" className="flex items-center gap-3">
-                    <Image src={logoImg} alt="MüzikBank" width={32} height={32} className="rounded-lg object-contain" />
+                    <Image src={logoImg} alt="MüzikBank" width={32} height={32} className="rounded-lg object-contain" priority />
                     <span className="text-base font-black text-app-text uppercase tracking-wider hidden sm:inline">MüzikBank</span>
                 </Link>
                 <div className="flex items-center gap-3">
@@ -115,6 +115,7 @@ export default function ResetPasswordPage() {
                         <label className="block text-[11px] uppercase font-bold text-app-text-muted tracking-wider mb-1.5 ml-1">{t('newPassword')}</label>
                         <input
                             type="password"
+                            name="newPassword"
                             value={newPassword}
                             onChange={(e) => setNewPassword(e.target.value)}
                             placeholder="••••••••"
@@ -127,6 +128,7 @@ export default function ResetPasswordPage() {
                         <label className="block text-[11px] uppercase font-bold text-app-text-muted tracking-wider mb-1.5 ml-1">{t('confirmPassword')}</label>
                         <input
                             type="password"
+                            name="confirmPassword"
                             value={confirmPassword}
                             onChange={(e) => setConfirmPassword(e.target.value)}
                             placeholder="••••••••"

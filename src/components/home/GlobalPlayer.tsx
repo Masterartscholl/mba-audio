@@ -56,6 +56,7 @@ export const GlobalPlayer: React.FC = () => {
                 </div>
                 <input
                     type="range"
+                    name="mobileProgressSlider"
                     min="0"
                     max={duration && duration > 0 ? duration : 100}
                     step="0.1"
@@ -168,6 +169,7 @@ export const GlobalPlayer: React.FC = () => {
                         <div className="group relative flex-1 h-6 flex items-center">
                             <input
                                 type="range"
+                                name="progressSlider"
                                 min="0"
                                 max={duration && duration > 0 ? duration : 100}
                                 step="0.1"
@@ -196,6 +198,7 @@ export const GlobalPlayer: React.FC = () => {
                         <svg className="w-5 h-5 text-app-text-muted group-hover:text-app-text transition-colors shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15.536 8.464a5 5 0 010 7.072m2.828-9.9a9 9 0 010 12.728M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z" /></svg>
                         <input
                             type="range"
+                            name="volumeSlider"
                             min="0"
                             max="1"
                             step="0.01"

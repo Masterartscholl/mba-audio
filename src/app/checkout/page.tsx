@@ -319,7 +319,7 @@ export default function CheckoutPage() {
             {/* Header */}
             <header className="h-14 sm:h-20 border-b border-app-border px-4 sm:px-6 lg:px-10 flex items-center justify-between sticky top-0 bg-app-bg/90 backdrop-blur-xl z-50">
                 <Link href="/" className="flex items-center shrink-0">
-                    <Image src={logoImg} alt="MüzikBank" width={32} height={32} className="rounded-xl object-contain sm:w-10 sm:h-10" />
+                    <Image src={logoImg} alt="MüzikBank" width={32} height={32} className="rounded-xl object-contain sm:w-10 sm:h-10" priority />
                 </Link>
                 <div className="flex items-center gap-2 sm:gap-4">
                     <ThemeSwitcher />
@@ -354,6 +354,7 @@ export default function CheckoutPage() {
                                     <label className="block text-[11px] font-black text-app-text-muted uppercase tracking-widest mb-2">{t('billingFullName')}</label>
                                     <input
                                         type="text"
+                                        name="billingName"
                                         placeholder={t('billingFullNamePlaceholder')}
                                         value={billingName}
                                         onChange={(e) => {
@@ -370,6 +371,7 @@ export default function CheckoutPage() {
                                     <label className="block text-[11px] font-black text-app-text-muted uppercase tracking-widest mb-2">{t('billingTcId')}</label>
                                     <input
                                         type="text"
+                                        name="billingTcId"
                                         inputMode="numeric"
                                         placeholder={t('billingTcIdPlaceholder')}
                                         value={billingTcId}
@@ -382,6 +384,7 @@ export default function CheckoutPage() {
                                 <div>
                                     <label className="block text-[11px] font-black text-app-text-muted uppercase tracking-widest mb-2">{t('billingAddress')}</label>
                                     <textarea
+                                        name="billingAddress"
                                         placeholder={t('billingAddressPlaceholder')}
                                         value={billingAddress}
                                         onChange={(e) => {
@@ -411,6 +414,7 @@ export default function CheckoutPage() {
                         <label className="flex items-start gap-3 cursor-pointer group">
                             <input
                                 type="checkbox"
+                                name="acceptTerms"
                                 checked={acceptTerms}
                                 onChange={(e) => setAcceptTerms(e.target.checked)}
                                 className="mt-1 w-4 h-4 rounded border-app-border bg-app-input-bg text-app-primary focus:ring-app-primary/50 shrink-0"

@@ -409,6 +409,8 @@ export default function SettingsPage() {
                                     <div className="space-y-2">
                                         <label className="text-xs uppercase font-bold text-admin-text-muted tracking-wider text-[10px]">{t('defaultLang')}</label>
                                         <select
+                                            id="defaultLang"
+                                            name="defaultLang"
                                             value={settings.default_lang}
                                             onChange={(e) => handleLangChange(e.target.value)}
                                             className="w-full bg-admin-bg border border-admin-border rounded-xl px-4 py-3.5 text-admin-text appearance-none focus:outline-none focus:border-admin-primary/50 cursor-pointer font-medium"
@@ -420,6 +422,8 @@ export default function SettingsPage() {
                                     <div className="space-y-2">
                                         <label className="text-xs uppercase font-bold text-admin-text-muted tracking-wider text-[10px]">{t('theme')}</label>
                                         <select
+                                            id="activeTheme"
+                                            name="activeTheme"
                                             value={settings.active_theme}
                                             onChange={(e) => handleThemeChange(e.target.value)}
                                             className="w-full bg-admin-bg border border-admin-border rounded-xl px-4 py-3.5 text-admin-text appearance-none focus:outline-none focus:border-admin-primary/50 cursor-pointer font-medium"
@@ -459,6 +463,8 @@ export default function SettingsPage() {
                                 <div className="space-y-2">
                                     <label className="text-xs uppercase font-bold text-admin-text-muted tracking-wider">{t('currency')}</label>
                                     <select
+                                        id="currency"
+                                        name="currency"
                                         value={settings.currency}
                                         onChange={(e) => setSettings({ ...settings, currency: e.target.value })}
                                         className="w-full bg-admin-bg border border-admin-border rounded-xl px-4 py-3.5 text-admin-text focus:outline-none focus:border-admin-primary/50 appearance-none cursor-pointer font-medium"

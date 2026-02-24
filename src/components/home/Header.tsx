@@ -12,7 +12,7 @@ import { supabase } from '@/lib/supabase';
 import { CartDrawer } from './CartDrawer';
 import { LanguageSwitcher } from './LanguageSwitcher';
 import { ThemeSwitcher } from './ThemeSwitcher';
-import logoImg from '@/images/logo.png';
+
 
 interface HeaderProps {
     onOpenMobileSidebar?: () => void;
@@ -103,6 +103,7 @@ export const Header: React.FC<HeaderProps> = ({ onOpenMobileSidebar }) => {
                         <input
                             autoFocus
                             type="search"
+                            name="mobileSearch"
                             value={query}
                             onChange={(e) => setQuery(e.target.value)}
                             placeholder={t('searchPlaceholder')}
@@ -137,13 +138,14 @@ export const Header: React.FC<HeaderProps> = ({ onOpenMobileSidebar }) => {
                     </button>
 
                     {/* Mobile Logo */}
-                    <Link href="/" className="lg:hidden block shrink-0 relative z-10 ms-1">
-                        <Image src={logoImg} alt="MüzikBank" width={32} height={32} className="rounded-lg object-contain" />
+                    <Link href="/" className="lg:hidden flex items-center shrink-0 relative z-10 ms-1">
+                        <span className="text-sm font-black text-app-text tracking-tight uppercase">{t('returnToTop')}</span>
                     </Link>
 
                     <div className="relative w-full max-w-3xl hidden sm:block">
                         <input
                             type="search"
+                            name="desktopSearch"
                             value={query}
                             onChange={(e) => setQuery(e.target.value)}
                             placeholder={t('searchPlaceholder')}
@@ -303,7 +305,7 @@ export const Header: React.FC<HeaderProps> = ({ onOpenMobileSidebar }) => {
                                     href="/login"
                                     className="w-9 h-9 flex items-center justify-center rounded-xl bg-app-surface border border-app-border text-app-text-muted hover:text-app-text sm:hidden"
                                 >
-                                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1" /></svg>
+                                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" /></svg>
                                 </Link>
 
                                 <Link

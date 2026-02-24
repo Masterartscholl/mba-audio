@@ -75,7 +75,7 @@ export default function SignupPage() {
     <div className="min-h-screen min-h-[100dvh] bg-app-bg flex flex-col">
       <header className="border-b border-app-border px-4 sm:px-6 py-3 sm:py-4 flex items-center justify-between shrink-0">
         <Link href="/" className="flex items-center gap-2 sm:gap-3">
-          <Image src={logoImg} alt="MüzikBank" width={32} height={32} className="rounded-xl object-contain sm:w-9 sm:h-9" />
+          <Image src={logoImg} alt="MüzikBank" width={32} height={32} className="rounded-xl object-contain sm:w-9 sm:h-9" priority />
           <span className="text-base sm:text-lg font-black text-app-text uppercase tracking-wider hidden sm:inline">MüzikBank</span>
         </Link>
         <div className="flex items-center gap-2 sm:gap-3">
@@ -84,7 +84,7 @@ export default function SignupPage() {
         </div>
       </header>
 
-      <main className="flex-1 flex items-center justify-center px-4 py-6 sm:py-8">
+      <main className="flex-1 flex items-start sm:items-center justify-center px-4 py-6 sm:py-8">
         <div className="w-full max-w-md">
           <div className="text-center mb-5 sm:mb-6 lg:mb-8">
             <h1 className="text-xl sm:text-2xl font-black text-app-text uppercase tracking-widest">{t('signupTitle')}</h1>
@@ -103,6 +103,7 @@ export default function SignupPage() {
                 <label className="block text-[11px] sm:text-xs uppercase font-bold text-app-text-muted tracking-wider mb-1 sm:mb-1.5">{t('fullName')}</label>
                 <input
                   type="text"
+                  name="fullName"
                   value={fullName}
                   onChange={(e) => setFullName(e.target.value)}
                   placeholder={t('fullNamePlaceholder')}
@@ -115,6 +116,7 @@ export default function SignupPage() {
                 <input
                   required
                   type="email"
+                  name="email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   placeholder="ornek@email.com"
@@ -127,6 +129,7 @@ export default function SignupPage() {
                 <input
                   required
                   type="password"
+                  name="password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="••••••••"

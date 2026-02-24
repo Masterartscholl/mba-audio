@@ -29,6 +29,13 @@ export const TrackList: React.FC<TrackListProps> = ({ filters, currency, selecte
     const [sortBy, setSortBy] = useState<SortOption>('newest');
     const [purchasedTrackIds, setPurchasedTrackIds] = useState<number[]>([]);
 
+    const [currentPage, setCurrentPage] = useState(1);
+    const itemsPerPage = 5;
+
+    useEffect(() => {
+        setCurrentPage(1);
+    }, [filters, searchQuery, sortBy]);
+
     const purchasedCacheRef = useRef<{ value: number[] | null }>({ value: null });
     const retryCountRef = useRef(0);
 
@@ -227,6 +234,10 @@ export const TrackList: React.FC<TrackListProps> = ({ filters, currency, selecte
             ? selectedCategoryName
             : t('browseTracks');
 
+    const startIndex = (currentPage - 1) * itemsPerPage;
+    const visibleTracks = tracks.slice(startIndex, startIndex + itemsPerPage);
+    const totalPages = Math.ceil(totalCount / itemsPerPage);
+
     return (
         <div className="flex-1 overflow-y-auto custom-scrollbar flex flex-col">
             <div className="px-4 lg:px-10 py-6 lg:py-10 flex flex-col lg:flex-row lg:items-end justify-between gap-4">
@@ -240,6 +251,9 @@ export const TrackList: React.FC<TrackListProps> = ({ filters, currency, selecte
                     <span className="text-[10px] font-black text-app-text-muted uppercase tracking-widest">{t('sortBy')}</span>
                     <div className="relative">
                         <select
+                            id="sortBy"
+                            name="sortBy"
+                            aria-label={t('sortBy')}
                             value={sortBy}
                             onChange={(e) => setSortBy(e.target.value as SortOption)}
                             className="bg-app-surface border border-app-border rounded-xl px-4 py-2 text-xs text-app-text font-bold appearance-none pr-10 focus:outline-none focus:border-app-primary/50 transition-all cursor-pointer"
@@ -264,9 +278,9 @@ export const TrackList: React.FC<TrackListProps> = ({ filters, currency, selecte
             </div>
 
             <div className="flex-1">
-                {tracks.length > 0 ? (
-                    tracks.map(track => (
-                        <TrackRow key={track.id} track={track} currency={currency} queue={tracks} purchasedTrackIds={purchasedTrackIds} />
+                {visibleTracks.length > 0 ? (
+                    visibleTracks.map(track => (
+                        <TrackRow key={track.id} track={track} currency={currency} queue={visibleTracks} purchasedTrackIds={purchasedTrackIds} />
                     ))
                 ) : (
                     <div className="flex flex-col items-center justify-center py-32 text-app-text-muted">
@@ -275,6 +289,31 @@ export const TrackList: React.FC<TrackListProps> = ({ filters, currency, selecte
                     </div>
                 )}
             </div>
+
+            {totalPages > 1 && (
+                <div className="flex justify-center items-center py-6 gap-4 border-t border-app-border">
+                    <button
+                        type="button"
+                        onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                        disabled={currentPage === 1}
+                        className="px-4 py-2 rounded-xl bg-app-surface border border-app-border text-[11px] lg:text-xs font-bold uppercase tracking-wider disabled:opacity-50 hover:bg-app-card transition-colors"
+                    >
+                        {t('prev')}
+                    </button>
+                    <span className="text-[11px] lg:text-xs font-bold text-app-text-muted">
+                        {currentPage} / {totalPages}
+                    </span>
+                    <button
+                        type="button"
+                        onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+                        disabled={currentPage === totalPages}
+                        className="px-4 py-2 rounded-xl bg-app-surface border border-app-border text-[11px] lg:text-xs font-bold uppercase tracking-wider disabled:opacity-50 hover:bg-app-card transition-colors"
+                    >
+                        {t('next')}
+                    </button>
+                </div>
+            )}
+
 
             <div className="h-40 lg:h-32 shrink-0" />
         </div>

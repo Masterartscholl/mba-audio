@@ -66,12 +66,14 @@ export const QuickAddModal = ({
                 <h3 className="text-admin-text font-bold text-lg mb-4">{titleText}</h3>
                 <input
                     autoFocus
+                    name="categoryName"
                     value={name}
                     onChange={(e) => setName(e.target.value)}
                     className="w-full bg-admin-bg border border-admin-border rounded-xl px-4 py-3 text-admin-text focus:border-admin-primary mb-4 outline-none font-medium"
                     placeholder={placeholderText}
                 />
                 <input
+                    name="categoryNameEn"
                     value={nameEn}
                     onChange={(e) => setNameEn(e.target.value)}
                     className="w-full bg-admin-bg border border-admin-border rounded-xl px-4 py-3 text-admin-text focus:border-admin-primary mb-4 outline-none font-medium"
