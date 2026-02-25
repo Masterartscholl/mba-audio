@@ -232,10 +232,42 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             }
         );
 
+        // --- 4. POPUP MESSAGE LISTENER (Wix Iframe Stability) ---
+        const handleMessage = async (event: MessageEvent) => {
+            if (event.data?.type === 'oauth_session') {
+                const { access_token, refresh_token } = event.data;
+                console.log('AuthProvider: Session received from popup, syncing...');
+
+                try {
+                    const { data, error } = await supabase.auth.setSession({
+                        access_token,
+                        refresh_token
+                    });
+
+                    if (!error && data.session) {
+                        setUser(data.session.user);
+                        if (mounted) {
+                            const p = await fetchProfile(data.session.user);
+                            setProfile(p);
+                        }
+                        // Ack to the popup so it can close
+                        if (event.source && 'postMessage' in event.source) {
+                            (event.source as Window).postMessage({ type: 'oauth_session_ack' }, (event.origin as any) || '*');
+                        }
+                    }
+                } catch (e) {
+                    console.error('AuthProvider: Popup session sync failed', e);
+                }
+            }
+        };
+
+        window.addEventListener('message', handleMessage);
+
         return () => {
             mounted = false;
             clearTimeout(timer);
             subscription.unsubscribe();
+            window.removeEventListener('message', handleMessage);
         };
     }, []); // Run only ONCE on mount
 

@@ -65,39 +65,57 @@ export default function LoginPage() {
     setLoading(true);
     setError(null);
     try {
-      // If inside an iframe (e.g. Wix), open a popup instead of redirecting the top window.
-      // Modifying window.top can break Safari ITP and partitioned cookies.
-      // A popup solves this cleanly by moving the authentication flow out of the iframe
-      // and then transmitting the credentials back via postMessage.
-      if (typeof window !== 'undefined' && window.self !== window.top && !searchParams.get('popup')) {
-        setLoading(true);
-        // Direct TOP window redirect instead of popup to fulfill "same tab" request
-        // We redirect the main Wix page to our verify flow which then returns to Wix with tokens
-        const redirectUri = `${window.location.origin}/auth/verify?next=${encodeURIComponent('https://www.muzikburada.net/muzikbank')}`;
+      const isIframe = typeof window !== 'undefined' && window.self !== window.top;
+      const isMobile = typeof navigator !== 'undefined' && /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
 
-        const { data, error: oauthError } = await supabase.auth.signInWithOAuth({
-          provider: 'google',
-          options: {
-            redirectTo: redirectUri,
-            skipBrowserRedirect: true
+      // FOR IFRAME (WIX): Use Popup strategy on Mobile, Top-Redirect on Desktop
+      if (isIframe && !searchParams.get('popup')) {
+        if (isMobile) {
+          console.log('LoginPage: Mobile Iframe detected, opening popup for OAuth...');
+          // Open a popup to our own login page with popup=1 and auto=google
+          // This ensures the OAuth flow happens in a top-level context that can talk back to this iframe via postMessage
+          const popupUrl = `${window.location.origin}/login?popup=1&auto=google`;
+          const width = 500;
+          const height = 650;
+          const left = window.screenX + (window.outerWidth - width) / 2;
+          const top = window.screenY + (window.outerHeight - height) / 2;
+
+          const popup = window.open(
+            popupUrl,
+            'muzikbank_auth',
+            `width=${width},height=${height},left=${left},top=${top},status=no,menubar=no,toolbar=no`
+          );
+
+          if (!popup || popup.closed || typeof popup.closed === 'undefined') {
+            setError(t('popupBlocked') || 'Lütfen açılır pencerelere izin verin.');
+            setLoading(false);
+          } else {
+            // The popup will be handled by verify/page.tsx which sends a message.
+            // Our AuthContext is already listening. We just wait.
+            // If the popup closes without success, we'll hit this timeout or the user will try again.
+            const checkPopup = setInterval(() => {
+              if (popup.closed) {
+                clearInterval(checkPopup);
+                setLoading(false);
+              }
+            }, 1000);
           }
-        });
-
-        if (oauthError) {
-          setError(oauthError.message);
-          setLoading(false);
+          return;
+        } else {
+          // DESKTOP IFRAME: Top-Redirect is usually fine and more seamless
+          const redirectUri = `${window.location.origin}/auth/verify?next=${encodeURIComponent('https://www.muzikburada.net/muzikbank')}`;
+          const { data, error: oauthError } = await supabase.auth.signInWithOAuth({
+            provider: 'google',
+            options: { redirectTo: redirectUri, skipBrowserRedirect: true }
+          });
+          if (oauthError) throw oauthError;
+          if (data?.url) window.top!.location.href = data.url;
           return;
         }
-
-        if (data?.url) {
-          window.top!.location.href = data.url;
-        }
-        return;
       }
 
+      // STANDARD / POPUP FLOW
       const popupParam = searchParams.get('popup') === '1';
-      // Use /auth/verify (Client Component) instead of /auth/callback (Server Route)
-      // to ensure the session exchange happens in the client-side context for localStorage persistence.
       const redirectTarget = `${window.location.origin}/auth/verify?next=${popupParam ? 'popup' : encodeURIComponent(returnUrl)}`;
 
       const { error: err } = await supabase.auth.signInWithOAuth({

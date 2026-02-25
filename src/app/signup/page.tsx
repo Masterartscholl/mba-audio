@@ -32,7 +32,7 @@ export default function SignupPage() {
         password,
         options: {
           data: { full_name: fullName.trim() || undefined },
-          emailRedirectTo: `${window.location.origin}${returnUrl ? `?returnUrl=${encodeURIComponent(returnUrl)}` : ''}`,
+          emailRedirectTo: `${window.location.origin}/auth/verify?next=${encodeURIComponent('https://www.muzikburada.net/muzikbank')}`,
         },
       });
       if (err) throw err;
@@ -57,15 +57,59 @@ export default function SignupPage() {
     setLoading(true);
     setError(null);
     try {
+      const isIframe = typeof window !== 'undefined' && window.self !== window.top;
+      const isMobile = typeof navigator !== 'undefined' && /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+
+      // FOR IFRAME (WIX): Use Popup strategy on Mobile, Top-Redirect on Desktop
+      if (isIframe && !searchParams.get('popup')) {
+        if (isMobile) {
+          console.log('SignupPage: Mobile Iframe detected, opening popup for OAuth...');
+          const popupUrl = `${window.location.origin}/login?popup=1&auto=google`;
+          const width = 500;
+          const height = 650;
+          const left = window.screenX + (window.outerWidth - width) / 2;
+          const top = window.screenY + (window.outerHeight - height) / 2;
+
+          const popup = window.open(
+            popupUrl,
+            'muzikbank_auth',
+            `width=${width},height=${height},left=${left},top=${top},status=no,menubar=no,toolbar=no`
+          );
+
+          if (!popup || popup.closed || typeof popup.closed === 'undefined') {
+            setError(t('popupBlocked') || 'Lütfen açılır pencerelere izin verin.');
+            setLoading(false);
+          } else {
+            const checkPopup = setInterval(() => {
+              if (popup.closed) {
+                clearInterval(checkPopup);
+                setLoading(false);
+              }
+            }, 1000);
+          }
+          return;
+        } else {
+          // DESKTOP IFRAME: Top-Redirect
+          const redirectUri = `${window.location.origin}/auth/verify?next=${encodeURIComponent('https://www.muzikburada.net/muzikbank')}`;
+          const { data, error: oauthError } = await supabase.auth.signInWithOAuth({
+            provider: 'google',
+            options: { redirectTo: redirectUri, skipBrowserRedirect: true }
+          });
+          if (oauthError) throw oauthError;
+          if (data?.url) window.top!.location.href = data.url;
+          return;
+        }
+      }
+
       const { error: err } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
-          redirectTo: `${window.location.origin}/auth/callback?next=${encodeURIComponent(returnUrl)}`,
+          redirectTo: `${window.location.origin}/auth/verify?next=${encodeURIComponent(returnUrl)}`,
         },
       });
       if (err) throw err;
     } catch (err: unknown) {
-      setError(err instanceof Error ? err.message : 'Google ile giriş yapılamadı.');
+      setError(err instanceof Error ? err.message : t('loginGoogleError') || 'Google ile giriş yapılamadı.');
     } finally {
       setLoading(false);
     }
