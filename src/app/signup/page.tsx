@@ -27,7 +27,7 @@ export default function SignupPage() {
     setLoading(true);
     setError(null);
     try {
-      const { error: err } = await supabase.auth.signUp({
+      const { data: signUpData, error: err } = await supabase.auth.signUp({
         email,
         password,
         options: {
@@ -36,13 +36,26 @@ export default function SignupPage() {
         },
       });
       if (err) throw err;
-      const { data: { user } } = await supabase.auth.getUser();
+
+      const user = signUpData.user;
+      const session = signUpData.session;
+
       if (user) {
         await supabase
           .from('profiles')
           .update({ full_name: fullName.trim() || null })
           .eq('id', user.id);
-        router.push(returnUrl);
+
+        // Handle Iframe session transfer
+        if (typeof window !== 'undefined' && window.self !== window.top && session) {
+          const at = session.access_token;
+          const rt = session.refresh_token;
+          const targetUrl = new URL(returnUrl, window.location.origin);
+          targetUrl.hash = `access_token=${at}&refresh_token=${rt}`;
+          window.location.replace(targetUrl.toString());
+        } else {
+          router.push(returnUrl);
+        }
       } else {
         router.push(`/login?returnUrl=${encodeURIComponent(returnUrl)}&message=confirm_email`);
       }

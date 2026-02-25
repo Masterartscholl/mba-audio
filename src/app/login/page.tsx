@@ -44,13 +44,23 @@ export default function LoginPage() {
     setError(null);
     setResetMessage(null);
     try {
-      const { error: err } = await supabase.auth.signInWithPassword({ email, password });
+      const { data, error: err } = await supabase.auth.signInWithPassword({ email, password });
       if (err) throw err;
 
-      // If inside an iframe, a full page reload or location replace is safer
-      // than router.push for ensuring the session is picked up.
+      // If inside an iframe, pass tokens in the hash to ensure AuthContext picks them up
+      // even if third-party cookies/storage are blocked (common on mobile).
       if (typeof window !== 'undefined' && window.self !== window.top) {
-        window.location.replace(returnUrl);
+        const session = data.session;
+        if (session) {
+          const at = session.access_token;
+          const rt = session.refresh_token;
+          const targetUrl = new URL(returnUrl, window.location.origin);
+          // Use hash for tokens to keep them out of server logs and allow client-side extraction
+          targetUrl.hash = `access_token=${at}&refresh_token=${rt}`;
+          window.location.replace(targetUrl.toString());
+        } else {
+          window.location.replace(returnUrl);
+        }
       } else {
         router.push(returnUrl);
       }
