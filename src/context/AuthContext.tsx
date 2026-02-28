@@ -60,13 +60,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
             // Start new fetch
             const fetchPromise = (async () => {
+                let timeoutId: any;
+
                 // Add a race against a timeout to prevent hanging the whole app
-                const timeoutPromise = new Promise<null>((resolve) =>
-                    setTimeout(() => {
+                const timeoutPromise = new Promise<null>((resolve) => {
+                    timeoutId = setTimeout(() => {
                         console.warn('AuthProvider: Profile fetch timed out (8s)');
                         resolve(null);
-                    }, 8000)
-                );
+                    }, 8000);
+                });
 
                 const dbPromise = (async () => {
                     try {
@@ -95,7 +97,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
                 })();
 
                 try {
-                    return await Promise.race([dbPromise, timeoutPromise]);
+                    const result = await Promise.race([dbPromise, timeoutPromise]);
+                    clearTimeout(timeoutId);
+                    return result;
                 } finally {
                     delete pendingFetches[u.id];
                 }
