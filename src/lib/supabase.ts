@@ -12,39 +12,34 @@ if (typeof window !== 'undefined') {
   }
 }
 
+// Memory storage fallback for restricted environments (Wix iframes with disabled storage)
+const memoryStorage = new Map<string, string>();
+
 // Custom storage manager for iframe/restricted environments
 const customStorage = typeof window !== 'undefined' ? {
   getItem: (key: string) => {
     try {
-      return window.localStorage.getItem(key);
+      const val = window.sessionStorage.getItem(key);
+      if (val !== null) return val;
+      return memoryStorage.get(key) || null;
     } catch {
-      try {
-        return window.sessionStorage.getItem(key);
-      } catch {
-        return null;
-      }
+      return memoryStorage.get(key) || null;
     }
   },
   setItem: (key: string, value: string) => {
     try {
-      window.localStorage.setItem(key, value);
+      window.sessionStorage.setItem(key, value);
     } catch {
-      try {
-        window.sessionStorage.setItem(key, value);
-      } catch {
-        // Silent fail
-      }
+      // Fallback to memory
+      memoryStorage.set(key, value);
     }
   },
   removeItem: (key: string) => {
     try {
-      window.localStorage.removeItem(key);
+      window.sessionStorage.removeItem(key);
     } catch {
-      try {
-        window.sessionStorage.removeItem(key);
-      } catch {
-        // Silent fail
-      }
+      // Fallback to memory
+      memoryStorage.delete(key);
     }
   }
 } : undefined;

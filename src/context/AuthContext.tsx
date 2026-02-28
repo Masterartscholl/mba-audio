@@ -275,6 +275,19 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             }, 2000);
         };
 
+        // 0. QUICK CHECK: Try to get session immediately on mount
+        supabase.auth.getSession().then(({ data: { session } }) => {
+            if (mounted && session?.user) {
+                const u = session.user;
+                console.log('AuthProvider: Session found on mount:', u.id);
+                setUser(u);
+                fetchProfile(u).then(p => {
+                    if (mounted) setProfile(p);
+                });
+                fetchPurchasedTracks(u);
+            }
+        });
+
         load();
 
         const { data: { subscription } } = supabase.auth.onAuthStateChange(
