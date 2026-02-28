@@ -53,7 +53,8 @@ export default function ResetPasswordPage() {
             });
             if (error) throw error;
             toast.success(t('passwordChanged'));
-            router.push('/');
+            // Redirect to the Wix-hosted MüzikBank page after successful reset
+            window.location.href = 'https://www.muzikburada.net/muzikbank';
         } catch (err: any) {
             toast.error(err.message || t('settingsError'));
         } finally {

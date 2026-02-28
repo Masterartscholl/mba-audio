@@ -21,7 +21,7 @@ interface TrackListProps {
 export const TrackList: React.FC<TrackListProps> = ({ filters, currency, selectedCategoryName }) => {
     const t = useTranslations('App');
     const { query: searchQuery } = useSearch();
-    const { user } = useAuth();
+    const { user, loading: authLoading } = useAuth();
     const [tracks, setTracks] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
@@ -39,9 +39,11 @@ export const TrackList: React.FC<TrackListProps> = ({ filters, currency, selecte
     const purchasedCacheRef = useRef<{ value: number[] | null }>({ value: null });
     const retryCountRef = useRef(0);
 
-    // Load purchased IDs from localStorage immediately for instant display
+
+    // Load purchased IDs from localStorage immediately on mount — no user check needed.
+    // This ensures purchased tracks show instantly even if auth is slow or blocked (Wix iframe).
     useEffect(() => {
-        if (typeof window !== 'undefined' && user) {
+        if (typeof window !== 'undefined') {
             const cached = localStorage.getItem('mba_purchased_ids');
             if (cached) {
                 try {
@@ -56,11 +58,15 @@ export const TrackList: React.FC<TrackListProps> = ({ filters, currency, selecte
     }, []); // Run once on mount
 
     useEffect(() => {
+        // Don't do anything while auth is still loading — user might become non-null soon
+        if (authLoading) return;
+
         const fetchPurchased = async () => {
             if (user) {
-                if (purchasedCacheRef.current.value) {
+                // If we already have cached data (from localStorage or a previous fetch), use it
+                if (purchasedCacheRef.current.value && purchasedCacheRef.current.value.length > 0) {
                     setPurchasedTrackIds(purchasedCacheRef.current.value);
-                    return;
+                    // Still re-verify in background without blocking
                 }
 
                 try {
@@ -84,13 +90,16 @@ export const TrackList: React.FC<TrackListProps> = ({ filters, currency, selecte
                     }
                 } catch (err) {
                     console.error('Failed to fetch purchased tracks:', err);
-                    purchasedCacheRef.current.value = [];
-                    setPurchasedTrackIds([]);
+                    // Don't reset to empty if we have cached data
+                    if (!purchasedCacheRef.current.value || purchasedCacheRef.current.value.length === 0) {
+                        purchasedCacheRef.current.value = [];
+                        setPurchasedTrackIds([]);
+                    }
                 }
             } else {
+                // User is confirmed null (not just loading) — this is a real logout
                 setPurchasedTrackIds([]);
                 purchasedCacheRef.current.value = null;
-                // Clear localStorage when logged out
                 if (typeof window !== 'undefined') {
                     localStorage.removeItem('mba_purchased_ids');
                 }
@@ -98,7 +107,7 @@ export const TrackList: React.FC<TrackListProps> = ({ filters, currency, selecte
         };
 
         fetchPurchased();
-    }, [user]);
+    }, [user, authLoading]);
 
     const fetchTracks = useCallback(async () => {
         try {
