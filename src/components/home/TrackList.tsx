@@ -37,9 +37,6 @@ export const TrackList: React.FC<TrackListProps> = ({ filters, currency, selecte
 
     const retryCountRef = useRef(0);
 
-
-
-
     const fetchTracks = useCallback(async () => {
         try {
             setLoading(true);

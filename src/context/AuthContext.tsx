@@ -81,6 +81,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
                             .eq('id', u.id)
                             .single();
 
+                        // Clear the timeout as soon as the database responds
+                        if (timeoutId) clearTimeout(timeoutId);
+
                         if (error) {
                             console.error(`AuthProvider: Profile fetch error (Status: ${status})`, error);
                             if (status === 401) {
@@ -93,15 +96,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
                         profileCache[u.id] = p || null;
                         return p || null;
                     } catch (err) {
+                        if (timeoutId) clearTimeout(timeoutId);
                         console.error(`AuthProvider: Profile fetch catch block for ${u.id}`, err);
                         return null;
                     }
                 })();
 
                 try {
-                    const result = await Promise.race([dbPromise, timeoutPromise]);
-                    clearTimeout(timeoutId);
-                    return result;
+                    return await Promise.race([dbPromise, timeoutPromise]);
                 } finally {
                     delete pendingFetches[u.id];
                 }
@@ -255,18 +257,21 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             async (event, session) => {
                 if (!mounted) return;
 
+                console.log(`AuthProvider: onAuthStateChange event: ${event}`);
                 const u = session?.user ?? null;
-                setUser(u);
 
                 if (u) {
+                    setUser(u);
                     const p = await fetchProfile(u);
                     if (mounted) setProfile(p);
                     fetchPurchasedTracks(u);
-                } else {
+                } else if (event === 'SIGNED_OUT') {
+                    // Only clear the user state on an explicit SIGNED_OUT event.
+                    // This prevents losing the "Sync User" session in iframes during transient states.
+                    setUser(null);
                     setProfile(null);
                     setPurchasedTrackIds([]);
                     localStorage.removeItem('mba_purchased_ids');
-                    // Clear cache on logout
                     profileCache = {};
                 }
 
