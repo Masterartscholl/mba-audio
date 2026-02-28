@@ -16,7 +16,7 @@ export const supabase = createBrowserClient(supabaseUrl, supabaseAnonKey, {
   auth: {
     persistSession: true,
     autoRefreshToken: true,
-    detectSessionInUrl: true,
+    detectSessionInUrl: false,
     flowType: 'pkce',
     storageKey: 'muzikbank-auth-token',
     storage: typeof window !== 'undefined' ? window.localStorage : undefined,

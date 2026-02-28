@@ -164,12 +164,13 @@ export default function LoginPage() {
     }
     setResetLoading(true);
     try {
-      const currentOrigin = window.location.origin;
-      const isMuzikBurada = currentOrigin.includes('muzikburada.net');
-      const basePath = isMuzikBurada ? '/muzikbank' : '';
+      // Always redirect through the actual Next.js app (Vercel) for auth flows.
+      // Wix only has the /muzikbank parent page (iframe embed) — sub-routes like
+      // /auth/callback don't exist on Wix, so redirecting through muzikburada.net fails.
+      const appOrigin = process.env.NEXT_PUBLIC_SITE_URL || window.location.origin;
 
       const { error: err } = await supabase.auth.resetPasswordForEmail(email, {
-        redirectTo: `${currentOrigin}${basePath}/auth/callback?next=${encodeURIComponent('/reset-password')}`,
+        redirectTo: `${appOrigin}/auth/callback?next=${encodeURIComponent('/reset-password')}`,
       });
       if (err) throw err;
       setResetMessage(t('forgotPasswordEmailSent'));

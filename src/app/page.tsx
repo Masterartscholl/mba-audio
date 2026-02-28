@@ -16,26 +16,6 @@ export default function Home() {
   const closeMobileSidebar = React.useCallback(() => setIsMobileSidebarOpen(false), []);
 
   useEffect(() => {
-    // Auth redirect handler: if we landed here with a code but no session was processed
-    // (e.g. Supabase dashboard default redirect), forward to the callback handler.
-    if (typeof window !== 'undefined') {
-      const searchParams = new URLSearchParams(window.location.search);
-      if (searchParams.has('code')) {
-        const currentOrigin = window.location.origin;
-        const isMuzikBurada = currentOrigin.includes('muzikburada.net');
-        const basePath = isMuzikBurada ? '/muzikbank' : '';
-
-        // If it's likely a password reset or email confirm flow, send to callback
-        const callbackUrl = new URL(`${currentOrigin}${basePath}/auth/callback${window.location.search}`);
-        // If not specific next, default to reset-password to be safe for this specific issue
-        if (!callbackUrl.searchParams.has('next')) {
-          callbackUrl.searchParams.set('next', '/reset-password');
-        }
-        window.location.replace(callbackUrl.toString());
-        return;
-      }
-    }
-
     fetchSettings();
   }, []);
 

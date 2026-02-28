@@ -167,19 +167,19 @@ export const TrackRow: React.FC<TrackRowProps> = ({ track, currency, queue, purc
                     </button>
 
                     {isPurchased ? (
-                        <div className="w-full flex flex-col items-end gap-1.5">
-                            <span className="text-[10px] font-black text-emerald-500 uppercase tracking-widest flex items-center gap-1.5 mb-0.5">
-                                <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <div className="flex flex-col items-end gap-1">
+                            <span className="text-[10px] font-black text-emerald-500 uppercase tracking-widest flex items-center gap-1">
+                                <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M5 13l4 4L19 7" />
                                 </svg>
                                 {t('purchased') || 'Satın Alındı'}
                             </span>
                             <Link
                                 href="/library"
-                                className="w-full px-4 py-2 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-[10px] font-black text-emerald-500 uppercase tracking-widest hover:bg-emerald-500/20 transition-all text-center flex items-center justify-center gap-1.5"
+                                className="px-3 py-1 rounded-lg bg-emerald-500/10 border border-emerald-500/20 text-[9px] font-black text-emerald-500 uppercase tracking-wider hover:bg-emerald-500/20 transition-all text-center flex items-center gap-1"
                             >
-                                <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 24 24"><path d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z" /></svg>
-                                {t('downloadInLibrary') || 'Kütüphaneye Git'}
+                                <svg className="w-2.5 h-2.5" fill="currentColor" viewBox="0 0 24 24"><path d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z" /></svg>
+                                {t('goToLibrary') || 'Kütüphane'}
                             </Link>
                         </div>
                     ) : (
@@ -216,19 +216,19 @@ export const TrackRow: React.FC<TrackRowProps> = ({ track, currency, queue, purc
                     </button>
 
                     {isPurchased ? (
-                        <div className="flex flex-col items-end gap-1.5 min-w-[140px]">
-                            <span className="text-[10px] font-black text-emerald-500 uppercase tracking-widest flex items-center gap-1.5">
-                                <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <div className="flex flex-col items-end gap-1">
+                            <span className="text-[10px] font-black text-emerald-500 uppercase tracking-widest flex items-center gap-1">
+                                <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M5 13l4 4L19 7" />
                                 </svg>
                                 {t('purchased') || 'Satın Alındı'}
                             </span>
                             <Link
                                 href="/library"
-                                className="px-4 py-1.5 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-[10px] font-black text-emerald-500 uppercase tracking-widest hover:bg-emerald-500/20 transition-all whitespace-nowrap flex items-center gap-1.5"
+                                className="px-3 py-1 rounded-lg bg-emerald-500/10 border border-emerald-500/20 text-[9px] font-black text-emerald-500 uppercase tracking-wider hover:bg-emerald-500/20 transition-all whitespace-nowrap flex items-center gap-1"
                             >
-                                <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 24 24"><path d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z" /></svg>
-                                {t('downloadInLibrary') || 'Kütüphaneye Git'}
+                                <svg className="w-2.5 h-2.5" fill="currentColor" viewBox="0 0 24 24"><path d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z" /></svg>
+                                {t('goToLibrary') || 'Kütüphane'}
                             </Link>
                         </div>
                     ) : (

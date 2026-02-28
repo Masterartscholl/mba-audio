@@ -39,6 +39,22 @@ export const TrackList: React.FC<TrackListProps> = ({ filters, currency, selecte
     const purchasedCacheRef = useRef<{ value: number[] | null }>({ value: null });
     const retryCountRef = useRef(0);
 
+    // Load purchased IDs from localStorage immediately for instant display
+    useEffect(() => {
+        if (typeof window !== 'undefined' && user) {
+            const cached = localStorage.getItem('mba_purchased_ids');
+            if (cached) {
+                try {
+                    const ids = JSON.parse(cached);
+                    if (Array.isArray(ids) && ids.length > 0) {
+                        setPurchasedTrackIds(ids);
+                        purchasedCacheRef.current.value = ids;
+                    }
+                } catch (e) { /* ignore */ }
+            }
+        }
+    }, []); // Run once on mount
+
     useEffect(() => {
         const fetchPurchased = async () => {
             if (user) {
@@ -61,6 +77,11 @@ export const TrackList: React.FC<TrackListProps> = ({ filters, currency, selecte
                     const ids = Array.isArray(data?.trackIds) ? data.trackIds : [];
                     purchasedCacheRef.current.value = ids;
                     setPurchasedTrackIds(ids);
+
+                    // Persist to localStorage for instant display on next page load
+                    if (typeof window !== 'undefined') {
+                        localStorage.setItem('mba_purchased_ids', JSON.stringify(ids));
+                    }
                 } catch (err) {
                     console.error('Failed to fetch purchased tracks:', err);
                     purchasedCacheRef.current.value = [];
@@ -69,6 +90,10 @@ export const TrackList: React.FC<TrackListProps> = ({ filters, currency, selecte
             } else {
                 setPurchasedTrackIds([]);
                 purchasedCacheRef.current.value = null;
+                // Clear localStorage when logged out
+                if (typeof window !== 'undefined') {
+                    localStorage.removeItem('mba_purchased_ids');
+                }
             }
         };
 
