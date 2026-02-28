@@ -30,7 +30,20 @@ export const TrackRow: React.FC<TrackRowProps> = ({ track, currency, queue }) =>
     const isActive = currentTrack?.id === track.id;
     const isLoading = loadingTrackId === track.id;
     const fav = isFavorite(track.id);
-    const isPurchased = purchasedTrackIds.includes(Number(track.id));
+    const isPurchased = React.useMemo(() => {
+        if (!purchasedTrackIds || purchasedTrackIds.length === 0) return false;
+        const targetId = String(track.id);
+        return purchasedTrackIds.some(pid => String(pid) === targetId);
+    }, [purchasedTrackIds, track.id]);
+
+    // Log for checking purchase status
+    React.useEffect(() => {
+        if (user && purchasedTrackIds.length > 0) {
+            if (isPurchased) {
+                console.log(`TrackRow: Track ${track.id} (${track.title}) is PURCHASED!`);
+            }
+        }
+    }, [user, purchasedTrackIds, isPurchased, track.id, track.title]);
 
     const requireLogin = (action: () => void, message: string) => {
         if (!user) {

@@ -133,8 +133,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
                 const res = await fetch('/api/me/purchased-track-ids', { headers });
                 const data = await res.json();
                 if (data.trackIds && Array.isArray(data.trackIds)) {
-                    setPurchasedTrackIds(data.trackIds);
-                    localStorage.setItem('mba_purchased_ids', JSON.stringify(data.trackIds));
+                    const ids = data.trackIds.map((id: any) => Number(id)).filter((id: any) => !isNaN(id));
+                    console.log(`AuthProvider: USER ${u.id} has ${ids.length} purchased tracks. IDs:`, ids);
+                    setPurchasedTrackIds(ids);
+                    localStorage.setItem('mba_purchased_ids', JSON.stringify(ids));
+                } else {
+                    console.warn('AuthProvider: API returned no trackIds or invalid format', data);
                 }
             } catch (err) {
                 console.error('AuthProvider: Failed to fetch purchased tracks', err);
