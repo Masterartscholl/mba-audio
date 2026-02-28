@@ -112,17 +112,21 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             return fetchPromise;
         };
 
-        const fetchPurchasedTracks = async (u: User) => {
+        const fetchPurchasedTracks = async (u: User, retryCount = 0) => {
+            if (!u) return;
+
             try {
-                // Load from localStorage first for instant display
-                const cached = localStorage.getItem('mba_purchased_ids');
-                if (cached) {
-                    try {
-                        const ids = JSON.parse(cached);
-                        if (Array.isArray(ids)) {
-                            setPurchasedTrackIds(ids);
-                        }
-                    } catch (e) { /* ignore */ }
+                // Load from localStorage first for instant display (only on first try)
+                if (retryCount === 0) {
+                    const cached = localStorage.getItem('mba_purchased_ids');
+                    if (cached) {
+                        try {
+                            const ids = JSON.parse(cached);
+                            if (Array.isArray(ids)) {
+                                setPurchasedTrackIds(ids);
+                            }
+                        } catch (e) { /* ignore */ }
+                    }
                 }
 
                 const { data: { session } } = await supabase.auth.getSession();
@@ -132,16 +136,31 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
                 const res = await fetch('/api/me/purchased-track-ids', { headers });
                 const data = await res.json();
-                if (data.trackIds && Array.isArray(data.trackIds)) {
+
+                if (data.trackIds && Array.isArray(data.trackIds) && data.trackIds.length > 0) {
                     const ids = data.trackIds.map((id: any) => Number(id)).filter((id: any) => !isNaN(id));
                     console.log(`AuthProvider: USER ${u.id} has ${ids.length} purchased tracks. IDs:`, ids);
                     setPurchasedTrackIds(ids);
                     localStorage.setItem('mba_purchased_ids', JSON.stringify(ids));
                 } else {
-                    console.warn('AuthProvider: API returned no trackIds or invalid format', data);
+                    // If empty or null, retry up to 3 times
+                    if (retryCount < 3) {
+                        console.log(`AuthProvider: Purchased tracks empty, retrying (${retryCount + 1}/3) in 3s...`);
+                        setTimeout(() => fetchPurchasedTracks(u, retryCount + 1), 3000);
+                    } else {
+                        console.warn('AuthProvider: API returned no trackIds after 3 retries', data);
+                        // Only clear if we're sure (after all retries)
+                        if (data.trackIds && Array.isArray(data.trackIds)) {
+                            setPurchasedTrackIds([]);
+                            localStorage.setItem('mba_purchased_ids', JSON.stringify([]));
+                        }
+                    }
                 }
             } catch (err) {
                 console.error('AuthProvider: Failed to fetch purchased tracks', err);
+                if (retryCount < 3) {
+                    setTimeout(() => fetchPurchasedTracks(u, retryCount + 1), 3000);
+                }
             }
         };
 
@@ -209,6 +228,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
                             if (mounted) setProfile(p);
                         });
 
+                        // Initial check for purchased tracks
                         fetchPurchasedTracks(u);
 
                         supabase.auth.getUser().then(({ data: { user: verifiedUser } }) => {
@@ -266,9 +286,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
                 if (u) {
                     setUser(u);
-                    const p = await fetchProfile(u);
-                    if (mounted) setProfile(p);
-                    fetchPurchasedTracks(u);
+
+                    // Fetch profile and purchased tracks separately
+                    fetchProfile(u).then(p => {
+                        if (mounted) setProfile(p);
+                    });
+
+                    // Trigger purchased tracks fetch on specific events or if user exists
+                    if (event === 'SIGNED_IN' || event === 'INITIAL_SESSION' || event === 'TOKEN_REFRESHED') {
+                        fetchPurchasedTracks(u);
+                    }
                 } else if (event === 'SIGNED_OUT') {
                     // Only clear the user state on an explicit SIGNED_OUT event.
                     // This prevents losing the "Sync User" session in iframes during transient states.
