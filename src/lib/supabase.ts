@@ -12,6 +12,43 @@ if (typeof window !== 'undefined') {
   }
 }
 
+// Custom storage manager for iframe/restricted environments
+const customStorage = typeof window !== 'undefined' ? {
+  getItem: (key: string) => {
+    try {
+      return window.localStorage.getItem(key);
+    } catch {
+      try {
+        return window.sessionStorage.getItem(key);
+      } catch {
+        return null;
+      }
+    }
+  },
+  setItem: (key: string, value: string) => {
+    try {
+      window.localStorage.setItem(key, value);
+    } catch {
+      try {
+        window.sessionStorage.setItem(key, value);
+      } catch {
+        // Silent fail
+      }
+    }
+  },
+  removeItem: (key: string) => {
+    try {
+      window.localStorage.removeItem(key);
+    } catch {
+      try {
+        window.sessionStorage.removeItem(key);
+      } catch {
+        // Silent fail
+      }
+    }
+  }
+} : undefined;
+
 export const supabase = createBrowserClient(supabaseUrl, supabaseAnonKey, {
   auth: {
     persistSession: true,
@@ -19,13 +56,7 @@ export const supabase = createBrowserClient(supabaseUrl, supabaseAnonKey, {
     detectSessionInUrl: false,
     flowType: 'pkce',
     storageKey: 'muzikbank-auth-token',
-    storage: typeof window !== 'undefined' ? window.localStorage : undefined,
-  },
-  cookieOptions: {
-    name: 'sb-auth-token',
-    sameSite: 'none',
-    secure: true,
-    path: '/',
-    maxAge: 60 * 60 * 24 * 7,
+    storage: customStorage,
   }
 })
+
