@@ -27,7 +27,6 @@ export const TrackList: React.FC<TrackListProps> = ({ filters, currency, selecte
     const [error, setError] = useState<string | null>(null);
     const [totalCount, setTotalCount] = useState(0);
     const [sortBy, setSortBy] = useState<SortOption>('newest');
-    const [purchasedTrackIds, setPurchasedTrackIds] = useState<number[]>([]);
 
     const [currentPage, setCurrentPage] = useState(1);
     const itemsPerPage = 5;
@@ -36,78 +35,10 @@ export const TrackList: React.FC<TrackListProps> = ({ filters, currency, selecte
         setCurrentPage(1);
     }, [filters, searchQuery, sortBy]);
 
-    const purchasedCacheRef = useRef<{ value: number[] | null }>({ value: null });
     const retryCountRef = useRef(0);
 
 
-    // Load purchased IDs from localStorage immediately on mount — no user check needed.
-    // This ensures purchased tracks show instantly even if auth is slow or blocked (Wix iframe).
-    useEffect(() => {
-        if (typeof window !== 'undefined') {
-            const cached = localStorage.getItem('mba_purchased_ids');
-            if (cached) {
-                try {
-                    const ids = JSON.parse(cached);
-                    if (Array.isArray(ids) && ids.length > 0) {
-                        setPurchasedTrackIds(ids);
-                        purchasedCacheRef.current.value = ids;
-                    }
-                } catch (e) { /* ignore */ }
-            }
-        }
-    }, []); // Run once on mount
 
-    useEffect(() => {
-        // Don't do anything while auth is still loading — user might become non-null soon
-        if (authLoading) return;
-
-        const fetchPurchased = async () => {
-            if (user) {
-                // If we already have cached data (from localStorage or a previous fetch), use it
-                if (purchasedCacheRef.current.value && purchasedCacheRef.current.value.length > 0) {
-                    setPurchasedTrackIds(purchasedCacheRef.current.value);
-                    // Still re-verify in background without blocking
-                }
-
-                try {
-                    // Force get session to ensure we have a token even if cookies are blocked (iframe)
-                    const { data: { session } } = await supabase.auth.getSession();
-                    const token = session?.access_token;
-
-                    const headers: Record<string, string> = {};
-                    if (token) headers['Authorization'] = `Bearer ${token}`;
-
-                    const res = await fetch('/api/me/purchased-track-ids', { headers });
-                    const data = await res.json();
-
-                    const ids = Array.isArray(data?.trackIds) ? data.trackIds : [];
-                    purchasedCacheRef.current.value = ids;
-                    setPurchasedTrackIds(ids);
-
-                    // Persist to localStorage for instant display on next page load
-                    if (typeof window !== 'undefined') {
-                        localStorage.setItem('mba_purchased_ids', JSON.stringify(ids));
-                    }
-                } catch (err) {
-                    console.error('Failed to fetch purchased tracks:', err);
-                    // Don't reset to empty if we have cached data
-                    if (!purchasedCacheRef.current.value || purchasedCacheRef.current.value.length === 0) {
-                        purchasedCacheRef.current.value = [];
-                        setPurchasedTrackIds([]);
-                    }
-                }
-            } else {
-                // User is confirmed null (not just loading) — this is a real logout
-                setPurchasedTrackIds([]);
-                purchasedCacheRef.current.value = null;
-                if (typeof window !== 'undefined') {
-                    localStorage.removeItem('mba_purchased_ids');
-                }
-            }
-        };
-
-        fetchPurchased();
-    }, [user, authLoading]);
 
     const fetchTracks = useCallback(async () => {
         try {
@@ -346,7 +277,7 @@ export const TrackList: React.FC<TrackListProps> = ({ filters, currency, selecte
             <div className="flex-1">
                 {visibleTracks.length > 0 ? (
                     visibleTracks.map(track => (
-                        <TrackRow key={track.id} track={track} currency={currency} queue={visibleTracks} purchasedTrackIds={purchasedTrackIds} />
+                        <TrackRow key={track.id} track={track} currency={currency} queue={visibleTracks} />
                     ))
                 ) : (
                     <div className="flex flex-col items-center justify-center py-32 text-app-text-muted">

@@ -20,6 +20,7 @@ type AuthContextType = {
     loading: boolean;
     displayName: string;
     avatarUrl: string | null;
+    purchasedTrackIds: number[];
 };
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -31,6 +32,7 @@ let pendingFetches: { [userId: string]: Promise<Profile | null> } = {};
 export function AuthProvider({ children }: { children: ReactNode }) {
     const [user, setUser] = useState<User | null>(null);
     const [profile, setProfile] = useState<Profile | null>(null);
+    const [purchasedTrackIds, setPurchasedTrackIds] = useState<number[]>([]);
     const [loading, setLoading] = useState(true);
     const pathname = usePathname();
 
@@ -105,8 +107,36 @@ export function AuthProvider({ children }: { children: ReactNode }) {
                 }
             })();
 
-            pendingFetches[u.id] = fetchPromise;
             return fetchPromise;
+        };
+
+        const fetchPurchasedTracks = async (u: User) => {
+            try {
+                // Load from localStorage first for instant display
+                const cached = localStorage.getItem('mba_purchased_ids');
+                if (cached) {
+                    try {
+                        const ids = JSON.parse(cached);
+                        if (Array.isArray(ids)) {
+                            setPurchasedTrackIds(ids);
+                        }
+                    } catch (e) { /* ignore */ }
+                }
+
+                const { data: { session } } = await supabase.auth.getSession();
+                const token = session?.access_token;
+                const headers: Record<string, string> = {};
+                if (token) headers['Authorization'] = `Bearer ${token}`;
+
+                const res = await fetch('/api/me/purchased-track-ids', { headers });
+                const data = await res.json();
+                if (data.trackIds && Array.isArray(data.trackIds)) {
+                    setPurchasedTrackIds(data.trackIds);
+                    localStorage.setItem('mba_purchased_ids', JSON.stringify(data.trackIds));
+                }
+            } catch (err) {
+                console.error('AuthProvider: Failed to fetch purchased tracks', err);
+            }
         };
 
         const load = async () => {
@@ -169,10 +199,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
                         setLoading(false);
                         clearTimeout(timer);
 
-                        // Background tasks
                         fetchProfile(u).then(p => {
                             if (mounted) setProfile(p);
                         });
+
+                        fetchPurchasedTracks(u);
 
                         supabase.auth.getUser().then(({ data: { user: verifiedUser } }) => {
                             if (mounted && verifiedUser) setUser(verifiedUser);
@@ -230,8 +261,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
                 if (u) {
                     const p = await fetchProfile(u);
                     if (mounted) setProfile(p);
+                    fetchPurchasedTracks(u);
                 } else {
                     setProfile(null);
+                    setPurchasedTrackIds([]);
+                    localStorage.removeItem('mba_purchased_ids');
                     // Clear cache on logout
                     profileCache = {};
                 }
@@ -253,10 +287,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
                     });
 
                     if (!error && data.session) {
-                        setUser(data.session.user);
                         if (mounted) {
                             const p = await fetchProfile(data.session.user);
                             setProfile(p);
+                            fetchPurchasedTracks(data.session.user);
                         }
                         // Ack to the popup so it can close
                         if (event.source && 'postMessage' in event.source) {
@@ -293,7 +327,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         null;
 
     return (
-        <AuthContext.Provider value={{ user, profile, loading, displayName, avatarUrl }}>
+        <AuthContext.Provider value={{ user, profile, loading, displayName, avatarUrl, purchasedTrackIds }}>
             {children}
         </AuthContext.Provider>
     );

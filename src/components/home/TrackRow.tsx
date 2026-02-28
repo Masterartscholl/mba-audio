@@ -16,15 +16,14 @@ interface TrackRowProps {
     track: any;
     currency: string;
     queue?: any[];
-    purchasedTrackIds?: number[];
 }
 
-export const TrackRow: React.FC<TrackRowProps> = ({ track, currency, queue, purchasedTrackIds = [] }) => {
+export const TrackRow: React.FC<TrackRowProps> = ({ track, currency, queue }) => {
     const t = useTranslations('App');
     const locale = useLocale();
     const pathname = usePathname();
     const router = useRouter();
-    const { user } = useAuth();
+    const { user, purchasedTrackIds = [] } = useAuth();
     const { currentTrack, isPlaying, playTrack, togglePlay, progress, duration, loadingTrackId } = useAudio();
     const { addItem } = useCart();
     const { isFavorite, toggleFavorite } = useFavorites();
