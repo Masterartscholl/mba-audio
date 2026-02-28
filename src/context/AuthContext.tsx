@@ -282,9 +282,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
                 if (!mounted) return;
 
                 console.log(`AuthProvider: onAuthStateChange event: ${event}`);
-                const u = session?.user ?? null;
+                let currentSession = session;
+                if (!currentSession && (event === 'INITIAL_SESSION' || event === 'SIGNED_IN')) {
+                    const { data } = await supabase.auth.getSession();
+                    currentSession = data.session;
+                }
+                const u = currentSession?.user ?? null;
 
                 if (u) {
+                    console.log(`AuthProvider: User found via ${event}, setting state...`);
                     setUser(u);
 
                     // Fetch profile and purchased tracks separately
@@ -292,10 +298,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
                         if (mounted) setProfile(p);
                     });
 
-                    // Trigger purchased tracks fetch on specific events or if user exists
-                    if (event === 'SIGNED_IN' || event === 'INITIAL_SESSION' || event === 'TOKEN_REFRESHED') {
-                        fetchPurchasedTracks(u);
-                    }
+                    fetchPurchasedTracks(u);
                 } else if (event === 'SIGNED_OUT') {
                     // Only clear the user state on an explicit SIGNED_OUT event.
                     // This prevents losing the "Sync User" session in iframes during transient states.
