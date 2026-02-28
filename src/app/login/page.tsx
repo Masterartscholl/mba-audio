@@ -80,11 +80,15 @@ export default function LoginPage() {
 
       // FOR IFRAME (WIX): Use Popup strategy on Mobile, Top-Redirect on Desktop
       if (isIframe && !searchParams.get('popup')) {
+        const currentOrigin = window.location.origin;
+        const isMuzikBurada = currentOrigin.includes('muzikburada.net');
+        const basePath = isMuzikBurada ? '/muzikbank' : '';
+
         if (isMobile) {
           console.log('LoginPage: Mobile Iframe detected, opening popup for OAuth...');
           // Open a popup to our own login page with popup=1 and auto=google
           // This ensures the OAuth flow happens in a top-level context that can talk back to this iframe via postMessage
-          const popupUrl = `${window.location.origin}/login?popup=1&auto=google`;
+          const popupUrl = `${currentOrigin}${basePath}/login?popup=1&auto=google`;
           const width = 500;
           const height = 650;
           const left = window.screenX + (window.outerWidth - width) / 2;
@@ -113,7 +117,11 @@ export default function LoginPage() {
           return;
         } else {
           // DESKTOP IFRAME: Top-Redirect is usually fine and more seamless
-          const redirectUri = `${window.location.origin}/auth/verify?next=${encodeURIComponent('https://www.muzikburada.net/muzikbank')}`;
+          const currentOrigin = window.location.origin;
+          const isMuzikBurada = currentOrigin.includes('muzikburada.net');
+          const basePath = isMuzikBurada ? '/muzikbank' : '';
+
+          const redirectUri = `${currentOrigin}${basePath}/auth/verify?next=${encodeURIComponent('https://www.muzikburada.net/muzikbank')}`;
           const { data, error: oauthError } = await supabase.auth.signInWithOAuth({
             provider: 'google',
             options: { redirectTo: redirectUri, skipBrowserRedirect: true }
@@ -125,8 +133,12 @@ export default function LoginPage() {
       }
 
       // STANDARD / POPUP FLOW
+      const currentOrigin = window.location.origin;
+      const isMuzikBurada = currentOrigin.includes('muzikburada.net');
+      const basePath = isMuzikBurada ? '/muzikbank' : '';
+
       const popupParam = searchParams.get('popup') === '1';
-      const redirectTarget = `${window.location.origin}/auth/verify?next=${popupParam ? 'popup' : encodeURIComponent(returnUrl)}`;
+      const redirectTarget = `${currentOrigin}${basePath}/auth/verify?next=${popupParam ? 'popup' : encodeURIComponent(returnUrl)}`;
 
       const { error: err } = await supabase.auth.signInWithOAuth({
         provider: 'google',
@@ -152,8 +164,12 @@ export default function LoginPage() {
     }
     setResetLoading(true);
     try {
+      const currentOrigin = window.location.origin;
+      const isMuzikBurada = currentOrigin.includes('muzikburada.net');
+      const basePath = isMuzikBurada ? '/muzikbank' : '';
+
       const { error: err } = await supabase.auth.resetPasswordForEmail(email, {
-        redirectTo: `${window.location.origin}/auth/callback?next=${encodeURIComponent('/reset-password')}`,
+        redirectTo: `${currentOrigin}${basePath}/auth/callback?next=${encodeURIComponent('/reset-password')}`,
       });
       if (err) throw err;
       setResetMessage(t('forgotPasswordEmailSent'));

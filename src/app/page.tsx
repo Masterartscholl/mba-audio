@@ -16,20 +16,47 @@ export default function Home() {
   const closeMobileSidebar = React.useCallback(() => setIsMobileSidebarOpen(false), []);
 
   useEffect(() => {
+    // Auth redirect handler: if we landed here with a code but no session was processed
+    // (e.g. Supabase dashboard default redirect), forward to the callback handler.
+    if (typeof window !== 'undefined') {
+      const searchParams = new URLSearchParams(window.location.search);
+      if (searchParams.has('code')) {
+        const currentOrigin = window.location.origin;
+        const isMuzikBurada = currentOrigin.includes('muzikburada.net');
+        const basePath = isMuzikBurada ? '/muzikbank' : '';
+
+        // If it's likely a password reset or email confirm flow, send to callback
+        const callbackUrl = new URL(`${currentOrigin}${basePath}/auth/callback${window.location.search}`);
+        // If not specific next, default to reset-password to be safe for this specific issue
+        if (!callbackUrl.searchParams.has('next')) {
+          callbackUrl.searchParams.set('next', '/reset-password');
+        }
+        window.location.replace(callbackUrl.toString());
+        return;
+      }
+    }
+
     fetchSettings();
   }, []);
 
   const fetchSettings = async () => {
     try {
-      const { data, error } = await supabase
+      // Add a small safety race
+      const fetchPromise = supabase
         .from('settings')
         .select('currency')
         .eq('id', 1)
-        .maybeSingle(); // Use maybeSingle instead of single to avoid 406 errors
+        .maybeSingle();
+
+      const timeoutPromise = new Promise((_, reject) =>
+        setTimeout(() => reject(new Error('timeout')), 5000)
+      );
+
+      const result = await Promise.race([fetchPromise, timeoutPromise]) as any;
+      const { data, error } = result;
 
       if (error) {
         console.warn('Settings fetch error:', error.message);
-        // Keep default currency (TL)
         return;
       }
 
@@ -37,8 +64,7 @@ export default function Home() {
         setCurrency(data.currency);
       }
     } catch (err) {
-      console.warn('Settings fetch failed, using default currency');
-      // Keep default currency (TL)
+      console.warn('Settings fetch failed or timed out, using default currency');
     }
   };
 

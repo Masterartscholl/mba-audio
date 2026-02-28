@@ -40,27 +40,39 @@ export const TrackList: React.FC<TrackListProps> = ({ filters, currency, selecte
     const retryCountRef = useRef(0);
 
     useEffect(() => {
-        if (user) {
-            if (purchasedCacheRef.current.value) {
-                setPurchasedTrackIds(purchasedCacheRef.current.value);
-                return;
-            }
+        const fetchPurchased = async () => {
+            if (user) {
+                if (purchasedCacheRef.current.value) {
+                    setPurchasedTrackIds(purchasedCacheRef.current.value);
+                    return;
+                }
 
-            fetch('/api/me/purchased-track-ids')
-                .then((res) => res.json())
-                .then((data) => {
+                try {
+                    // Force get session to ensure we have a token even if cookies are blocked (iframe)
+                    const { data: { session } } = await supabase.auth.getSession();
+                    const token = session?.access_token;
+
+                    const headers: Record<string, string> = {};
+                    if (token) headers['Authorization'] = `Bearer ${token}`;
+
+                    const res = await fetch('/api/me/purchased-track-ids', { headers });
+                    const data = await res.json();
+
                     const ids = Array.isArray(data?.trackIds) ? data.trackIds : [];
                     purchasedCacheRef.current.value = ids;
                     setPurchasedTrackIds(ids);
-                })
-                .catch(() => {
+                } catch (err) {
+                    console.error('Failed to fetch purchased tracks:', err);
                     purchasedCacheRef.current.value = [];
                     setPurchasedTrackIds([]);
-                });
-        } else {
-            setPurchasedTrackIds([]);
-            purchasedCacheRef.current.value = null;
-        }
+                }
+            } else {
+                setPurchasedTrackIds([]);
+                purchasedCacheRef.current.value = null;
+            }
+        };
+
+        fetchPurchased();
     }, [user]);
 
     const fetchTracks = useCallback(async () => {
@@ -68,11 +80,26 @@ export const TrackList: React.FC<TrackListProps> = ({ filters, currency, selecte
             setLoading(true);
             setError(null);
 
-            // Timeout logic
+            // Fast path: Load from cache
+            if (typeof window !== 'undefined' && !searchQuery) {
+                const cached = localStorage.getItem('mba_tracks_cache');
+                if (cached) {
+                    try {
+                        const parsed = JSON.parse(cached);
+                        setTracks(parsed);
+                        setTotalCount(parsed.length);
+                        setLoading(false);
+                    } catch (e) {
+                        console.warn('Tracks cache parse error', e);
+                    }
+                }
+            }
+
+            // Timeout logic - reduced to 10s for faster failure
             const timeoutId = setTimeout(() => {
-                console.warn('TrackList: tracks fetch timed out (25s)');
+                console.warn('TrackList: tracks fetch timed out (10s)');
                 setLoading(false);
-            }, 25000);
+            }, 10000);
 
             let q = supabase
                 .from('tracks')
@@ -196,6 +223,11 @@ export const TrackList: React.FC<TrackListProps> = ({ filters, currency, selecte
                 setTracks(filtered);
                 setTotalCount(filtered.length);
                 retryCountRef.current = 0;
+
+                // Update cache only if not searching
+                if (typeof window !== 'undefined' && !searchQuery) {
+                    localStorage.setItem('mba_tracks_cache', JSON.stringify(filtered.slice(0, 100)));
+                }
             }
         } catch (err) {
             console.error('Error fetching tracks:', err);

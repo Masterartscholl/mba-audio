@@ -25,34 +25,37 @@ export const CategoryBar: React.FC<CategoryBarProps> = ({ filters, onFilterChang
                 const cached = localStorage.getItem('mba_categories_cache');
                 if (cached) {
                     try {
-                        setCategories(JSON.parse(cached));
-                        // If we have cache, we can keep loading in background quietly
-                        // but for UI, we might want to stop the pulse soon
+                        const parsed = JSON.parse(cached);
+                        setCategories(parsed);
+                        // If we have cache, we can show it immediately and hide the loading state
+                        if (parsed.length > 0) {
+                            setLoading(false);
+                        }
                     } catch (e) {
                         console.warn('Categories cache parse error', e);
                     }
                 }
             }
 
-            // Timeout logic - increased for Wix compatibility
+            // Timeout logic - reduced to 8s for faster failure
             const timeoutId = setTimeout(() => {
-                console.warn('CategoryBar: categories fetch timed out (20s)');
-                setLoading(false);
-            }, 20000);
+                console.warn('CategoryBar: categories fetch timed out (8s)');
+                setLoading(lastLoading => lastLoading ? false : false); // Ensure we stop loading
+            }, 8000);
 
             const { data, error } = await supabase.from('categories').select('id, name, name_en').order('name');
             clearTimeout(timeoutId);
 
-            if (error) {
-                console.error('Categories fetch error:', error);
-            }
             if (data) {
                 const cats = data as { id: number; name: string; name_en?: string }[];
                 setCategories(cats);
+                setLoading(false); // Success, hide spinner
                 // Update cache
                 if (typeof window !== 'undefined') {
                     localStorage.setItem('mba_categories_cache', JSON.stringify(cats));
                 }
+            } else if (error) {
+                console.error('Categories fetch error:', error);
             }
         } catch (err) {
             console.error('Categories fetch failed:', err);

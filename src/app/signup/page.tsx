@@ -27,12 +27,16 @@ export default function SignupPage() {
     setLoading(true);
     setError(null);
     try {
+      const currentOrigin = window.location.origin;
+      const isMuzikBurada = currentOrigin.includes('muzikburada.net');
+      const basePath = isMuzikBurada ? '/muzikbank' : '';
+
       const { data: signUpData, error: err } = await supabase.auth.signUp({
         email,
         password,
         options: {
           data: { full_name: fullName.trim() || undefined },
-          emailRedirectTo: `${window.location.origin}/auth/verify?next=${encodeURIComponent('https://www.muzikburada.net/muzikbank')}`,
+          emailRedirectTo: `${currentOrigin}${basePath}/auth/verify?next=${encodeURIComponent('https://www.muzikburada.net/muzikbank')}`,
         },
       });
       if (err) throw err;
@@ -75,9 +79,13 @@ export default function SignupPage() {
 
       // FOR IFRAME (WIX): Use Popup strategy on Mobile, Top-Redirect on Desktop
       if (isIframe && !searchParams.get('popup')) {
+        const currentOrigin = window.location.origin;
+        const isMuzikBurada = currentOrigin.includes('muzikburada.net');
+        const basePath = isMuzikBurada ? '/muzikbank' : '';
+
         if (isMobile) {
           console.log('SignupPage: Mobile Iframe detected, opening popup for OAuth...');
-          const popupUrl = `${window.location.origin}/login?popup=1&auto=google`;
+          const popupUrl = `${currentOrigin}${basePath}/login?popup=1&auto=google`;
           const width = 500;
           const height = 650;
           const left = window.screenX + (window.outerWidth - width) / 2;
@@ -103,7 +111,11 @@ export default function SignupPage() {
           return;
         } else {
           // DESKTOP IFRAME: Top-Redirect
-          const redirectUri = `${window.location.origin}/auth/verify?next=${encodeURIComponent('https://www.muzikburada.net/muzikbank')}`;
+          const currentOrigin = window.location.origin;
+          const isMuzikBurada = currentOrigin.includes('muzikburada.net');
+          const basePath = isMuzikBurada ? '/muzikbank' : '';
+
+          const redirectUri = `${currentOrigin}${basePath}/auth/verify?next=${encodeURIComponent('https://www.muzikburada.net/muzikbank')}`;
           const { data, error: oauthError } = await supabase.auth.signInWithOAuth({
             provider: 'google',
             options: { redirectTo: redirectUri, skipBrowserRedirect: true }
@@ -114,10 +126,14 @@ export default function SignupPage() {
         }
       }
 
+      const currentOrigin = window.location.origin;
+      const isMuzikBurada = currentOrigin.includes('muzikburada.net');
+      const basePath = isMuzikBurada ? '/muzikbank' : '';
+
       const { error: err } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
-          redirectTo: `${window.location.origin}/auth/verify?next=${encodeURIComponent(returnUrl)}`,
+          redirectTo: `${currentOrigin}${basePath}/auth/verify?next=${encodeURIComponent(returnUrl)}`,
         },
       });
       if (err) throw err;

@@ -10,6 +10,7 @@ import { formatPrice } from '@/utils/format';
 import { ThemeSwitcher } from '@/components/home/ThemeSwitcher';
 import { LanguageSwitcher } from '@/components/home/LanguageSwitcher';
 import logoImg from '@/images/logo.png';
+import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/lib/supabase';
 
 const DEFAULT_LINKS = {
@@ -30,8 +31,29 @@ export default function CheckoutPage() {
     const [billingErrors, setBillingErrors] = useState<{ billingName?: string; billingTcId?: string; billingAddress?: string }>({});
     const [legalLinks, setLegalLinks] = useState<typeof DEFAULT_LINKS>(DEFAULT_LINKS);
     const [isPaymentOpen, setIsPaymentOpen] = useState(false);
+    const [purchasedTrackIds, setPurchasedTrackIds] = useState<number[]>([]);
+
+    const { user, loading: authLoading } = useAuth();
 
     useEffect(() => {
+        const fetchPurchased = async () => {
+            if (user) {
+                try {
+                    const { data: { session } } = await supabase.auth.getSession();
+                    const token = session?.access_token;
+                    const headers: Record<string, string> = {};
+                    if (token) headers['Authorization'] = `Bearer ${token}`;
+
+                    const res = await fetch('/api/me/purchased-track-ids', { headers });
+                    const data = await res.json();
+                    setPurchasedTrackIds(Array.isArray(data?.trackIds) ? data.trackIds : []);
+                } catch (e) {
+                    console.error('Failed to fetch purchased track ids', e);
+                }
+            }
+        };
+        fetchPurchased();
+
         fetch('/api/settings/links')
             .then((res) => res.ok ? res.json() : {})
             .then((data: Record<string, string | null>) => {
@@ -43,7 +65,12 @@ export default function CheckoutPage() {
                 });
             })
             .catch(() => { });
-    }, []);
+    }, [user]);
+
+    // Filter out already purchased tracks from items
+    const purchaseableItems = items.filter(t => !purchasedTrackIds.includes(Number(t.id)));
+    const total = purchaseableItems.reduce((s, t) => s + (t.price ?? 0), 0);
+    const currency = purchaseableItems[0]?.currency || 'TL';
 
     const closePaymentForm = useCallback(() => {
         // Overlay'i kaldır
@@ -116,9 +143,6 @@ export default function CheckoutPage() {
         };
     }, [isPaymentOpen, closePaymentForm]);
 
-    const total = items.reduce((s, t) => s + (t.price ?? 0), 0);
-    const currency = items[0]?.currency || 'TL';
-
     const formatTcId = (v: string) => v.replace(/\D/g, '').slice(0, 11);
 
     /** TC Kimlik No doğrulama (11 hane, resmi algoritma) */
@@ -161,9 +185,7 @@ export default function CheckoutPage() {
         setBillingErrors({});
 
         try {
-            // Get the current session to pass the access token manually
-            // This is required because third-party cookies are blocked in Wix iframes,
-            // so the backend won't receive the session cookie automatically.
+            // Force get session to ensure we have the most current token for the Bearer header
             const { data: { session } } = await supabase.auth.getSession();
             const token = session?.access_token;
 
@@ -179,7 +201,7 @@ export default function CheckoutPage() {
                 method: 'POST',
                 headers,
                 body: JSON.stringify({
-                    items: items.map((t) => t.id),
+                    items: purchaseableItems.map((t) => t.id),
                 }),
             });
 
@@ -203,6 +225,9 @@ export default function CheckoutPage() {
                 });
 
                 // 1) Sayfanın üzerine overlay ve panel oluştur
+                const isIframe = window.self !== window.top;
+                const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+
                 const overlay = document.createElement('div');
                 overlay.id = 'iyzipay-overlay';
                 overlay.style.position = 'fixed';
@@ -210,8 +235,8 @@ export default function CheckoutPage() {
                 overlay.style.background = 'rgba(0,0,0,0.75)';
                 overlay.style.zIndex = '9999';
                 overlay.style.display = 'flex';
-                overlay.style.alignItems = 'center';
-                overlay.style.justifyContent = 'center';
+                overlay.style.alignItems = (isIframe && isMobile) ? 'flex-start' : 'center';
+                overlay.style.justifyContent = (isIframe && isMobile) ? 'flex-start' : 'center';
                 overlay.style.padding = '16px';
                 overlay.style.overflowY = 'auto';
 
@@ -220,7 +245,19 @@ export default function CheckoutPage() {
                 panel.style.borderRadius = '16px';
                 panel.style.maxWidth = '480px';
                 panel.style.width = '100%';
-                panel.style.margin = 'auto';
+                panel.style.margin = (isIframe && isMobile) ? '40px auto' : 'auto';
+
+                // If we are in a huge Wix iframe but on a mobile device, 
+                // centering will hide the form. We should stick it to the left or use a fixed width container.
+                if (isIframe && isMobile && window.innerWidth > 600) {
+                    panel.style.marginLeft = '0';
+                    panel.style.marginRight = '0';
+                    panel.style.position = 'absolute';
+                    panel.style.left = '10px';
+                    panel.style.top = '20px';
+                    panel.style.maxWidth = 'calc(100vw - 20px)';
+                }
+
                 panel.style.padding = '8px';
                 panel.style.position = 'relative';
 
@@ -261,6 +298,7 @@ export default function CheckoutPage() {
                 const formDiv = document.createElement('div');
                 formDiv.id = 'iyzipay-checkout-form';
                 formDiv.style.minHeight = '520px';
+                formDiv.className = 'iyzi-payment-container';
 
                 panel.appendChild(closeButton);
                 panel.appendChild(formDiv);
@@ -434,7 +472,7 @@ export default function CheckoutPage() {
 
                         <button
                             type="submit"
-                            disabled={items.length === 0}
+                            disabled={purchaseableItems.length === 0}
                             className="w-full py-4 rounded-xl bg-app-primary text-app-primary-foreground text-sm font-black uppercase tracking-widest hover:opacity-90 active:scale-[0.99] transition-all shadow-lg shadow-app-primary/20 disabled:opacity-50 disabled:cursor-not-allowed disabled:shadow-none"
                         >
                             {t('payButton')}
@@ -450,7 +488,7 @@ export default function CheckoutPage() {
                             ) : (
                                 <>
                                     <ul className="space-y-3 mb-6 max-h-64 overflow-y-auto custom-scrollbar">
-                                        {items.map(t => (
+                                        {purchaseableItems.map(t => (
                                             <li key={t.id} className="flex justify-between items-center text-sm">
                                                 <span className="font-bold text-app-text truncate max-w-[180px]">{t.title}</span>
                                                 <span className="text-app-primary font-black shrink-0">{formatPrice(t.price ?? 0, currency)}</span>

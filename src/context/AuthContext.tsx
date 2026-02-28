@@ -37,13 +37,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     useEffect(() => {
         let mounted = true;
 
-        // Safety timeout
+        // Safety timeout - faster to unblock UI
         const timer = setTimeout(() => {
             if (mounted && loading) {
-                console.warn('AuthProvider: Loading safety timeout reached (20s). Forcefully disabling loading state.');
+                console.warn('AuthProvider: Loading safety timeout reached (5s). Forcefully disabling loading state.');
                 setLoading(false);
             }
-        }, 20000);
+        }, 5000);
 
         const fetchProfile = async (u: User | null): Promise<Profile | null> => {
             if (!u) return null;
@@ -63,9 +63,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
                 // Add a race against a timeout to prevent hanging the whole app
                 const timeoutPromise = new Promise<null>((resolve) =>
                     setTimeout(() => {
-                        console.warn('AuthProvider: Profile fetch timed out (25s)');
+                        console.warn('AuthProvider: Profile fetch timed out (8s)');
                         resolve(null);
-                    }, 25000)
+                    }, 8000)
                 );
 
                 const dbPromise = (async () => {

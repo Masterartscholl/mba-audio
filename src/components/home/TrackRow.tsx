@@ -167,12 +167,21 @@ export const TrackRow: React.FC<TrackRowProps> = ({ track, currency, queue, purc
                     </button>
 
                     {isPurchased ? (
-                        <span className="flex flex-col items-end gap-1 text-[11px] font-black text-app-text-muted uppercase tracking-widest">
-                            <span className="text-xs">{t('purchased')}</span>
-                            <Link href="/library" className="text-app-primary hover:underline text-[10px]">
-                                {t('downloadInLibrary')}
+                        <div className="w-full flex flex-col items-end gap-1.5">
+                            <span className="text-[10px] font-black text-emerald-500 uppercase tracking-widest flex items-center gap-1.5 mb-0.5">
+                                <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M5 13l4 4L19 7" />
+                                </svg>
+                                {t('purchased') || 'Satın Alındı'}
+                            </span>
+                            <Link
+                                href="/library"
+                                className="w-full px-4 py-2 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-[10px] font-black text-emerald-500 uppercase tracking-widest hover:bg-emerald-500/20 transition-all text-center flex items-center justify-center gap-1.5"
+                            >
+                                <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 24 24"><path d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z" /></svg>
+                                {t('downloadInLibrary') || 'Kütüphaneye Git'}
                             </Link>
-                        </span>
+                        </div>
                     ) : (
                         <div className="flex-1 flex flex-col items-end gap-2">
                             <span className="text-sm font-black text-[#3b82f6] uppercase tracking-wider">
@@ -196,7 +205,7 @@ export const TrackRow: React.FC<TrackRowProps> = ({ track, currency, queue, purc
                     )}
                 </div>
 
-                {/* Desktop: Favori + Fiyat + Butonlar alt alta */}
+                {/* Desktop: Favori + Fiyat + Butonlar yan yana/alt alta */}
                 <div className="hidden lg:flex w-full items-center justify-end gap-3">
                     <button
                         onClick={handleFavorite}
@@ -207,12 +216,21 @@ export const TrackRow: React.FC<TrackRowProps> = ({ track, currency, queue, purc
                     </button>
 
                     {isPurchased ? (
-                        <span className="flex flex-col items-end gap-1 text-[11px] font-black text-app-text-muted uppercase tracking-widest">
-                            <span className="text-xs">{t('purchased')}</span>
-                            <Link href="/library" className="text-app-primary hover:underline text-[10px]">
-                                {t('downloadInLibrary')}
+                        <div className="flex flex-col items-end gap-1.5 min-w-[140px]">
+                            <span className="text-[10px] font-black text-emerald-500 uppercase tracking-widest flex items-center gap-1.5">
+                                <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M5 13l4 4L19 7" />
+                                </svg>
+                                {t('purchased') || 'Satın Alındı'}
+                            </span>
+                            <Link
+                                href="/library"
+                                className="px-4 py-1.5 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-[10px] font-black text-emerald-500 uppercase tracking-widest hover:bg-emerald-500/20 transition-all whitespace-nowrap flex items-center gap-1.5"
+                            >
+                                <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 24 24"><path d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z" /></svg>
+                                {t('downloadInLibrary') || 'Kütüphaneye Git'}
                             </Link>
-                        </span>
+                        </div>
                     ) : (
                         <div className="flex flex-col items-end gap-2">
                             <span className="text-sm font-black text-[#3b82f6] uppercase tracking-wider">
