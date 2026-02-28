@@ -70,6 +70,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
                 const dbPromise = (async () => {
                     try {
+                        console.log(`AuthProvider: Fetching profile for user ${u.id}...`);
                         const { data: p, error, status } = await supabase
                             .from('profiles')
                             .select('id, email, full_name, avatar_url, is_admin, created_at')
@@ -83,9 +84,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
                             }
                             throw error;
                         }
+
+                        console.log(`AuthProvider: Profile fetch success for ${u.id}:`, p);
                         profileCache[u.id] = p || null;
                         return p || null;
                     } catch (err) {
+                        console.error(`AuthProvider: Profile fetch catch block for ${u.id}`, err);
                         return null;
                     }
                 })();
