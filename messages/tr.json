@@ -217,6 +217,7 @@
         "action": "Favori / İşlem",
         "noTracksFilter": "Seçilen filtrelerle parça bulunamadı",
         "purchased": "Satın alındı",
+        "goToLibrary": "Kütüphaneme Git",
         "downloadInLibrary": "Kütüphanede indir",
         "cartEmpty": "Sepetiniz boş",
         "cartEmptyHint": "Parça eklemek için Keşfet sayfasından fiyata tıklayın.",

@@ -17,32 +17,40 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ trackIds: [] }, { status: 200 });
   }
 
-  const supabaseAuth = createServerClient(supabaseUrl, supabaseAnonKey!, {
-    cookies: {
-      getAll() {
-        return request.cookies.getAll();
-      },
-      setAll() {},
-    },
-  });
+  const supabaseAdmin = createClient(supabaseUrl, serviceKey);
+  const authHeader = request.headers.get('Authorization');
+  let user = null;
 
-  const {
-    data: { user },
-  } = await supabaseAuth.auth.getUser();
+  if (authHeader?.startsWith('Bearer ')) {
+    const token = authHeader.split(' ')[1];
+    const { data: { user: verifiedUser } } = await supabaseAdmin.auth.getUser(token);
+    user = verifiedUser;
+  } else {
+    const supabaseAuth = createServerClient(supabaseUrl, supabaseAnonKey!, {
+      cookies: {
+        getAll() {
+          return request.cookies.getAll();
+        },
+        setAll() { },
+      },
+    });
+    const { data: { user: verifiedUser } } = await supabaseAuth.auth.getUser();
+    user = verifiedUser;
+  }
 
   if (!user) {
     return NextResponse.json({ trackIds: [] }, { status: 200 });
   }
 
-  const supabaseAdmin = createClient(supabaseUrl, serviceKey);
   const { data: orders } = await supabaseAdmin
     .from('orders')
     .select('track_id')
     .eq('user_id', user.id)
     .eq('status', 'success');
 
+
   const trackIds = Array.from(
-    new Set((orders || []).map((o) => Number((o as any).track_id)).filter(Number.isFinite))
+    new Set((orders as any[] || []).map((o: any) => Number(o.track_id)).filter(Number.isFinite))
   );
 
   return NextResponse.json({ trackIds }, { status: 200 });
