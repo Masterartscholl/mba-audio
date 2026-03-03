@@ -8,9 +8,11 @@ import { Header } from '@/components/home/Header';
 import { GlobalPlayer } from '@/components/home/GlobalPlayer';
 import { LibraryTrackRow } from '@/components/home/LibraryTrackRow';
 import { supabase } from '@/lib/supabase';
+import { useAuth } from '@/hooks/useAuth';
 
 export default function LibraryPage() {
     const t = useTranslations('App');
+    const { user, loading: authLoading } = useAuth();
     const [purchasedTracks, setPurchasedTracks] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
     const [filters, setFilters] = useState<any>({});
@@ -18,9 +20,19 @@ export default function LibraryPage() {
     const closeMobileSidebar = React.useCallback(() => setIsMobileSidebarOpen(false), []);
 
     useEffect(() => {
+        if (authLoading) return;
+
+        if (!user) {
+            setPurchasedTracks([]);
+            setLoading(false);
+            return;
+        }
+
         const run = async () => {
             try {
                 setLoading(true);
+                console.log('Library: Fetching orders for user', user.id);
+
                 // Kullanıcının başarılı siparişlerinden ilişkili track'leri getir
                 const { data, error } = await supabase
                     .from('orders')
@@ -43,6 +55,7 @@ export default function LibraryPage() {
                             genres ( name )
                         )
                     `)
+                    .eq('user_id', user.id)
                     .eq('status', 'success')
                     .order('created_at', { ascending: false });
 
@@ -61,6 +74,8 @@ export default function LibraryPage() {
                                 purchased_at: o.created_at,
                             };
                         }).filter(Boolean) || [];
+
+                    console.log(`Library: Found ${list.length} purchased tracks`);
                     setPurchasedTracks(list);
                 }
             } catch (e) {
@@ -71,7 +86,7 @@ export default function LibraryPage() {
             }
         };
         run();
-    }, []);
+    }, [user, authLoading]);
 
     // Apply filters to purchased tracks
     const filteredTracks = useMemo(() => {
