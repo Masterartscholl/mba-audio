@@ -1,6 +1,6 @@
 "use client";
 
-import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import React, { createContext, useContext, useState, useEffect, ReactNode, useCallback, useRef } from 'react';
 import { User } from '@supabase/supabase-js';
 import { supabase } from '@/lib/supabase';
 import { usePathname } from 'next/navigation';
@@ -37,6 +37,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const [authToken, setAuthToken] = useState<string | null>(null);
     const [loading, setLoading] = useState(true);
     const pathname = usePathname();
+    const fetchingPurchasedRef = useRef(false);
 
     useEffect(() => {
         let mounted = true;
@@ -115,9 +116,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         };
 
         const fetchPurchasedTracks = async (u: User, retryCount = 0, explicitToken?: string) => {
-            if (!u || !mounted) return;
+            if (!u || !mounted || fetchingPurchasedRef.current) return;
 
             try {
+                fetchingPurchasedRef.current = true;
                 // Load from localStorage first for instant display (only on first try)
                 if (retryCount === 0) {
                     const cached = localStorage.getItem('mba_purchased_ids');
@@ -129,7 +131,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
                     }
                 }
 
-                let token = explicitToken;
+                let token: string | null = explicitToken ?? authToken;
                 if (!token) {
                     const { data: { session } } = await supabase.auth.getSession();
                     token = session?.access_token;
@@ -147,7 +149,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
                 }
 
                 if (!token) {
-                    console.warn('AuthProvider: No token found for purchased tracks fetch, delaying...');
+                    fetchingPurchasedRef.current = false;
                     if (retryCount < 2) {
                         setTimeout(() => fetchPurchasedTracks(u, retryCount + 1), 2000);
                     }
@@ -159,8 +161,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
                     'Authorization': `Bearer ${token}`
                 };
 
-                console.log('AuthProvider: Fetching purchased tracks with token...');
-
                 const isWix = window.location.origin.includes('muzikburada.net');
                 const apiUrl = isWix
                     ? `https://mba-audio.vercel.app/api/me/purchased-track-ids`
@@ -169,8 +169,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
                 const res = await fetch(apiUrl, { headers });
 
                 if (res.status === 401) {
-                    console.warn('AuthProvider: API returned 401. Token might be stale.');
-                    // Don't retry immediately on 401 to avoid spam
+                    fetchingPurchasedRef.current = false;
                     return;
                 }
 
@@ -180,23 +179,26 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
                 if (data.trackIds && Array.isArray(data.trackIds)) {
                     const ids = data.trackIds.map((id: any) => Number(id)).filter((id: any) => !isNaN(id));
-                    console.log(`AuthProvider: USER ${u.id} has ${ids.length} purchased tracks. IDs:`, ids);
+                    console.log(`AuthProvider: USER ${u.id} has ${ids.length} purchased tracks.`);
                     setPurchasedTrackIds(ids);
                     localStorage.setItem('mba_purchased_ids', JSON.stringify(ids));
                 }
             } catch (err) {
                 console.error('AuthProvider: Failed to fetch purchased tracks', err);
-                if (retryCount < 2) {
-                    setTimeout(() => fetchPurchasedTracks(u, retryCount + 1, explicitToken), 3000);
-                }
+            } finally {
+                fetchingPurchasedRef.current = false;
             }
         };
 
         const updateAuthState = (u: User | null, token: string | null = null) => {
             if (!mounted) return;
             setUser(u);
-            if (token) setAuthToken(token);
-            else if (!u) setAuthToken(null);
+            if (token) {
+                setAuthToken(token);
+            } else if (!u) {
+                // Only clear token if we are explicitly logging out
+                setAuthToken(null);
+            }
         };
 
         const load = async () => {
