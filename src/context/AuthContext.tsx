@@ -294,7 +294,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
                             if (mounted) setProfile(p);
                         });
 
-                        // Initial check for purchased tracks
+                        // Initial check for purchased tracks - explicitly pass token
                         fetchPurchasedTracks(u, 0, session?.access_token);
 
                         supabase.auth.getUser().then(({ data: { user: verifiedUser } }) => {
@@ -310,24 +310,27 @@ export function AuthProvider({ children }: { children: ReactNode }) {
                         if (currentUser) {
                             console.warn('AuthProvider: Server-side check failed, but keeping current Sync User for iframe stability.');
 
+                            // Try to get token from local storage if getSession failed
+                            let tokenFromLocal: string | null = null;
+                            try {
+                                const localRaw = localStorage.getItem('muzikbank-auth-token');
+                                if (localRaw) {
+                                    const local = JSON.parse(localRaw);
+                                    tokenFromLocal = local?.access_token;
+                                }
+                            } catch (e) { /* ignore */ }
+
                             // Ensure data is fetched for the sync user even if getSession() failed
                             fetchProfile(currentUser).then(p => {
                                 if (mounted) setProfile(p);
                             });
-                            fetchPurchasedTracks(currentUser);
+
+                            // EXTREMELY IMPORTANT: Pass the token found from localStorage
+                            fetchPurchasedTracks(currentUser, 0, tokenFromLocal ?? undefined);
 
                             // Try one last check with getUser(), which is more robust than getSession() in some SDK versions
                             supabase.auth.getUser().then(({ data: { user: verifiedUser } }) => {
                                 if (mounted && verifiedUser) {
-                                    // Attempt to get token from local storage if getSession failed
-                                    let tokenFromLocal: string | null = null;
-                                    try {
-                                        const localRaw = localStorage.getItem('muzikbank-auth-token');
-                                        if (localRaw) {
-                                            const local = JSON.parse(localRaw);
-                                            tokenFromLocal = local?.access_token;
-                                        }
-                                    } catch (e) { /* ignore */ }
                                     updateAuthState(verifiedUser, tokenFromLocal);
                                     fetchPurchasedTracks(verifiedUser, 0, tokenFromLocal ?? undefined);
                                 }

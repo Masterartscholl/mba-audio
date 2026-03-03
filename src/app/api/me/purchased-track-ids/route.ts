@@ -39,7 +39,7 @@ export async function GET(request: NextRequest) {
   }
 
   if (!user) {
-    return NextResponse.json({ trackIds: [] }, { status: 200 });
+    return NextResponse.json({ trackIds: [] }, { status: 401 });
   }
 
   const { data: orders } = await supabaseAdmin

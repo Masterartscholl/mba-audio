@@ -53,7 +53,7 @@ function saveToStorage(items: FavoriteTrack[]) {
 }
 
 export const FavoritesProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-    const { user } = useAuth();
+    const { user, authToken } = useAuth();
     const [favorites, setFavorites] = useState<FavoriteTrack[]>([]);
     const [loading, setLoading] = useState(true);
 
@@ -74,27 +74,25 @@ export const FavoritesProvider: React.FC<{ children: React.ReactNode }> = ({ chi
 
             try {
                 setLoading(true);
-                // Get favorites from DB
-                const { data, error } = await supabase
-                    .from('user_favorites')
-                    .select('track_id, tracks (*)')
-                    .eq('user_id', user.id);
+                const headers: Record<string, string> = {};
+                if (authToken) headers['Authorization'] = `Bearer ${authToken}`;
+
+                const isWix = typeof window !== 'undefined' && window.location.origin.includes('muzikburada.net');
+                const apiUrl = isWix ? 'https://mba-audio.vercel.app/api/me/favorites' : '/api/me/favorites';
+
+                const res = await fetch(apiUrl, { headers });
+                if (!res.ok) throw new Error(`API error: ${res.status}`);
+
+                const { favorites: dbFavs, error } = await res.json();
 
                 if (error) {
-                    // Table might not exist yet, ignore error and stay with local
-                    console.warn('FavoritesContext: user_favorites table fetch error (expected if not created yet)', error);
+                    console.warn('FavoritesContext: API fetch error', error);
                     return;
                 }
 
-                if (data) {
-                    const dbFavs = data
-                        .map((item: any) => item.tracks)
-                        .filter(Boolean);
-
-                    if (dbFavs.length > 0) {
-                        setFavorites(dbFavs);
-                        saveToStorage(dbFavs);
-                    }
+                if (dbFavs && Array.isArray(dbFavs)) {
+                    setFavorites(dbFavs);
+                    saveToStorage(dbFavs);
                 }
             } catch (err) {
                 console.error('FavoritesContext: Sync error', err);
@@ -106,7 +104,7 @@ export const FavoritesProvider: React.FC<{ children: React.ReactNode }> = ({ chi
         if (user) {
             syncWithDb();
         }
-    }, [user]);
+    }, [user, authToken]);
 
     const addFavorite = useCallback(async (track: FavoriteTrack) => {
         setFavorites(prev => {
@@ -116,16 +114,24 @@ export const FavoritesProvider: React.FC<{ children: React.ReactNode }> = ({ chi
             return next;
         });
 
-        if (user) {
+        if (user && authToken) {
             try {
-                await supabase
-                    .from('user_favorites')
-                    .upsert({ user_id: user.id, track_id: track.id }, { onConflict: 'user_id,track_id' });
+                const isWix = typeof window !== 'undefined' && window.location.origin.includes('muzikburada.net');
+                const apiUrl = isWix ? 'https://mba-audio.vercel.app/api/me/favorites' : '/api/me/favorites';
+
+                await fetch(apiUrl, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${authToken}`
+                    },
+                    body: JSON.stringify({ trackId: track.id })
+                });
             } catch (e) {
-                console.error('FavoritesContext: DB save error', e);
+                console.error('FavoritesContext: API save error', e);
             }
         }
-    }, [user]);
+    }, [user, authToken]);
 
     const removeFavorite = useCallback(async (trackId: string | number) => {
         setFavorites(prev => {
@@ -134,18 +140,22 @@ export const FavoritesProvider: React.FC<{ children: React.ReactNode }> = ({ chi
             return next;
         });
 
-        if (user) {
+        if (user && authToken) {
             try {
-                await supabase
-                    .from('user_favorites')
-                    .delete()
-                    .eq('user_id', user.id)
-                    .eq('track_id', trackId);
+                const isWix = typeof window !== 'undefined' && window.location.origin.includes('muzikburada.net');
+                const apiUrl = isWix
+                    ? `https://mba-audio.vercel.app/api/me/favorites?trackId=${trackId}`
+                    : `/api/me/favorites?trackId=${trackId}`;
+
+                await fetch(apiUrl, {
+                    method: 'DELETE',
+                    headers: { 'Authorization': `Bearer ${authToken}` }
+                });
             } catch (e) {
-                console.error('FavoritesContext: DB delete error', e);
+                console.error('FavoritesContext: API delete error', e);
             }
         }
-    }, [user]);
+    }, [user, authToken]);
 
     const isFavorite = useCallback((trackId: string | number) => {
         return favorites.some(t => t.id === trackId);

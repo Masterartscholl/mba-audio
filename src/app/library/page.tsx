@@ -12,7 +12,7 @@ import { useAuth } from '@/hooks/useAuth';
 
 export default function LibraryPage() {
     const t = useTranslations('App');
-    const { user, loading: authLoading } = useAuth();
+    const { user, loading: authLoading, authToken } = useAuth();
     const [purchasedTracks, setPurchasedTracks] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
     const [filters, setFilters] = useState<any>({});
@@ -33,38 +33,31 @@ export default function LibraryPage() {
                 setLoading(true);
                 console.log('Library: Fetching orders for user', user.id);
 
-                // Kullanıcının başarılı siparişlerinden ilişkili track'leri getir
-                const { data, error } = await supabase
-                    .from('orders')
-                    .select(`
-                        id,
-                        amount,
-                        created_at,
-                        tracks (
-                            id,
-                            title,
-                            artist_name,
-                            image_url,
-                            preview_url,
-                            bpm,
-                            price,
-                            category_id,
-                            genre_id,
-                            mode_id,
-                            categories ( name ),
-                            genres ( name )
-                        )
-                    `)
-                    .eq('user_id', user.id)
-                    .eq('status', 'success')
-                    .order('created_at', { ascending: false });
+                const headers: Record<string, string> = {};
+                // Use token from AuthContext to bypass iframe restrictions
+                if (authToken) {
+                    headers['Authorization'] = `Bearer ${authToken}`;
+                }
+
+                const isWix = typeof window !== 'undefined' && window.location.origin.includes('muzikburada.net');
+                const apiUrl = isWix
+                    ? 'https://mba-audio.vercel.app/api/me/orders'
+                    : '/api/me/orders';
+
+                const res = await fetch(apiUrl, { headers });
+
+                if (!res.ok) {
+                    throw new Error(`API error: ${res.status}`);
+                }
+
+                const { orders, error } = await res.json();
 
                 if (error) {
                     console.error('Library orders fetch error:', error);
                     setPurchasedTracks([]);
                 } else {
                     const list =
-                        (data as any[])?.map((o) => {
+                        (orders as any[])?.map((o) => {
                             const track = (o as any).tracks;
                             if (!track) return null;
                             return {
@@ -86,7 +79,7 @@ export default function LibraryPage() {
             }
         };
         run();
-    }, [user, authLoading]);
+    }, [user, authLoading, authToken]);
 
     // Apply filters to purchased tracks
     const filteredTracks = useMemo(() => {

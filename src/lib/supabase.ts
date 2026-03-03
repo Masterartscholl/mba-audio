@@ -15,12 +15,19 @@ if (typeof window !== 'undefined') {
 // Memory storage fallback for restricted environments (Wix iframes with disabled storage)
 const memoryStorage = new Map<string, string>();
 
-// Custom storage manager for iframe/restricted environments
+// Priority Storage System for restricted environments (Wix iframes)
 const customStorage = typeof window !== 'undefined' ? {
   getItem: (key: string) => {
     try {
-      const val = window.sessionStorage.getItem(key);
-      if (val !== null) return val;
+      // 1. Try local storage (standard)
+      let val = window.localStorage.getItem(key);
+      if (val) return val;
+
+      // 2. Try session storage (fallback for some iframe restrictions)
+      val = window.sessionStorage.getItem(key);
+      if (val) return val;
+
+      // 3. Try memory (last resort for very restricted browsers)
       return memoryStorage.get(key) || null;
     } catch {
       return memoryStorage.get(key) || null;
@@ -28,17 +35,17 @@ const customStorage = typeof window !== 'undefined' ? {
   },
   setItem: (key: string, value: string) => {
     try {
-      window.sessionStorage.setItem(key, value);
+      window.localStorage.setItem(key, value);
+      window.sessionStorage.setItem(key, value); // Mirror to session storage for safety
     } catch {
-      // Fallback to memory
       memoryStorage.set(key, value);
     }
   },
   removeItem: (key: string) => {
     try {
+      window.localStorage.removeItem(key);
       window.sessionStorage.removeItem(key);
     } catch {
-      // Fallback to memory
       memoryStorage.delete(key);
     }
   }
@@ -48,7 +55,7 @@ export const supabase = createBrowserClient(supabaseUrl, supabaseAnonKey, {
   auth: {
     persistSession: true,
     autoRefreshToken: true,
-    detectSessionInUrl: false,
+    detectSessionInUrl: true, // Let SDK handle tokens in URL too
     flowType: 'pkce',
     storageKey: 'muzikbank-auth-token',
     storage: customStorage,
