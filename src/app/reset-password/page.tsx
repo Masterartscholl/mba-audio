@@ -47,15 +47,22 @@ export default function ResetPasswordPage() {
             return;
         }
         setChangingPassword(true);
+        console.log('ResetPasswordPage: Attempting to change password...');
         try {
-            const { error } = await supabase.auth.updateUser({
+            const { data, error } = await supabase.auth.updateUser({
                 password: newPassword,
             });
-            if (error) throw error;
+            if (error) {
+                console.error('ResetPasswordPage: Password update error:', error);
+                toast.error(`${error.message || t('settingsError')}`);
+                return;
+            }
+            console.log('ResetPasswordPage: Password updated successfully:', data);
             toast.success(t('passwordChanged'));
             // Redirect to the Wix-hosted MüzikBank page after successful reset
             window.location.href = 'https://www.muzikburada.net/muzikbank';
         } catch (err: any) {
+            console.error('ResetPasswordPage: Password update catch block:', err);
             toast.error(err.message || t('settingsError'));
         } finally {
             setChangingPassword(false);

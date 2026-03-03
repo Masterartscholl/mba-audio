@@ -72,11 +72,39 @@ export default function SettingsPage() {
       return;
     }
     setChangingPassword(true);
+    console.log('SettingsPage: Attempting to change password...');
     try {
-      const { error } = await supabase.auth.updateUser({
+      // Check current session state before updating
+      const { data: sessionData } = await supabase.auth.getSession();
+      console.log('SettingsPage: session status:', sessionData.session ? 'Active' : 'Missing');
+
+      if (!sessionData.session) {
+        console.warn('SettingsPage: No active session found in Supabase client. Attempting manual sync...');
+        // Try to get token from storage as a last resort
+        const localRaw = localStorage.getItem('muzikbank-auth-token');
+        if (localRaw) {
+          const local = JSON.parse(localRaw);
+          if (local.access_token && local.refresh_token) {
+            await supabase.auth.setSession({
+              access_token: local.access_token,
+              refresh_token: local.refresh_token
+            });
+            console.log('SettingsPage: Session manually restored from storage');
+          }
+        }
+      }
+
+      const { data, error } = await supabase.auth.updateUser({
         password: newPassword,
       });
-      if (error) throw error;
+
+      if (error) {
+        console.error('SettingsPage: Password update error:', error);
+        toast.error(`${t('settingsError')} (${error.message})`);
+        return;
+      }
+
+      console.log('SettingsPage: Password updated successfully:', data);
       setNewPassword('');
       setConfirmPassword('');
       toast.success(t('passwordChanged'));
@@ -85,7 +113,8 @@ export default function SettingsPage() {
       if (isPasswordReset) {
         router.push('/');
       }
-    } catch (err) {
+    } catch (err: any) {
+      console.error('SettingsPage: Password update catch block:', err);
       toast.error(t('settingsError'));
     } finally {
       setChangingPassword(false);
