@@ -16,7 +16,7 @@ export default function SettingsPage() {
   const t = useTranslations('App');
   const searchParams = useSearchParams();
   const router = useRouter();
-  const { user, profile, loading: authLoading } = useAuth();
+  const { user, profile, loading: authLoading, authToken } = useAuth();
   const [fullName, setFullName] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
@@ -72,39 +72,35 @@ export default function SettingsPage() {
       return;
     }
     setChangingPassword(true);
-    console.log('SettingsPage: Attempting to change password...');
+    console.log('SettingsPage: Attempting to change password via API...');
+
     try {
-      // Check current session state before updating
-      const { data: sessionData } = await supabase.auth.getSession();
-      console.log('SettingsPage: session status:', sessionData.session ? 'Active' : 'Missing');
+      // Wix Iframe'lerde Supabase client session'ı kaybolabildiği için doğrudan API kullanıyoruz
+      const token = authToken || (typeof window !== 'undefined' ? JSON.parse(localStorage.getItem('muzikbank-auth-token') || '{}')?.access_token : null);
 
-      if (!sessionData.session) {
-        console.warn('SettingsPage: No active session found in Supabase client. Attempting manual sync...');
-        // Try to get token from storage as a last resort
-        const localRaw = localStorage.getItem('muzikbank-auth-token');
-        if (localRaw) {
-          const local = JSON.parse(localRaw);
-          if (local.access_token && local.refresh_token) {
-            await supabase.auth.setSession({
-              access_token: local.access_token,
-              refresh_token: local.refresh_token
-            });
-            console.log('SettingsPage: Session manually restored from storage');
-          }
-        }
-      }
-
-      const { data, error } = await supabase.auth.updateUser({
-        password: newPassword,
-      });
-
-      if (error) {
-        console.error('SettingsPage: Password update error:', error);
-        toast.error(`${t('settingsError')} (${error.message})`);
+      if (!token) {
+        console.error('SettingsPage: No auth token found!');
+        toast.error(t('settingsError') + ' (Oturum bulunamadı)');
+        setChangingPassword(false);
         return;
       }
 
-      console.log('SettingsPage: Password updated successfully:', data);
+      const response = await fetch('/api/me/update-password', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({ password: newPassword })
+      });
+
+      const result = await response.json();
+
+      if (!response.ok) {
+        throw new Error(result.error || t('settingsError'));
+      }
+
+      console.log('SettingsPage: Password updated successfully via API');
       setNewPassword('');
       setConfirmPassword('');
       toast.success(t('passwordChanged'));
@@ -114,8 +110,8 @@ export default function SettingsPage() {
         router.push('/');
       }
     } catch (err: any) {
-      console.error('SettingsPage: Password update catch block:', err);
-      toast.error(t('settingsError'));
+      console.error('SettingsPage: Password update API error:', err);
+      toast.error(err.message || t('settingsError'));
     } finally {
       setChangingPassword(false);
     }
