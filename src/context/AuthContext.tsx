@@ -21,6 +21,7 @@ type AuthContextType = {
     displayName: string;
     avatarUrl: string | null;
     purchasedTrackIds: number[];
+    authToken: string | null;
 };
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -33,6 +34,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const [user, setUser] = useState<User | null>(null);
     const [profile, setProfile] = useState<Profile | null>(null);
     const [purchasedTrackIds, setPurchasedTrackIds] = useState<number[]>([]);
+    const [authToken, setAuthToken] = useState<string | null>(null);
     const [loading, setLoading] = useState(true);
     const pathname = usePathname();
 
@@ -197,6 +199,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             }
         };
 
+        const updateAuthState = (u: User | null, token: string | null = null) => {
+            if (!mounted) return;
+            setUser(u);
+            if (token) setAuthToken(token);
+            else if (!u) setAuthToken(null);
+        };
+
         const load = async () => {
             if (typeof window !== 'undefined' && window.location.pathname.startsWith('/admin')) {
                 setLoading(false);
@@ -220,7 +229,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
                                 localStorage.setItem('muzikbank-auth-token', JSON.stringify(data.session));
                                 // Clean URL
                                 window.history.replaceState(null, '', window.location.pathname);
-                                setUser(data.session.user);
+                                updateAuthState(data.session.user, data.session.access_token);
 
                                 fetchProfile(data.session.user).then(p => {
                                     if (mounted) setProfile(p);
@@ -239,7 +248,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
                             const localSession = JSON.parse(localSessionRaw);
                             if (localSession?.user) {
                                 console.log('AuthProvider: Sync session detected, UI unlocked');
-                                setUser(localSession.user);
+                                updateAuthState(localSession.user, localSession.access_token);
 
                                 // Bridging the gap: Notify Supabase SDK about the restored session
                                 if (localSession.access_token && localSession.refresh_token) {
@@ -277,7 +286,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
                     if (!mounted) return;
 
                     if (u) {
-                        setUser(u);
+                        updateAuthState(u, session?.access_token);
                         setLoading(false);
                         clearTimeout(timer);
 
@@ -289,7 +298,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
                         fetchPurchasedTracks(u, 0, session?.access_token);
 
                         supabase.auth.getUser().then(({ data: { user: verifiedUser } }) => {
-                            if (mounted && verifiedUser) setUser(verifiedUser);
+                            if (mounted && verifiedUser) updateAuthState(verifiedUser, session?.access_token);
                         });
                     } else if (sessionError || !u) {
                         // In an iframe (Wix), server-side session (cookies) often fail.
@@ -310,14 +319,23 @@ export function AuthProvider({ children }: { children: ReactNode }) {
                             // Try one last check with getUser(), which is more robust than getSession() in some SDK versions
                             supabase.auth.getUser().then(({ data: { user: verifiedUser } }) => {
                                 if (mounted && verifiedUser) {
-                                    setUser(verifiedUser);
-                                    fetchPurchasedTracks(verifiedUser);
+                                    // Attempt to get token from local storage if getSession failed
+                                    let tokenFromLocal: string | null = null;
+                                    try {
+                                        const localRaw = localStorage.getItem('muzikbank-auth-token');
+                                        if (localRaw) {
+                                            const local = JSON.parse(localRaw);
+                                            tokenFromLocal = local?.access_token;
+                                        }
+                                    } catch (e) { /* ignore */ }
+                                    updateAuthState(verifiedUser, tokenFromLocal);
+                                    fetchPurchasedTracks(verifiedUser, 0, tokenFromLocal ?? undefined);
                                 }
                             });
                             setLoading(false);
                             clearTimeout(timer);
                         } else {
-                            setUser(null);
+                            updateAuthState(null);
                             setLoading(false);
                             clearTimeout(timer);
                         }
@@ -344,11 +362,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             if (mounted && session?.user) {
                 const u = session.user;
                 console.log('AuthProvider: Session found on mount:', u.id);
-                setUser(u);
+                updateAuthState(u, session.access_token);
                 fetchProfile(u).then(p => {
                     if (mounted) setProfile(p);
                 });
-                fetchPurchasedTracks(u);
+                fetchPurchasedTracks(u, 0, session.access_token);
             }
         });
 
@@ -368,7 +386,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
                 if (u) {
                     console.log(`AuthProvider: User found via ${event}, setting state...`);
-                    setUser(u);
+                    updateAuthState(u, currentSession?.access_token);
 
                     // Fetch profile and purchased tracks separately
                     fetchProfile(u).then(p => {
@@ -379,7 +397,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
                 } else if (event === 'SIGNED_OUT') {
                     // Only clear the user state on an explicit SIGNED_OUT event.
                     // This prevents losing the "Sync User" session in iframes during transient states.
-                    setUser(null);
+                    updateAuthState(null);
                     setProfile(null);
                     setPurchasedTrackIds([]);
                     localStorage.removeItem('mba_purchased_ids');
@@ -404,9 +422,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
                     if (!error && data.session) {
                         if (mounted) {
+                            updateAuthState(data.session.user, data.session.access_token);
                             const p = await fetchProfile(data.session.user);
                             setProfile(p);
-                            fetchPurchasedTracks(data.session.user);
+                            fetchPurchasedTracks(data.session.user, 0, data.session.access_token);
                         }
                         // Ack to the popup so it can close
                         if (event.source && 'postMessage' in event.source) {
@@ -443,7 +462,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         null;
 
     return (
-        <AuthContext.Provider value={{ user, profile, loading, displayName, avatarUrl, purchasedTrackIds }}>
+        <AuthContext.Provider value={{ user, profile, loading, displayName, avatarUrl, purchasedTrackIds, authToken }}>
             {children}
         </AuthContext.Provider>
     );

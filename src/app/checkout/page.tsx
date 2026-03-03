@@ -33,7 +33,7 @@ export default function CheckoutPage() {
     const [isPaymentOpen, setIsPaymentOpen] = useState(false);
     const [purchasedTrackIds, setPurchasedTrackIds] = useState<number[]>([]);
 
-    const { user, loading: authLoading } = useAuth();
+    const { user, loading: authLoading, authToken } = useAuth();
 
     useEffect(() => {
         const fetchPurchased = async () => {
@@ -185,9 +185,9 @@ export default function CheckoutPage() {
         setBillingErrors({});
 
         try {
-            // Force get session to ensure we have the most current token for the Bearer header
-            const { data: { session } } = await supabase.auth.getSession();
-            const token = session?.access_token;
+            // Use the token from AuthContext which handles sync sessions
+            const token = authToken;
+            console.log('Checkout: Initiating payment with token:', token ? 'Found' : 'Missing');
 
             const headers: Record<string, string> = {
                 'Content-Type': 'application/json',
@@ -197,7 +197,13 @@ export default function CheckoutPage() {
                 headers['Authorization'] = `Bearer ${token}`;
             }
 
-            const res = await fetch('/api/payment', {
+            // Ensure absolute URL if on Wix domain
+            const isWix = window.location.origin.includes('muzikburada.net');
+            const apiUrl = isWix
+                ? 'https://mba-audio.vercel.app/api/payment'
+                : '/api/payment';
+
+            const res = await fetch(apiUrl, {
                 method: 'POST',
                 headers,
                 body: JSON.stringify({
