@@ -134,7 +134,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
                 let token: string | null = explicitToken ?? authToken;
                 if (!token) {
                     const { data: { session } } = await supabase.auth.getSession();
-                    token = session?.access_token;
+                    token = session?.access_token ?? null;
                 }
 
                 // Fallback: Check localStorage directly if session is not yet in SDK
@@ -143,7 +143,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
                         const localRaw = localStorage.getItem('muzikbank-auth-token');
                         if (localRaw) {
                             const local = JSON.parse(localRaw);
-                            token = local?.access_token;
+                            token = local?.access_token ?? null;
                         }
                     } catch (e) { /* ignore */ }
                 }
@@ -281,7 +281,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
                     if (!mounted) return;
 
                     if (u) {
-                        updateAuthState(u, session?.access_token);
+                        updateAuthState(u, session?.access_token ?? null);
                         setLoading(false);
                         clearTimeout(timer);
 
@@ -293,7 +293,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
                         fetchPurchasedTracks(u, 0, session?.access_token);
 
                         supabase.auth.getUser().then(({ data: { user: verifiedUser } }) => {
-                            if (mounted && verifiedUser) updateAuthState(verifiedUser, session?.access_token);
+                            if (mounted && verifiedUser) updateAuthState(verifiedUser, session?.access_token ?? null);
                         });
                     } else if (sessionError || !u) {
                         // In an iframe (Wix), server-side session (cookies) often fail.
@@ -384,7 +384,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
                 if (u) {
                     console.log(`AuthProvider: User found via ${event}, setting state...`);
-                    updateAuthState(u, currentSession?.access_token);
+                    updateAuthState(u, currentSession?.access_token ?? null);
 
                     // Fetch profile and purchased tracks separately
                     fetchProfile(u).then(p => {
