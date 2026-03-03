@@ -196,15 +196,33 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
                     const localSessionRaw = localStorage.getItem('muzikbank-auth-token');
                     if (localSessionRaw) {
-                        const localSession = JSON.parse(localSessionRaw);
-                        if (localSession?.user) {
-                            setUser(localSession.user);
-                            setLoading(false);
-                            console.log('AuthProvider: Sync session detected, UI unlocked');
+                        try {
+                            const localSession = JSON.parse(localSessionRaw);
+                            if (localSession?.user) {
+                                console.log('AuthProvider: Sync session detected, UI unlocked');
+                                setUser(localSession.user);
+
+                                // Bridging the gap: Notify Supabase SDK about the restored session
+                                if (localSession.access_token && localSession.refresh_token) {
+                                    supabase.auth.setSession({
+                                        access_token: localSession.access_token,
+                                        refresh_token: localSession.refresh_token
+                                    }).catch(err => console.warn('AuthProvider: Sync setSession error', err));
+                                }
+
+                                fetchProfile(localSession.user).then(p => {
+                                    if (mounted) setProfile(p);
+                                });
+                                fetchPurchasedTracks(localSession.user);
+
+                                setLoading(false);
+                            }
+                        } catch (e) {
+                            console.warn('AuthProvider: Sync session parse error', e);
                         }
                     }
                 } catch (e) {
-                    console.warn('AuthProvider: Sync session parse error', e);
+                    console.warn('AuthProvider: Sync session handling error', e);
                 }
             }
 
@@ -243,12 +261,19 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
                         if (currentUser) {
                             console.warn('AuthProvider: Server-side check failed, but keeping current Sync User for iframe stability.');
+
+                            // Ensure data is fetched for the sync user even if getSession() failed
+                            fetchProfile(currentUser).then(p => {
+                                if (mounted) setProfile(p);
+                            });
+                            fetchPurchasedTracks(currentUser);
+
                             // Try one last check with getUser(), which is more robust than getSession() in some SDK versions
                             supabase.auth.getUser().then(({ data: { user: verifiedUser } }) => {
                                 if (mounted && verifiedUser) {
                                     setUser(verifiedUser);
+                                    fetchPurchasedTracks(verifiedUser);
                                 }
-                                // No 'else' here - keep the currentUser as a fallback if getUser() also fails to locate it via cookies
                             });
                             setLoading(false);
                             clearTimeout(timer);
