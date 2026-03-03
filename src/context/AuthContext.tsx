@@ -112,7 +112,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             return fetchPromise;
         };
 
-        const fetchPurchasedTracks = async (u: User, retryCount = 0) => {
+        const fetchPurchasedTracks = async (u: User, retryCount = 0, explicitToken?: string) => {
             if (!u) return;
 
             try {
@@ -129,37 +129,70 @@ export function AuthProvider({ children }: { children: ReactNode }) {
                     }
                 }
 
-                const { data: { session } } = await supabase.auth.getSession();
-                const token = session?.access_token;
-                const headers: Record<string, string> = {};
-                if (token) headers['Authorization'] = `Bearer ${token}`;
+                let token = explicitToken;
+                if (!token) {
+                    const { data: { session } } = await supabase.auth.getSession();
+                    token = session?.access_token;
+                }
 
-                const res = await fetch('/api/me/purchased-track-ids', { headers });
+                // Fallback: Check localStorage directly if session is not yet in SDK
+                if (!token) {
+                    try {
+                        const localRaw = localStorage.getItem('muzikbank-auth-token');
+                        if (localRaw) {
+                            const local = JSON.parse(localRaw);
+                            token = local?.access_token;
+                        }
+                    } catch (e) { /* ignore */ }
+                }
+
+                const headers: Record<string, string> = {
+                    'Content-Type': 'application/json'
+                };
+                if (token) {
+                    headers['Authorization'] = `Bearer ${token}`;
+                    console.log('AuthProvider: Fetching purchased tracks with token...');
+                } else {
+                    console.warn('AuthProvider: No token found for purchased tracks fetch');
+                }
+
+                // Enforce absolute URL when on Wix domain to ensure it hits Vercel API
+                const isWix = window.location.origin.includes('muzikburada.net');
+                const apiUrl = isWix
+                    ? `https://mba-audio.vercel.app/api/me/purchased-track-ids`
+                    : '/api/me/purchased-track-ids';
+
+                const res = await fetch(apiUrl, { headers });
+
+                if (!res.ok) {
+                    throw new Error(`API error: ${res.status}`);
+                }
+
                 const data = await res.json();
 
-                if (data.trackIds && Array.isArray(data.trackIds) && data.trackIds.length > 0) {
+                if (data.trackIds && Array.isArray(data.trackIds)) {
                     const ids = data.trackIds.map((id: any) => Number(id)).filter((id: any) => !isNaN(id));
-                    console.log(`AuthProvider: USER ${u.id} has ${ids.length} purchased tracks. IDs:`, ids);
-                    setPurchasedTrackIds(ids);
-                    localStorage.setItem('mba_purchased_ids', JSON.stringify(ids));
-                } else {
-                    // If empty or null, retry up to 3 times
-                    if (retryCount < 3) {
-                        console.log(`AuthProvider: Purchased tracks empty, retrying (${retryCount + 1}/3) in 3s...`);
-                        setTimeout(() => fetchPurchasedTracks(u, retryCount + 1), 3000);
+                    if (ids.length > 0) {
+                        console.log(`AuthProvider: USER ${u.id} has ${ids.length} purchased tracks. IDs:`, ids);
+                        setPurchasedTrackIds(ids);
+                        localStorage.setItem('mba_purchased_ids', JSON.stringify(ids));
                     } else {
-                        console.warn('AuthProvider: API returned no trackIds after 3 retries', data);
-                        // Only clear if we're sure (after all retries)
-                        if (data.trackIds && Array.isArray(data.trackIds)) {
-                            setPurchasedTrackIds([]);
-                            localStorage.setItem('mba_purchased_ids', JSON.stringify([]));
-                        }
+                        // If definitively empty from API
+                        console.log('AuthProvider: USER has 0 purchased tracks (API confirmed)');
+                        setPurchasedTrackIds([]);
+                        localStorage.setItem('mba_purchased_ids', JSON.stringify([]));
+                    }
+                } else {
+                    // Retry logic for undefined/null responses
+                    if (retryCount < 3) {
+                        console.log(`AuthProvider: Purchased tracks undefined, retrying (${retryCount + 1}/3) in 3s...`);
+                        setTimeout(() => fetchPurchasedTracks(u, retryCount + 1, explicitToken), 3000);
                     }
                 }
             } catch (err) {
                 console.error('AuthProvider: Failed to fetch purchased tracks', err);
                 if (retryCount < 3) {
-                    setTimeout(() => fetchPurchasedTracks(u, retryCount + 1), 3000);
+                    setTimeout(() => fetchPurchasedTracks(u, retryCount + 1, explicitToken), 3000);
                 }
             }
         };
@@ -188,6 +221,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
                                 // Clean URL
                                 window.history.replaceState(null, '', window.location.pathname);
                                 setUser(data.session.user);
+
+                                fetchProfile(data.session.user).then(p => {
+                                    if (mounted) setProfile(p);
+                                });
+                                fetchPurchasedTracks(data.session.user, 0, data.session.access_token);
+
                                 setLoading(false);
                                 return;
                             }
@@ -204,7 +243,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
                                 // Bridging the gap: Notify Supabase SDK about the restored session
                                 if (localSession.access_token && localSession.refresh_token) {
-                                    supabase.auth.setSession({
+                                    await supabase.auth.setSession({
                                         access_token: localSession.access_token,
                                         refresh_token: localSession.refresh_token
                                     }).catch(err => console.warn('AuthProvider: Sync setSession error', err));
@@ -213,7 +252,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
                                 fetchProfile(localSession.user).then(p => {
                                     if (mounted) setProfile(p);
                                 });
-                                fetchPurchasedTracks(localSession.user);
+                                fetchPurchasedTracks(localSession.user, 0, localSession.access_token);
 
                                 setLoading(false);
                             }
@@ -247,7 +286,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
                         });
 
                         // Initial check for purchased tracks
-                        fetchPurchasedTracks(u);
+                        fetchPurchasedTracks(u, 0, session?.access_token);
 
                         supabase.auth.getUser().then(({ data: { user: verifiedUser } }) => {
                             if (mounted && verifiedUser) setUser(verifiedUser);
@@ -336,7 +375,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
                         if (mounted) setProfile(p);
                     });
 
-                    fetchPurchasedTracks(u);
+                    fetchPurchasedTracks(u, 0, currentSession?.access_token);
                 } else if (event === 'SIGNED_OUT') {
                     // Only clear the user state on an explicit SIGNED_OUT event.
                     // This prevents losing the "Sync User" session in iframes during transient states.
