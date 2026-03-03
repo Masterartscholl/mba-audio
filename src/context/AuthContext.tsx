@@ -115,7 +115,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         };
 
         const fetchPurchasedTracks = async (u: User, retryCount = 0, explicitToken?: string) => {
-            if (!u) return;
+            if (!u || !mounted) return;
 
             try {
                 // Load from localStorage first for instant display (only on first try)
@@ -124,9 +124,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
                     if (cached) {
                         try {
                             const ids = JSON.parse(cached);
-                            if (Array.isArray(ids)) {
-                                setPurchasedTrackIds(ids);
-                            }
+                            if (Array.isArray(ids)) setPurchasedTrackIds(ids);
                         } catch (e) { /* ignore */ }
                     }
                 }
@@ -148,17 +146,21 @@ export function AuthProvider({ children }: { children: ReactNode }) {
                     } catch (e) { /* ignore */ }
                 }
 
-                const headers: Record<string, string> = {
-                    'Content-Type': 'application/json'
-                };
-                if (token) {
-                    headers['Authorization'] = `Bearer ${token}`;
-                    console.log('AuthProvider: Fetching purchased tracks with token...');
-                } else {
-                    console.warn('AuthProvider: No token found for purchased tracks fetch');
+                if (!token) {
+                    console.warn('AuthProvider: No token found for purchased tracks fetch, delaying...');
+                    if (retryCount < 2) {
+                        setTimeout(() => fetchPurchasedTracks(u, retryCount + 1), 2000);
+                    }
+                    return;
                 }
 
-                // Enforce absolute URL when on Wix domain to ensure it hits Vercel API
+                const headers: Record<string, string> = {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                };
+
+                console.log('AuthProvider: Fetching purchased tracks with token...');
+
                 const isWix = window.location.origin.includes('muzikburada.net');
                 const apiUrl = isWix
                     ? `https://mba-audio.vercel.app/api/me/purchased-track-ids`
@@ -166,34 +168,25 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
                 const res = await fetch(apiUrl, { headers });
 
-                if (!res.ok) {
-                    throw new Error(`API error: ${res.status}`);
+                if (res.status === 401) {
+                    console.warn('AuthProvider: API returned 401. Token might be stale.');
+                    // Don't retry immediately on 401 to avoid spam
+                    return;
                 }
+
+                if (!res.ok) throw new Error(`API error: ${res.status}`);
 
                 const data = await res.json();
 
                 if (data.trackIds && Array.isArray(data.trackIds)) {
                     const ids = data.trackIds.map((id: any) => Number(id)).filter((id: any) => !isNaN(id));
-                    if (ids.length > 0) {
-                        console.log(`AuthProvider: USER ${u.id} has ${ids.length} purchased tracks. IDs:`, ids);
-                        setPurchasedTrackIds(ids);
-                        localStorage.setItem('mba_purchased_ids', JSON.stringify(ids));
-                    } else {
-                        // If definitively empty from API
-                        console.log('AuthProvider: USER has 0 purchased tracks (API confirmed)');
-                        setPurchasedTrackIds([]);
-                        localStorage.setItem('mba_purchased_ids', JSON.stringify([]));
-                    }
-                } else {
-                    // Retry logic for undefined/null responses
-                    if (retryCount < 3) {
-                        console.log(`AuthProvider: Purchased tracks undefined, retrying (${retryCount + 1}/3) in 3s...`);
-                        setTimeout(() => fetchPurchasedTracks(u, retryCount + 1, explicitToken), 3000);
-                    }
+                    console.log(`AuthProvider: USER ${u.id} has ${ids.length} purchased tracks. IDs:`, ids);
+                    setPurchasedTrackIds(ids);
+                    localStorage.setItem('mba_purchased_ids', JSON.stringify(ids));
                 }
             } catch (err) {
                 console.error('AuthProvider: Failed to fetch purchased tracks', err);
-                if (retryCount < 3) {
+                if (retryCount < 2) {
                     setTimeout(() => fetchPurchasedTracks(u, retryCount + 1, explicitToken), 3000);
                 }
             }

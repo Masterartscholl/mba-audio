@@ -42,12 +42,16 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ trackIds: [] }, { status: 401 });
   }
 
-  const { data: orders } = await supabaseAdmin
+  const { data: orders, error } = await supabaseAdmin
     .from('orders')
     .select('track_id')
     .eq('user_id', user.id)
     .eq('status', 'success');
 
+  if (error) {
+    console.error('API purchased-track-ids error:', error);
+    return NextResponse.json({ error: error.message, trackIds: [] }, { status: 500 });
+  }
 
   const trackIds = Array.from(
     new Set((orders as any[] || []).map((o: any) => Number(o.track_id)).filter(Number.isFinite))

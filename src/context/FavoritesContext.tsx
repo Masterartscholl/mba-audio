@@ -67,28 +67,31 @@ export const FavoritesProvider: React.FC<{ children: React.ReactNode }> = ({ chi
         hydrate();
     }, [hydrate]);
 
-    // DB Sync when user logs in
+    // DB Sync when user logs in - Wait for BOTH user and authToken
     React.useEffect(() => {
         const syncWithDb = async () => {
-            if (!user) return;
+            if (!user || !authToken) return;
 
             try {
                 setLoading(true);
-                const headers: Record<string, string> = {};
-                if (authToken) headers['Authorization'] = `Bearer ${authToken}`;
+                const headers: Record<string, string> = {
+                    'Authorization': `Bearer ${authToken}`
+                };
 
-                const isWix = typeof window !== 'undefined' && window.location.origin.includes('muzikburada.net');
+                const isWix = window.location.origin.includes('muzikburada.net');
                 const apiUrl = isWix ? 'https://mba-audio.vercel.app/api/me/favorites' : '/api/me/favorites';
 
                 const res = await fetch(apiUrl, { headers });
-                if (!res.ok) throw new Error(`API error: ${res.status}`);
 
-                const { favorites: dbFavs, error } = await res.json();
-
-                if (error) {
-                    console.warn('FavoritesContext: API fetch error', error);
+                if (res.status === 401) {
+                    console.warn('FavoritesContext: API returned 401. Token might be stale.');
                     return;
                 }
+
+                if (!res.ok) throw new Error(`API error: ${res.status}`);
+
+                const data = await res.json();
+                const dbFavs = data.favorites;
 
                 if (dbFavs && Array.isArray(dbFavs)) {
                     setFavorites(dbFavs);
@@ -101,7 +104,7 @@ export const FavoritesProvider: React.FC<{ children: React.ReactNode }> = ({ chi
             }
         };
 
-        if (user) {
+        if (user && authToken) {
             syncWithDb();
         }
     }, [user, authToken]);
