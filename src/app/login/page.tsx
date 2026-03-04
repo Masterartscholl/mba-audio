@@ -22,6 +22,7 @@ export default function LoginPage() {
   const [error, setError] = useState<string | null>(null);
   const [resetMessage, setResetMessage] = useState<string | null>(null);
   const [resetLoading, setResetLoading] = useState(false);
+  const [view, setView] = useState<'login' | 'forgot'>(searchParams.get('view') as any || 'login');
 
   // Automatically handle popup fallbacks
   React.useEffect(() => {
@@ -158,10 +159,34 @@ export default function LoginPage() {
     e.preventDefault();
     setError(null);
     setResetMessage(null);
+
+    const isIframe = typeof window !== 'undefined' && window.self !== window.top;
+
+    // IFRAME CASE: Open in popup to avoid PKCE storage partitioning issues
+    if (isIframe && !searchParams.get('popup')) {
+      const currentOrigin = window.location.origin;
+      const isMuzikBurada = currentOrigin.includes('muzikburada.net');
+      const basePath = isMuzikBurada ? '/muzikbank' : '';
+      const popupUrl = `${currentOrigin}${basePath}/login?popup=1&view=forgot&email=${encodeURIComponent(email)}`;
+
+      const width = 500;
+      const height = 600;
+      const left = window.screenX + (window.outerWidth - width) / 2;
+      const top = window.screenY + (window.outerHeight - height) / 2;
+
+      window.open(
+        popupUrl,
+        'muzikbank_forgot_password',
+        `width=${width},height=${height},left=${left},top=${top},status=no,menubar=no,toolbar=no`
+      );
+      return;
+    }
+
     if (!email) {
       setError(t('forgotPasswordEmailRequired'));
       return;
     }
+
     setResetLoading(true);
     try {
       // Wix sub-routes like /auth/verify don't exist on Wix, so we MUST use the Vercel URL.
@@ -172,7 +197,18 @@ export default function LoginPage() {
         redirectTo: `${appOrigin}/auth/verify?next=${encodeURIComponent('/reset-password')}`,
       });
       if (err) throw err;
+
       setResetMessage(t('forgotPasswordEmailSent'));
+
+      // If in popup, notify opener and close after a delay
+      if (searchParams.get('popup') === '1') {
+        setTimeout(() => {
+          if (window.opener) {
+            window.opener.postMessage({ type: 'forgot_password_sent' }, '*');
+          }
+          window.close();
+        }, 3000);
+      }
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : t('forgotPasswordError'));
     } finally {
@@ -201,95 +237,165 @@ export default function LoginPage() {
           </div>
 
           <div className="bg-app-card border border-app-border rounded-2xl sm:rounded-3xl p-5 sm:p-6 lg:p-8 shadow-xl">
-            <form onSubmit={handleLogin} className="space-y-3.5 sm:space-y-4 lg:space-y-5">
-              {error && (
-                <div className="bg-red-500/10 border border-red-500/20 text-red-500 px-3 sm:px-4 py-2.5 sm:py-3 rounded-xl text-xs sm:text-sm text-center">
-                  {error}
+            {view === 'login' ? (
+              <form onSubmit={handleLogin} className="space-y-3.5 sm:space-y-4 lg:space-y-5">
+                {error && (
+                  <div className="bg-red-500/10 border border-red-500/20 text-red-500 px-3 sm:px-4 py-2.5 sm:py-3 rounded-xl text-xs sm:text-sm text-center">
+                    {error}
+                  </div>
+                )}
+                {resetMessage && (
+                  <div className="bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 px-3 sm:px-4 py-2.5 sm:py-3 rounded-xl text-xs sm:text-sm text-center">
+                    {resetMessage}
+                  </div>
+                )}
+
+                <div>
+                  <label htmlFor="email" className="block text-[11px] sm:text-xs uppercase font-bold text-app-text-muted tracking-wider mb-1 sm:mb-1.5">{t('email')}</label>
+                  <input
+                    id="email"
+                    required
+                    type="email"
+                    name="email"
+                    autoComplete="email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    placeholder="ornek@email.com"
+                    className="w-full bg-app-input-bg border border-app-border rounded-xl px-3.5 sm:px-4 py-2.5 sm:py-3 text-sm text-app-text placeholder:text-app-text-muted focus:outline-none focus:border-app-primary/50 transition-all"
+                  />
                 </div>
-              )}
-              {resetMessage && (
-                <div className="bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 px-3 sm:px-4 py-2.5 sm:py-3 rounded-xl text-xs sm:text-sm text-center">
-                  {resetMessage}
+
+                <div>
+                  <label htmlFor="password" className="block text-[11px] sm:text-xs uppercase font-bold text-app-text-muted tracking-wider mb-1 sm:mb-1.5">{t('password')}</label>
+                  <input
+                    id="password"
+                    required
+                    type="password"
+                    name="password"
+                    autoComplete="current-password"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    placeholder="••••••••"
+                    className="w-full bg-app-input-bg border border-app-border rounded-xl px-3.5 sm:px-4 py-2.5 sm:py-3 text-sm text-app-text placeholder:text-app-text-muted focus:outline-none focus:border-app-primary/50 transition-all"
+                  />
                 </div>
-              )}
 
-              <div>
-                <label htmlFor="email" className="block text-[11px] sm:text-xs uppercase font-bold text-app-text-muted tracking-wider mb-1 sm:mb-1.5">{t('email')}</label>
-                <input
-                  id="email"
-                  required
-                  type="email"
-                  name="email"
-                  autoComplete="email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  placeholder="ornek@email.com"
-                  className="w-full bg-app-input-bg border border-app-border rounded-xl px-3.5 sm:px-4 py-2.5 sm:py-3 text-sm text-app-text placeholder:text-app-text-muted focus:outline-none focus:border-app-primary/50 transition-all"
-                />
-              </div>
+                <div className="flex justify-end">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const isIframe = typeof window !== 'undefined' && window.self !== window.top;
+                      if (isIframe) {
+                        handleForgotPassword({ preventDefault: () => { } } as any);
+                      } else {
+                        setView('forgot');
+                      }
+                    }}
+                    disabled={loading || resetLoading}
+                    className="text-[11px] sm:text-xs font-bold text-app-text-muted hover:text-app-primary underline-offset-4 hover:underline"
+                  >
+                    {t('forgotPassword')}
+                  </button>
+                </div>
 
-              <div>
-                <label htmlFor="password" className="block text-[11px] sm:text-xs uppercase font-bold text-app-text-muted tracking-wider mb-1 sm:mb-1.5">{t('password')}</label>
-                <input
-                  id="password"
-                  required
-                  type="password"
-                  name="password"
-                  autoComplete="current-password"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  placeholder="••••••••"
-                  className="w-full bg-app-input-bg border border-app-border rounded-xl px-3.5 sm:px-4 py-2.5 sm:py-3 text-sm text-app-text placeholder:text-app-text-muted focus:outline-none focus:border-app-primary/50 transition-all"
-                />
-              </div>
+                <button
+                  type="submit"
+                  disabled={loading}
+                  className="w-full bg-app-primary text-app-primary-foreground font-bold py-3 sm:py-3.5 rounded-xl text-sm hover:opacity-90 transition-opacity disabled:opacity-50 flex items-center justify-center gap-2"
+                >
+                  {loading ? (
+                    <span className="w-5 h-5 border-2 border-app-primary-foreground/30 border-t-app-primary-foreground rounded-full animate-spin" />
+                  ) : (
+                    t('loginButton')
+                  )}
+                </button>
 
-              <div className="flex justify-end">
+                <div className="relative my-4 sm:my-6">
+                  <span className="absolute inset-0 flex items-center">
+                    <span className="w-full border-t border-app-border" />
+                  </span>
+                  <span className="relative flex justify-center text-[11px] sm:text-xs uppercase font-bold text-app-text-muted tracking-wider">
+                    {t('or')}
+                  </span>
+                </div>
+
                 <button
                   type="button"
-                  onClick={handleForgotPassword}
-                  disabled={loading || resetLoading}
-                  className="text-[11px] sm:text-xs font-bold text-app-text-muted hover:text-app-primary underline-offset-4 hover:underline"
+                  onClick={handleGoogleLogin}
+                  disabled={loading}
+                  className="w-full bg-app-surface border border-app-border text-app-text font-bold py-3 sm:py-3.5 rounded-xl text-sm hover:border-app-primary/50 transition-colors flex items-center justify-center gap-2 disabled:opacity-50"
                 >
-                  {resetLoading ? t('loading') : t('forgotPassword')}
+                  <svg className="w-4 h-4 sm:w-5 sm:h-5" viewBox="0 0 24 24">
+                    <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" />
+                    <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" />
+                    <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" />
+                    <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" />
+                  </svg>
+                  {t('loginWithGoogle')}
                 </button>
-              </div>
+              </form>
+            ) : (
+              <form onSubmit={(e) => { e.preventDefault(); handleForgotPassword(e as any); }} className="space-y-4 sm:space-y-5">
+                <button
+                  type="button"
+                  onClick={() => setView('login')}
+                  className="text-app-text-muted flex items-center gap-2 text-xs font-bold hover:text-app-primary transition-colors mb-2"
+                >
+                  ← {t('loginTitle')}
+                </button>
 
-              <button
-                type="submit"
-                disabled={loading}
-                className="w-full bg-app-primary text-app-primary-foreground font-bold py-3 sm:py-3.5 rounded-xl text-sm hover:opacity-90 transition-opacity disabled:opacity-50 flex items-center justify-center gap-2"
-              >
-                {loading ? (
-                  <span className="w-5 h-5 border-2 border-app-primary-foreground/30 border-t-app-primary-foreground rounded-full animate-spin" />
-                ) : (
-                  t('loginButton')
+                <h2 className="text-lg font-bold text-app-text mb-2">{t('forgotPassword')}</h2>
+
+                {error && (
+                  <div className="bg-red-500/10 border border-red-500/20 text-red-500 px-3 sm:px-4 py-2.5 sm:py-3 rounded-xl text-xs sm:text-sm text-center">
+                    {error}
+                  </div>
                 )}
-              </button>
-            </form>
+                {resetMessage && (
+                  <div className="bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 px-3 sm:px-4 py-2.5 sm:py-3 rounded-xl text-xs sm:text-sm text-center">
+                    {resetMessage}
+                  </div>
+                )}
 
-            <div className="relative my-4 sm:my-6">
-              <span className="absolute inset-0 flex items-center">
-                <span className="w-full border-t border-app-border" />
-              </span>
-              <span className="relative flex justify-center text-[11px] sm:text-xs uppercase font-bold text-app-text-muted tracking-wider">
-                {t('or')}
-              </span>
-            </div>
-
-            <button
-              type="button"
-              onClick={handleGoogleLogin}
-              disabled={loading}
-              className="w-full bg-app-surface border border-app-border text-app-text font-bold py-3 sm:py-3.5 rounded-xl text-sm hover:border-app-primary/50 transition-colors flex items-center justify-center gap-2 disabled:opacity-50"
-            >
-              <svg className="w-4 h-4 sm:w-5 sm:h-5" viewBox="0 0 24 24">
-                <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" />
-                <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" />
-                <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" />
-                <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" />
-              </svg>
-              {t('loginWithGoogle')}
-            </button>
+                {!resetMessage ? (
+                  <>
+                    <p className="text-app-text-muted text-xs sm:text-sm">
+                      {t('forgotPasswordEmailRequired')}
+                    </p>
+                    <div>
+                      <label htmlFor="reset-email" className="block text-[11px] sm:text-xs uppercase font-bold text-app-text-muted tracking-wider mb-1 sm:mb-1.5">{t('email')}</label>
+                      <input
+                        id="reset-email"
+                        required
+                        type="email"
+                        value={email}
+                        onChange={(e) => setEmail(e.target.value)}
+                        placeholder="ornek@email.com"
+                        className="w-full bg-app-input-bg border border-app-border rounded-xl px-3.5 sm:px-4 py-2.5 sm:py-3 text-sm text-app-text"
+                      />
+                    </div>
+                    <button
+                      type="submit"
+                      disabled={resetLoading}
+                      className="w-full bg-app-primary text-app-primary-foreground font-bold py-3 sm:py-3.5 rounded-xl text-sm hover:opacity-90 transition-opacity disabled:opacity-50"
+                    >
+                      {resetLoading ? t('loading') : t('forgotPassword')}
+                    </button>
+                  </>
+                ) : (
+                  <div className="text-center py-4">
+                    <p className="text-app-text text-sm mb-4">Talimatlar e-posta adresinize gönderildi.</p>
+                    <button
+                      type="button"
+                      onClick={() => searchParams.get('popup') === '1' ? window.close() : setView('login')}
+                      className="text-app-primary font-bold hover:underline"
+                    >
+                      {searchParams.get('popup') === '1' ? 'Pencereyi Kapat' : t('loginTitle')}
+                    </button>
+                  </div>
+                )}
+              </form>
+            )}
           </div>
 
           <p className="text-center text-app-text-muted text-xs sm:text-sm mt-4 sm:mt-6">
