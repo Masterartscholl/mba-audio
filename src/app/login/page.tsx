@@ -162,12 +162,12 @@ export default function LoginPage() {
 
     const isIframe = typeof window !== 'undefined' && window.self !== window.top;
 
-    // IFRAME CASE: Open in popup to avoid PKCE storage partitioning issues
+    // IFRAME CASE: Open in popup on VERCEL domain to ensure PKCE verifier is shared
     if (isIframe && !searchParams.get('popup')) {
-      const currentOrigin = window.location.origin;
-      const isMuzikBurada = currentOrigin.includes('muzikburada.net');
-      const basePath = isMuzikBurada ? '/muzikbank' : '';
-      const popupUrl = `${currentOrigin}${basePath}/login?popup=1&view=forgot&email=${encodeURIComponent(email)}`;
+      // We must use the Vercel URL for the popup because the email redirect (redirectTo)
+      // also goes to the Vercel URL. PKCE verifiers are not shared across domains.
+      const vercelUrl = 'https://mba-audio.vercel.app';
+      const popupUrl = `${vercelUrl}/login?popup=1&view=forgot&email=${encodeURIComponent(email)}`;
 
       const width = 500;
       const height = 600;
