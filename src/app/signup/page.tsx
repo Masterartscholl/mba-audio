@@ -27,18 +27,17 @@ export default function SignupPage() {
     setLoading(true);
     setError(null);
     try {
-      // Wix sub-routes like /auth/verify don't exist, so we MUST use the Vercel URL.
-      const vercelUrl = 'https://mba-audio.vercel.app';
-      const appOrigin = process.env.NEXT_PUBLIC_SITE_URL?.includes('muzikburada.net')
-        ? vercelUrl
-        : (process.env.NEXT_PUBLIC_SITE_URL || window.location.origin);
+      // Wix sub-routes like /auth/verify don't exist on Wix, so we MUST use the Vercel URL.
+      // We hardcode the Vercel URL here to be absolutely safe in all environments.
+      const appOrigin = 'https://mba-audio.vercel.app';
+      const redirectUri = `${appOrigin}/auth/verify?next=${encodeURIComponent('https://www.muzikburada.net/muzikbank')}`;
 
       const { data: signUpData, error: err } = await supabase.auth.signUp({
         email,
         password,
         options: {
           data: { full_name: fullName.trim() || undefined },
-          emailRedirectTo: `${appOrigin}/auth/verify?next=${encodeURIComponent('https://www.muzikburada.net/muzikbank')}`,
+          emailRedirectTo: redirectUri,
         },
       });
       if (err) throw err;

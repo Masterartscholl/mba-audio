@@ -164,15 +164,12 @@ export default function LoginPage() {
     }
     setResetLoading(true);
     try {
-      // Wix sub-routes like /auth/callback don't exist, so we MUST use the Vercel URL.
-      // Priority: 1. ENV, 2. Hardcoded fallback for this project, 3. window.location (if not in iframe)
-      const vercelUrl = 'https://mba-audio.vercel.app';
-      const appOrigin = process.env.NEXT_PUBLIC_SITE_URL?.includes('muzikburada.net')
-        ? vercelUrl
-        : (process.env.NEXT_PUBLIC_SITE_URL || window.location.origin);
+      // Wix sub-routes like /auth/verify don't exist on Wix, so we MUST use the Vercel URL.
+      // We hardcode the Vercel URL here to be absolutely safe in all environments.
+      const appOrigin = 'https://mba-audio.vercel.app';
 
       const { error: err } = await supabase.auth.resetPasswordForEmail(email, {
-        redirectTo: `${appOrigin}/auth/callback?next=${encodeURIComponent('/reset-password')}`,
+        redirectTo: `${appOrigin}/auth/verify?next=${encodeURIComponent('/reset-password')}`,
       });
       if (err) throw err;
       setResetMessage(t('forgotPasswordEmailSent'));
