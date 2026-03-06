@@ -4,9 +4,12 @@ import { NextResponse, type NextRequest } from 'next/server'
 export async function GET(request: NextRequest) {
   const { searchParams } = request.nextUrl
   const code = searchParams.get('code')
+  const token_hash = searchParams.get('token_hash')
+  const type = searchParams.get('type') as 'recovery' | 'signup' | 'invite' | 'magiclink' | 'email' | null
   const next = searchParams.get('next') ?? '/'
 
-  if (!code) {
+  // Both code AND token_hash are missing → nothing we can do
+  if (!code && !token_hash) {
     return NextResponse.redirect(new URL('/', request.url))
   }
 
@@ -17,7 +20,6 @@ export async function GET(request: NextRequest) {
   }
 
   const redirectTo = new URL(next, request.url)
-  // Client tarafında session'ın kesin okunması için auth_refresh ile yönlendir
   redirectTo.searchParams.set('auth_refresh', '1')
   const response = NextResponse.redirect(redirectTo)
 
@@ -27,11 +29,6 @@ export async function GET(request: NextRequest) {
         return request.cookies.getAll()
       },
       setAll(cookiesToSet) {
-        // Ensure cookies are set with SameSite=None and Secure so they can
-        // be used when the app is embedded (iframe) on another origin
-        // (e.g. Wix). Browsers may still block third-party cookies depending
-        // on user settings / ITP, but this makes cookies usable where
-        // cross-site cookies are permitted.
         cookiesToSet.forEach(({ name, value, options }) => {
           const safeOptions = {
             ...options,
@@ -46,12 +43,31 @@ export async function GET(request: NextRequest) {
     },
   })
 
-  const { data, error } = await supabase.auth.exchangeCodeForSession(code)
+  let data: any = null
+  let error: any = null
+
+  if (token_hash && type) {
+    // ── EMAIL RECOVERY / MAGIC-LINK FLOW ──────────────────────────────────
+    // Supabase emails send `token_hash` + `type` instead of `code`.
+    // This does NOT require a PKCE code_verifier, so it works perfectly
+    // even when the user clicks the link in a fresh browser tab/session.
+    const result = await supabase.auth.verifyOtp({ token_hash, type })
+    data = result.data
+    error = result.error
+  } else if (code) {
+    // ── OAUTH / PKCE CODE FLOW ────────────────────────────────────────────
+    // Used for Google OAuth and similar flows where the client initiated
+    // the flow (and therefore already stored the code_verifier).
+    const result = await supabase.auth.exchangeCodeForSession(code)
+    data = result.data
+    error = result.error
+  }
+
   if (error) {
+    console.error('[auth/callback] Exchange/Verify error:', error.message)
     if (next === 'popup') {
       return new NextResponse(
         `<html><body><script>
-            // Tell the opener (iframe) that login failed
             if (window.opener) {
               window.opener.postMessage({ type: 'oauth_session_error' }, '*');
             }
@@ -60,14 +76,16 @@ export async function GET(request: NextRequest) {
         { headers: { 'Content-Type': 'text/html' } }
       )
     }
-    redirectTo.searchParams.delete('auth_refresh')
-    return NextResponse.redirect(redirectTo)
+    // Redirect to login with error message so user gets feedback
+    const loginUrl = new URL('/login', request.url)
+    loginUrl.searchParams.set('error', error.message)
+    return NextResponse.redirect(loginUrl)
   }
 
-  // If we are in the popup flow, transmit the tokens back to the iframe
+  // ── POPUP FLOW (OAuth popup window) ───────────────────────────────────
   if (next === 'popup') {
-    const access_token = data?.session?.access_token || '';
-    const refresh_token = data?.session?.refresh_token || '';
+    const access_token = data?.session?.access_token || ''
+    const refresh_token = data?.session?.refresh_token || ''
 
     return new NextResponse(
       `<html><body>
@@ -75,7 +93,6 @@ export async function GET(request: NextRequest) {
       <script>
           let ackReceived = false;
 
-          // Mesajın ulaştığını iframe'den teyit et
           window.addEventListener('message', (event) => {
               if (event.data?.type === 'oauth_session_ack') {
                   ackReceived = true;
@@ -84,12 +101,8 @@ export async function GET(request: NextRequest) {
           });
 
           if (window.opener && !window.opener.closed) {
-            // Sürekli gönder
             const interval = setInterval(() => {
-              if (ackReceived) {
-                 clearInterval(interval);
-                 return;
-              }
+              if (ackReceived) { clearInterval(interval); return; }
               try {
                 window.opener.postMessage({
                   type: 'oauth_session',
@@ -97,17 +110,13 @@ export async function GET(request: NextRequest) {
                   refresh_token: '${refresh_token}'
                 }, '*');
               } catch(e) {
-                 // Cross-origin yasaklaması (COOP) 
                  console.error("Opener postMessage access denied", e);
               }
             }, 300);
             
-            // Eğer 3 saniye boyunca teyit alamazsak (Wix engelleyebilir/Safari ITP)
-            // Pencereyi zorla kapatmadan ana sayfamıza fiziksel olarak yönlendirerek session'ın kurtarılmasını dene.
             setTimeout(() => {
               if (!ackReceived) {
                  clearInterval(interval);
-                 // Fallback: popup içinden fiziksel olarak bizim sitemize gidip auth token'ı yazdır
                  window.location.href = '/login?auto=close_popup';
               }
             }, 3000);
@@ -119,7 +128,5 @@ export async function GET(request: NextRequest) {
     )
   }
 
-  // Artık Google kullanıcılarını zorunlu olarak /settings?complete=1 sayfasına yönlendirmiyoruz.
-  // Sadece auth_refresh ile belirtilen hedef sayfaya dönüyoruz.
   return response
 }

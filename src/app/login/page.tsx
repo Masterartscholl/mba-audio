@@ -194,7 +194,10 @@ export default function LoginPage() {
       const appOrigin = 'https://mba-audio.vercel.app';
 
       const { error: err } = await supabase.auth.resetPasswordForEmail(email, {
-        redirectTo: `${appOrigin}/auth/verify?next=${encodeURIComponent('/reset-password')}`,
+        // Use /auth/callback (server-side route) instead of /auth/verify (client component).
+        // Supabase sends token_hash+type in the email link — the server route handles this
+        // with verifyOtp() which does NOT require a PKCE code_verifier.
+        redirectTo: `${appOrigin}/auth/callback?next=${encodeURIComponent('/reset-password')}`,
       });
       if (err) throw err;
 
