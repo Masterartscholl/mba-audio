@@ -5,7 +5,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useTranslations } from 'next-intl';
-import { supabase } from '@/lib/supabase';
+import { supabase, supabaseImplicitForEmail } from '@/lib/supabase';
 import { ThemeSwitcher } from '@/components/home/ThemeSwitcher';
 import { LanguageSwitcher } from '@/components/home/LanguageSwitcher';
 import logoImg from '@/images/logo.png';
@@ -193,7 +193,9 @@ export default function LoginPage() {
       // We hardcode the Vercel URL here to be absolutely safe in all environments.
       const appOrigin = 'https://mba-audio.vercel.app';
 
-      const { error: err } = await supabase.auth.resetPasswordForEmail(email, {
+      // Use a dedicated Supabase client with implicit flow so that
+      // recovery links do NOT use PKCE (no code_verifier needed).
+      const { error: err } = await supabaseImplicitForEmail.auth.resetPasswordForEmail(email, {
         // Use /auth/callback (server-side route) instead of /auth/verify (client component).
         // Supabase sends token_hash+type in the email link — the server route handles this
         // with verifyOtp() which does NOT require a PKCE code_verifier.

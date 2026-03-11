@@ -62,3 +62,18 @@ export const supabase = createBrowserClient(supabaseUrl, supabaseAnonKey, {
   }
 })
 
+// Separate client for password reset emails WITHOUT PKCE.
+// Using implicit flow here ensures that Supabase sends recovery links
+// that do not require a code_verifier in browser storage.
+export const supabaseImplicitForEmail = createBrowserClient(supabaseUrl, supabaseAnonKey, {
+  auth: {
+    persistSession: true,
+    autoRefreshToken: true,
+    detectSessionInUrl: true,
+    flowType: 'implicit',
+    storageKey: 'muzikbank-auth-token-email',
+    storage: customStorage,
+  },
+})
+
+
