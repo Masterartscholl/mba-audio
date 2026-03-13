@@ -215,7 +215,7 @@ export default function LoginPage() {
             window.opener.postMessage({ type: 'forgot_password_sent' }, '*');
           }
           window.close();
-        }, 3000);
+        }, 10000);
       }
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : t('forgotPasswordError'));
@@ -254,7 +254,10 @@ export default function LoginPage() {
                 )}
                 {resetMessage && (
                   <div className="bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 px-3 sm:px-4 py-2.5 sm:py-3 rounded-xl text-xs sm:text-sm text-center">
-                    {resetMessage}
+                    <div>{resetMessage}</div>
+                    <div className="mt-1 text-[10px] sm:text-xs text-app-text-muted">
+                      E-postayı gelen kutunuzda göremezseniz, spam / gereksiz posta klasörünü de kontrol edin.
+                    </div>
                   </div>
                 )}
 
@@ -361,7 +364,10 @@ export default function LoginPage() {
                 )}
                 {resetMessage && (
                   <div className="bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 px-3 sm:px-4 py-2.5 sm:py-3 rounded-xl text-xs sm:text-sm text-center">
-                    {resetMessage}
+                    <div>{resetMessage}</div>
+                    <div className="mt-1 text-[10px] sm:text-xs text-app-text-muted">
+                      E-postayı gelen kutunuzda göremezseniz, spam / gereksiz posta klasörünü de kontrol edin.
+                    </div>
                   </div>
                 )}
 
