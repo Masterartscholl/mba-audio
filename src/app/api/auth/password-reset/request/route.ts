@@ -87,13 +87,9 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Şifre sıfırlama isteği oluşturulamadı.' }, { status: 500 });
     }
 
-    // 3. Vercel app URL'si üzerinden reset-password sayfasına yönlendiren link
-    const appBase =
-      process.env.NEXT_PUBLIC_APP_URL ||
-      process.env.NEXT_PUBLIC_SITE_URL ||
-      'https://mba-audio.vercel.app';
-
-    const resetUrl = `${appBase}/reset-password?token=${encodeURIComponent(token)}`;
+    // 3. Şifre sıfırlama her zaman Vercel app'ine gitsin (Wix değil)
+    // Buradaki URL, reset-password/page.tsx'i barındıran Next.js projesinin tam origin'i olmalı.
+    const resetUrl = `https://mba-audio.vercel.app/reset-password?token=${encodeURIComponent(token)}`;
 
     // 4. E-posta gönder (SMTP ile - Gmail / Outlook vb.)
     const transporter = getTransporter();
