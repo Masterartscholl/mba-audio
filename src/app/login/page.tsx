@@ -77,60 +77,36 @@ export default function LoginPage() {
     setError(null);
     try {
       const isIframe = typeof window !== 'undefined' && window.self !== window.top;
-      const isMobile = typeof navigator !== 'undefined' && /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
 
       // FOR IFRAME (WIX): Use Popup strategy on Mobile, Top-Redirect on Desktop
       if (isIframe && !searchParams.get('popup')) {
-        const currentOrigin = window.location.origin;
-        const isMuzikBurada = currentOrigin.includes('muzikburada.net');
-        const basePath = isMuzikBurada ? '/muzikbank' : '';
+        // WIX IFRAME: Daima Vercel domain'de açılan bir popup kullan.
+        // Böylece PKCE verileri ve Supabase storage aynı origin'de kalır.
+        const vercelUrl = 'https://mba-audio.vercel.app';
+        const popupUrl = `${vercelUrl}/login?popup=1&auto=google`;
+        const width = 500;
+        const height = 650;
+        const left = window.screenX + (window.outerWidth - width) / 2;
+        const top = window.screenY + (window.outerHeight - height) / 2;
 
-        if (isMobile) {
-          console.log('LoginPage: Mobile Iframe detected, opening popup for OAuth...');
-          // Open a popup to our own login page with popup=1 and auto=google
-          // This ensures the OAuth flow happens in a top-level context that can talk back to this iframe via postMessage
-          const popupUrl = `${currentOrigin}${basePath}/login?popup=1&auto=google`;
-          const width = 500;
-          const height = 650;
-          const left = window.screenX + (window.outerWidth - width) / 2;
-          const top = window.screenY + (window.outerHeight - height) / 2;
+        const popup = window.open(
+          popupUrl,
+          'muzikbank_auth',
+          `width=${width},height=${height},left=${left},top=${top},status=no,menubar=no,toolbar=no`
+        );
 
-          const popup = window.open(
-            popupUrl,
-            'muzikbank_auth',
-            `width=${width},height=${height},left=${left},top=${top},status=no,menubar=no,toolbar=no`
-          );
-
-          if (!popup || popup.closed || typeof popup.closed === 'undefined') {
-            setError(t('popupBlocked') || 'Lütfen açılır pencerelere izin verin.');
-            setLoading(false);
-          } else {
-            // The popup will be handled by verify/page.tsx which sends a message.
-            // Our AuthContext is already listening. We just wait.
-            // If the popup closes without success, we'll hit this timeout or the user will try again.
-            const checkPopup = setInterval(() => {
-              if (popup.closed) {
-                clearInterval(checkPopup);
-                setLoading(false);
-              }
-            }, 1000);
-          }
-          return;
+        if (!popup || popup.closed || typeof popup.closed === 'undefined') {
+          setError(t('popupBlocked') || 'Lütfen açılır pencerelere izin verin.');
+          setLoading(false);
         } else {
-          // DESKTOP IFRAME: Top-Redirect is usually fine and more seamless
-          const currentOrigin = window.location.origin;
-          const isMuzikBurada = currentOrigin.includes('muzikburada.net');
-          const basePath = isMuzikBurada ? '/muzikbank' : '';
-
-          const redirectUri = `${currentOrigin}${basePath}/auth/verify?next=${encodeURIComponent('https://www.muzikburada.net/muzikbank')}`;
-          const { data, error: oauthError } = await supabase.auth.signInWithOAuth({
-            provider: 'google',
-            options: { redirectTo: redirectUri, skipBrowserRedirect: true }
-          });
-          if (oauthError) throw oauthError;
-          if (data?.url) window.top!.location.href = data.url;
-          return;
+          const checkPopup = setInterval(() => {
+            if (popup.closed) {
+              clearInterval(checkPopup);
+              setLoading(false);
+            }
+          }, 1000);
         }
+        return;
       }
 
       // STANDARD / POPUP FLOW
