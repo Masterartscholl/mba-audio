@@ -149,7 +149,7 @@ export default function ResetPasswordPage() {
                     <p className="text-xs text-app-text-muted text-center mt-3 leading-relaxed">
                         {t('resetPasswordHint')}
                     </p>
-                    {user.email && (
+                    {user?.email && (
                         <span className="mt-4 px-3 py-1 bg-app-surface rounded-full text-[10px] font-bold text-app-text-muted border border-app-border">
                             {user.email}
                         </span>
