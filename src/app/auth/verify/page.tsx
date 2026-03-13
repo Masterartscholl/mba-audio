@@ -10,74 +10,90 @@ function VerifyContent() {
     const [status, setStatus] = useState('Giriş onaylanıyor...');
 
     useEffect(() => {
-        const code = searchParams.get('code');
         const next = searchParams.get('next') || '/';
 
-        if (code) {
-            supabase.auth.exchangeCodeForSession(code)
-                .then(({ data, error }) => {
-                    if (error) {
-                        console.error('Exchange error:', error.message);
-                        setStatus('Giriş başarısız: ' + error.message);
-                        setTimeout(() => router.replace('/login'), 2000);
-                    } else if (data?.session) {
-                        // Save to localStorage specifically for AuthContext fallback
-                        try {
-                            localStorage.setItem('muzikbank-auth-token', JSON.stringify(data.session));
-                        } catch (e) {
-                            console.warn('LocalStorage write failed', e);
-                        }
+        let cancelled = false;
 
-                        if (next === 'popup') {
-                            setStatus('Giriş başarılı! Bilgiler aktarılıyor...');
-                            if (window.opener) {
-                                const access_token = data.session.access_token;
-                                const refresh_token = data.session.refresh_token;
+        const run = async () => {
+            try {
+                const { data, error } = await supabase.auth.getSession();
+                if (cancelled) return;
 
-                                window.opener.postMessage({
-                                    type: 'oauth_session',
-                                    access_token,
-                                    refresh_token
-                                }, '*');
+                if (error) {
+                    console.error('Session fetch error on verify:', error.message);
+                    setStatus('Giriş başarısız: ' + error.message);
+                    setTimeout(() => router.replace('/login'), 2000);
+                    return;
+                }
 
-                                const handleAck = (event: MessageEvent) => {
-                                    if (event.data?.type === 'oauth_session_ack') {
-                                        window.removeEventListener('message', handleAck);
-                                        window.close();
-                                    }
-                                };
-                                window.addEventListener('message', handleAck);
-                                setTimeout(() => window.close(), 3000);
-                            } else {
-                                window.location.replace('/');
+                const session = data.session;
+                if (!session) {
+                    setStatus('Oturum bulunamadı. Lütfen tekrar giriş yapmayı deneyin.');
+                    setTimeout(() => router.replace('/login'), 2000);
+                    return;
+                }
+
+                // Save to localStorage specifically for AuthContext fallback
+                try {
+                    localStorage.setItem('muzikbank-auth-token', JSON.stringify(session));
+                } catch (e) {
+                    console.warn('LocalStorage write failed', e);
+                }
+
+                if (next === 'popup') {
+                    setStatus('Giriş başarılı! Bilgiler aktarılıyor...');
+                    if (window.opener) {
+                        const access_token = session.access_token;
+                        const refresh_token = session.refresh_token;
+
+                        window.opener.postMessage({
+                            type: 'oauth_session',
+                            access_token,
+                            refresh_token
+                        }, '*');
+
+                        const handleAck = (event: MessageEvent) => {
+                            if (event.data?.type === 'oauth_session_ack') {
+                                window.removeEventListener('message', handleAck);
+                                window.close();
                             }
-                        } else if (next.includes('muzikburada.net')) {
-                            // WIX CASE: Redirect to Wix with tokens in the HASH
-                            // This is the most reliable way for the iframe to 'see' the session
-                            setStatus('Oturum hazır! Wix sayfasına güvenli geçiş yapılıyor...');
-                            const access_token = data.session.access_token;
-                            const refresh_token = data.session.refresh_token;
-
-                            // Remove any existing codes or tokens from the next URL
-                            const target = new URL(next);
-                            target.searchParams.delete('code');
-
-                            // Append tokens to hash
-                            const finalUrl = `${target.origin}${target.pathname}#access_token=${access_token}&refresh_token=${refresh_token}`;
-                            window.top!.location.href = finalUrl;
-                        } else {
-                            setStatus('Giriş başarılı! Yönlendiriliyorsunuz...');
-                            window.location.replace(next);
-                        }
+                        };
+                        window.addEventListener('message', handleAck);
+                        setTimeout(() => window.close(), 3000);
+                    } else {
+                        window.location.replace('/');
                     }
-                })
-                .catch(err => {
-                    console.error('System error:', err);
-                    setStatus('Bir sistem hatası oluştu.');
-                });
-        } else {
-            router.replace('/');
-        }
+                } else if (next.includes('muzikburada.net')) {
+                    // WIX CASE: Redirect to Wix with tokens in the HASH
+                    // This is the most reliable way for the iframe to 'see' the session
+                    setStatus('Oturum hazır! Wix sayfasına güvenli geçiş yapılıyor...');
+                    const access_token = session.access_token;
+                    const refresh_token = session.refresh_token;
+
+                    // Remove any existing codes or tokens from the next URL
+                    const target = new URL(next);
+                    target.searchParams.delete('code');
+
+                    // Append tokens to hash
+                    const finalUrl = `${target.origin}${target.pathname}#access_token=${access_token}&refresh_token=${refresh_token}`;
+                    window.top!.location.href = finalUrl;
+                } else {
+                    setStatus('Giriş başarılı! Yönlendiriliyorsunuz...');
+                    window.location.replace(next);
+                }
+            } catch (err) {
+                if (cancelled) return;
+                console.error('System error on verify:', err);
+                setStatus('Bir sistem hatası oluştu.');
+                setTimeout(() => router.replace('/login'), 2000);
+            }
+        };
+
+        run();
+
+        return () => {
+            cancelled = true;
+        };
     }, [searchParams, router]);
 
     return (
