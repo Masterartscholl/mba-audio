@@ -1,10 +1,15 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
-import { Resend } from 'resend';
+import nodemailer from 'nodemailer';
 
 export const runtime = 'nodejs';
 
-const resend = process.env.RESEND_API_KEY ? new Resend(process.env.RESEND_API_KEY) : null;
+const smtpHost = process.env.SMTP_HOST;
+const smtpPort = process.env.SMTP_PORT;
+const smtpUser = process.env.SMTP_USER;
+const smtpPass = process.env.SMTP_PASS;
+const smtpFrom = process.env.SMTP_FROM;
+const smtpSecure = process.env.SMTP_SECURE;
 
 function getServiceClient() {
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
@@ -17,9 +22,26 @@ function getServiceClient() {
   return createClient(supabaseUrl, serviceKey);
 }
 
+function getTransporter() {
+  if (!smtpHost || !smtpPort || !smtpUser || !smtpPass || !smtpFrom) {
+    throw new Error('SMTP credentials are not configured');
+  }
+
+  const port = Number(smtpPort);
+
+  return nodemailer.createTransport({
+    host: smtpHost,
+    port,
+    secure: smtpSecure === 'true' || port === 465,
+    auth: {
+      user: smtpUser,
+      pass: smtpPass,
+    },
+  });
+}
+
 export async function POST(request: NextRequest) {
   try {
-    console.log('[password-reset/request] RESEND_API_KEY present:', !!process.env.RESEND_API_KEY);
     const { email } = await request.json();
 
     if (!email || typeof email !== 'string') {
@@ -73,25 +95,18 @@ export async function POST(request: NextRequest) {
 
     const resetUrl = `${appBase}/reset-password?token=${encodeURIComponent(token)}`;
 
-    // 4. E-posta gönder (Resend ile)
-    if (!resend) {
-      console.error('[password-reset/request] RESEND_API_KEY not configured, cannot send reset email.');
-      return NextResponse.json(
-        { error: 'E-posta servisi yapılandırılmamış. Lütfen daha sonra tekrar deneyin.' },
-        { status: 500 }
-      );
-    }
+    // 4. E-posta gönder (SMTP ile - Gmail / Outlook vb.)
+    const transporter = getTransporter();
 
     const toEmail = profile.email || normalizedEmail;
     const displayName = profile.full_name || toEmail;
 
-    const { error: emailError } = await resend.emails.send({
-      // Geçici olarak Resend'in doğrulanmış test gönderen adresini kullanıyoruz.
-      // Domain doğrulamasını tamamladıktan sonra tekrar no-reply@muzikbank.app'e dönebiliriz.
-      from: 'MüzikBank <onboarding@resend.dev>',
-      to: toEmail,
-      subject: 'Şifre Sıfırlama Talebiniz',
-      html: `
+    try {
+      await transporter.sendMail({
+        from: smtpFrom,
+        to: toEmail,
+        subject: 'Şifre Sıfırlama Talebiniz',
+        html: `
         <div style="font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background:#020617; color:#e5e7eb; padding:24px;">
           <h1 style="color:#ede066; font-size:20px; margin-bottom:16px;">Şifre Sıfırlama</h1>
           <p style="font-size:14px; margin-bottom:12px;">Merhaba ${displayName},</p>
@@ -113,17 +128,11 @@ export async function POST(request: NextRequest) {
           </p>
         </div>
       `,
-    });
-
-    if (emailError) {
+      });
+    } catch (emailError: any) {
       console.error('[password-reset/request] email error:', emailError);
-      // Geçici olarak hatayı daha detaylı göstereceğiz ki konfigürasyon sorununu hızlıca bulabilelim.
-      const message =
-        (emailError as any)?.message ||
-        (emailError as any)?.name ||
-        'Bilinmeyen hata';
       return NextResponse.json(
-        { error: `Şifre sıfırlama e-postası gönderilemedi: ${message}` },
+        { error: 'Şifre sıfırlama e-postası gönderilemedi. Lütfen daha sonra tekrar deneyin.' },
         { status: 500 }
       );
     }
