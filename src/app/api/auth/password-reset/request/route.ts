@@ -86,7 +86,9 @@ export async function POST(request: NextRequest) {
     const displayName = profile.full_name || toEmail;
 
     const { error: emailError } = await resend.emails.send({
-      from: 'MüzikBank <no-reply@muzikbank.app>',
+      // Geçici olarak Resend'in doğrulanmış test gönderen adresini kullanıyoruz.
+      // Domain doğrulamasını tamamladıktan sonra tekrar no-reply@muzikbank.app'e dönebiliriz.
+      from: 'MüzikBank <onboarding@resend.dev>',
       to: toEmail,
       subject: 'Şifre Sıfırlama Talebiniz',
       html: `
@@ -115,7 +117,10 @@ export async function POST(request: NextRequest) {
 
     if (emailError) {
       console.error('[password-reset/request] email error:', emailError);
-      // Token üretildi, kullanıcı linki farklı yoldan da alabilir; yine de generic success dönüyoruz.
+      return NextResponse.json(
+        { error: 'Şifre sıfırlama e-postası gönderilemedi. Lütfen daha sonra tekrar deneyin.' },
+        { status: 500 }
+      );
     }
 
     return NextResponse.json({ success: true });
