@@ -398,7 +398,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
                     updateAuthState(null);
                     setProfile(null);
                     setPurchasedTrackIds([]);
-                    localStorage.removeItem('mba_purchased_ids');
+                    try {
+                        localStorage.removeItem('mba_purchased_ids');
+                        localStorage.removeItem('muzikbank-auth-token');
+                    } catch {
+                        // ignore
+                    }
                     profileCache = {};
                 }
 
