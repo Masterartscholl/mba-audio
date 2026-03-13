@@ -6,6 +6,7 @@ import Image from 'next/image';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import { supabase } from '@/lib/supabase';
+import { useAuth } from '@/hooks/useAuth';
 import { ThemeSwitcher } from '@/components/home/ThemeSwitcher';
 import { LanguageSwitcher } from '@/components/home/LanguageSwitcher';
 import logoImg from '@/images/logo.png';
@@ -15,6 +16,7 @@ export default function LoginPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const returnUrl = searchParams.get('returnUrl') || '/';
+  const { user, loading: authLoading } = useAuth();
 
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -129,6 +131,13 @@ export default function LoginPage() {
       setLoading(false);
     }
   };
+  // Eğer kullanıcı zaten giriş yapmışsa, login sayfasında kalmak yerine hedef sayfaya yönlendir.
+  React.useEffect(() => {
+    if (!authLoading && user) {
+      router.replace(returnUrl || '/');
+    }
+  }, [authLoading, user, router, returnUrl]);
+
 
 
   const handleForgotPassword = async (e: React.MouseEvent) => {
