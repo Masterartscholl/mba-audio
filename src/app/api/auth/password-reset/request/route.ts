@@ -117,8 +117,13 @@ export async function POST(request: NextRequest) {
 
     if (emailError) {
       console.error('[password-reset/request] email error:', emailError);
+      // Geçici olarak hatayı daha detaylı göstereceğiz ki konfigürasyon sorununu hızlıca bulabilelim.
+      const message =
+        (emailError as any)?.message ||
+        (emailError as any)?.name ||
+        'Bilinmeyen hata';
       return NextResponse.json(
-        { error: 'Şifre sıfırlama e-postası gönderilemedi. Lütfen daha sonra tekrar deneyin.' },
+        { error: `Şifre sıfırlama e-postası gönderilemedi: ${message}` },
         { status: 500 }
       );
     }
