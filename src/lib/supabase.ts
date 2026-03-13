@@ -56,7 +56,11 @@ export const supabase = createBrowserClient(supabaseUrl, supabaseAnonKey, {
     persistSession: true,
     autoRefreshToken: true,
     detectSessionInUrl: true, // Let SDK handle tokens in URL too
-    flowType: 'pkce',
+    // PKCE, Wix iframe + farklı domain (muzikburada.net ↔ mba-audio.vercel.app) kombinasyonunda
+    // "PKCE code verifier not found in storage" hatalarına yol açtığı için
+    // ana client'ı implicit flow'a alıyoruz. Token'lar URL hash üzerinden geliyor ve
+    // AuthProvider bunları zaten yakalayıp setSession ile kaydediyor.
+    flowType: 'implicit',
     storageKey: 'muzikbank-auth-token',
     storage: customStorage,
   }
