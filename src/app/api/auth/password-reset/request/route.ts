@@ -19,6 +19,7 @@ function getServiceClient() {
 
 export async function POST(request: NextRequest) {
   try {
+    console.log('[password-reset/request] RESEND_API_KEY present:', !!process.env.RESEND_API_KEY);
     const { email } = await request.json();
 
     if (!email || typeof email !== 'string') {
@@ -74,8 +75,11 @@ export async function POST(request: NextRequest) {
 
     // 4. E-posta gönder (Resend ile)
     if (!resend) {
-      console.warn('[password-reset/request] RESEND_API_KEY not configured, skipping email send.');
-      return NextResponse.json({ success: true });
+      console.error('[password-reset/request] RESEND_API_KEY not configured, cannot send reset email.');
+      return NextResponse.json(
+        { error: 'E-posta servisi yapılandırılmamış. Lütfen daha sonra tekrar deneyin.' },
+        { status: 500 }
+      );
     }
 
     const toEmail = profile.email || normalizedEmail;
