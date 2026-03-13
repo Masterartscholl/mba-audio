@@ -5,7 +5,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useTranslations } from 'next-intl';
-import { supabase, supabaseImplicitForEmail } from '@/lib/supabase';
+import { supabase } from '@/lib/supabase';
 import { ThemeSwitcher } from '@/components/home/ThemeSwitcher';
 import { LanguageSwitcher } from '@/components/home/LanguageSwitcher';
 import logoImg from '@/images/logo.png';
@@ -189,19 +189,22 @@ export default function LoginPage() {
 
     setResetLoading(true);
     try {
-      // Wix sub-routes like /auth/verify don't exist on Wix, so we MUST use the Vercel URL.
-      // We hardcode the Vercel URL here to be absolutely safe in all environments.
-      const appOrigin = 'https://mba-audio.vercel.app';
+      // Kendi custom password reset API'mizi kullanıyoruz (PKCE'den bağımsız).
+      const isWix = typeof window !== 'undefined' && window.location.origin.includes('muzikburada.net');
+      const baseUrl = isWix ? 'https://mba-audio.vercel.app' : '';
 
-      // Use a dedicated Supabase client with implicit flow so that
-      // recovery links do NOT use PKCE (no code_verifier needed).
-      const { error: err } = await supabaseImplicitForEmail.auth.resetPasswordForEmail(email, {
-        // Use /auth/callback (server-side route) instead of /auth/verify (client component).
-        // Supabase sends token_hash+type in the email link — the server route handles this
-        // with verifyOtp() which does NOT require a PKCE code_verifier.
-        redirectTo: `${appOrigin}/auth/callback?next=${encodeURIComponent('/reset-password')}`,
+      const res = await fetch(`${baseUrl}/api/auth/password-reset/request`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ email }),
       });
-      if (err) throw err;
+
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
+        throw new Error(data.error || t('forgotPasswordError'));
+      }
 
       setResetMessage(t('forgotPasswordEmailSent'));
 

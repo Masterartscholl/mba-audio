@@ -15,16 +15,17 @@ import { toast } from 'sonner';
 export default function ResetPasswordPage() {
     const t = useTranslations('App');
     const router = useRouter();
+    const searchParams = typeof window !== 'undefined' ? new URLSearchParams(window.location.search) : null;
+    const resetToken = searchParams?.get('token') || null;
     const { user, loading: authLoading, authToken } = useAuth();
     const [newPassword, setNewPassword] = useState('');
     const [confirmPassword, setConfirmPassword] = useState('');
     const [changingPassword, setChangingPassword] = useState(false);
 
     useEffect(() => {
-        // If auth loading is done and there's no user, they shouldn't be here
+        // If auth loading is done and there's no user AND no reset token, they shouldn't be here
         // But we wait a bit because session might be being restored
-        if (!authLoading && !user) {
-            // Check if there is an error in the hash (OTP expired etc)
+        if (!authLoading && !user && !resetToken) {
             const hash = window.location.hash;
             if (hash.includes('error=')) {
                 const params = new URLSearchParams(hash.replace('#', '?'));
@@ -34,7 +35,7 @@ export default function ResetPasswordPage() {
                 }
             }
         }
-    }, [user, authLoading]);
+    }, [user, authLoading, resetToken]);
 
     const handleChangePassword = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -50,32 +51,50 @@ export default function ResetPasswordPage() {
         console.log('ResetPasswordPage: Attempting to change password via API...');
 
         try {
-            // Wix Iframe kısıtlamaları nedeniyle doğrudan API kullanıyoruz
-            const token = authToken || (typeof window !== 'undefined' ? JSON.parse(localStorage.getItem('muzikbank-auth-token') || '{}')?.access_token : null);
+            const isWix = typeof window !== 'undefined' && window.location.origin.includes('muzikburada.net');
+            const baseUrl = isWix ? 'https://mba-audio.vercel.app' : '';
 
-            if (!token) {
-                console.error('ResetPasswordPage: No auth token found!');
-                toast.error(t('settingsError') + ' (Oturum bulunamadı)');
-                setChangingPassword(false);
-                return;
+            if (resetToken) {
+                // E-posta ile gelen token üzerinden (oturum gerektirmeyen) şifre sıfırlama
+                const response = await fetch(`${baseUrl}/api/auth/password-reset/confirm`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ token: resetToken, password: newPassword })
+                });
+
+                const result = await response.json();
+                if (!response.ok) {
+                    throw new Error(result.error || t('settingsError'));
+                }
+            } else {
+                // Oturum açıkken (settings sayfasından) şifre güncelleme
+                const token = authToken || (typeof window !== 'undefined' ? JSON.parse(localStorage.getItem('muzikbank-auth-token') || '{}')?.access_token : null);
+
+                if (!token) {
+                    console.error('ResetPasswordPage: No auth token found!');
+                    toast.error(t('settingsError') + ' (Oturum bulunamadı)');
+                    setChangingPassword(false);
+                    return;
+                }
+
+                const response = await fetch(`${baseUrl || ''}/api/me/update-password`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify({ password: newPassword })
+                });
+
+                const result = await response.json();
+                if (!response.ok) {
+                    throw new Error(result.error || t('settingsError'));
+                }
             }
 
-            const response = await fetch('/api/me/update-password', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${token}`
-                },
-                body: JSON.stringify({ password: newPassword })
-            });
-
-            const result = await response.json();
-
-            if (!response.ok) {
-                throw new Error(result.error || t('settingsError'));
-            }
-
-            console.log('ResetPasswordPage: Password updated successfully via API');
+            console.log('ResetPasswordPage: Password updated successfully');
             toast.success(t('passwordChanged'));
 
             // Redirect to the Wix-hosted MüzikBank page after successful reset
@@ -96,7 +115,7 @@ export default function ResetPasswordPage() {
         );
     }
 
-    if (!user) {
+    if (!user && !resetToken) {
         return (
             <div className="min-h-screen bg-app-bg flex flex-col items-center justify-center gap-6 p-4">
                 <Image src={logoImg} alt="MüzikBank" width={64} height={64} className="rounded-2xl object-contain mb-2" />
