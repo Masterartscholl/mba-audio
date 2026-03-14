@@ -3,7 +3,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useTranslations, useLocale } from 'next-intl';
 import { setUserLocale } from '@/services/locale';
-import { useRouter } from 'next/navigation';
 
 const LOCALES = [
     { code: 'tr', key: 'turkish' as const },
@@ -12,7 +11,6 @@ const LOCALES = [
 
 export const LanguageSwitcher: React.FC = () => {
     const t = useTranslations('App');
-    const router = useRouter();
     const currentLocale = useLocale();
     const [open, setOpen] = useState(false);
     const ref = useRef<HTMLDivElement>(null);
@@ -36,22 +34,23 @@ export const LanguageSwitcher: React.FC = () => {
             localStorage.setItem('NEXT_LOCALE', code);
         }
 
+        // Cookie / server tarafı locale güncelle (iframe veya normal)
+        await setUserLocale(code);
+
         if (isIframe && isBrowser) {
-            // WIX IFRAME: URL tabanlı dil değiştirme + tam reload
+            // WIX IFRAME: URL + tam reload
             const url = new URL(window.location.href);
             url.searchParams.set('locale', code);
-
-            // Cookie de güncellensin
-            await setUserLocale(code);
-
-            // Middleware'in query paramı görmesi için tam reload
             window.location.href = url.toString();
             return;
         }
 
-        // Normal web (iframe değil): Auth state'i kaybetmemek için SPA tarzı refresh
-        await setUserLocale(code);
-        router.refresh();
+        // Normal web: Tam reload + ?locale=... ile dil değiştir. Session localStorage'da
+        // (muzikbank-auth-token) olduğu için yükleme sonrası AuthProvider sync path ile geri yükler.
+        // router.refresh() kullanmıyoruz; Google ile giriş sonrası remount'ta session kaybı oluyordu.
+        const url = new URL(window.location.href);
+        url.searchParams.set('locale', code);
+        window.location.href = url.toString();
     };
 
     return (

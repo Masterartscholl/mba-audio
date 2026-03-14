@@ -240,8 +240,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
                     const localSessionRaw = localStorage.getItem('muzikbank-auth-token');
                     if (localSessionRaw) {
                         try {
-                            const localSession = JSON.parse(localSessionRaw);
-                            if (localSession?.user) {
+                            const parsed = JSON.parse(localSessionRaw);
+                            // Hem doğrudan session objesi hem Supabase SDK'nın sarabileceği format
+                            const localSession = parsed?.user ? parsed : parsed?.session ?? null;
+                            if (localSession?.user && localSession?.access_token) {
                                 console.log('AuthProvider: Sync session detected, UI unlocked');
                                 updateAuthState(localSession.user, localSession.access_token);
 
@@ -259,6 +261,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
                                 fetchPurchasedTracks(localSession.user, 0, localSession.access_token);
 
                                 setLoading(false);
+                                return;
                             }
                         } catch (e) {
                             console.warn('AuthProvider: Sync session parse error', e);
@@ -384,6 +387,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
                 if (u) {
                     console.log(`AuthProvider: User found via ${event}, setting state...`);
+                    // Session'ı her güncellemede sakla; router.refresh() / dil değişimi sonrası sync path kullanabilsin
+                    if (currentSession) {
+                        try {
+                            localStorage.setItem('muzikbank-auth-token', JSON.stringify(currentSession));
+                        } catch (e) { /* ignore */ }
+                    }
                     updateAuthState(u, currentSession?.access_token ?? null);
 
                     // Fetch profile and purchased tracks separately
@@ -425,6 +434,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
                     if (!error && data.session) {
                         if (mounted) {
+                            // Google/popup akışında session'ı açıkça sakla; dil değişimi veya refresh sonrası
+                            // sync path'in oturumu geri yüklemesi için gerekli.
+                            try {
+                                localStorage.setItem('muzikbank-auth-token', JSON.stringify(data.session));
+                            } catch (e) { /* ignore */ }
                             updateAuthState(data.session.user, data.session.access_token);
                             const p = await fetchProfile(data.session.user);
                             setProfile(p);
