@@ -27,24 +27,31 @@ export const LanguageSwitcher: React.FC = () => {
 
     const handleSelect = async (code: string) => {
         setOpen(false);
-        // Persist local preference
-        if (typeof window !== 'undefined') {
-            localStorage.setItem('NEXT_LOCALE', code);
 
-            // For iframes (Wix), URL-based switching is the most reliable.
-            // We append ?locale=... to the URL and reload.
+        const isBrowser = typeof window !== 'undefined';
+        const isIframe = isBrowser && window.self !== window.top;
+
+        // Her zaman localStorage'da sakla (hem ana site hem iframe için)
+        if (isBrowser) {
+            localStorage.setItem('NEXT_LOCALE', code);
+        }
+
+        if (isIframe && isBrowser) {
+            // WIX IFRAME: URL tabanlı dil değiştirme + tam reload
             const url = new URL(window.location.href);
             url.searchParams.set('locale', code);
 
-            // Call the server action to try and set the cookie too
+            // Cookie de güncellensin
             await setUserLocale(code);
 
-            // Full reload to ensure middleware picks up the query param
+            // Middleware'in query paramı görmesi için tam reload
             window.location.href = url.toString();
-        } else {
-            await setUserLocale(code);
-            router.refresh();
+            return;
         }
+
+        // Normal web (iframe değil): Auth state'i kaybetmemek için SPA tarzı refresh
+        await setUserLocale(code);
+        router.refresh();
     };
 
     return (
