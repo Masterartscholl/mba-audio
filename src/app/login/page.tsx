@@ -28,6 +28,14 @@ export default function LoginPage() {
 
   // Automatically handle popup fallbacks
   React.useEffect(() => {
+    // Admin panel için ayrı auth storage kullanıyoruz (supabaseAdmin).
+    // Bu sayfadan giriş yapınca admin oturumu oluşmadığı için /admin'e gidişte "giriş yok" gibi görünür.
+    // Bu nedenle admin girişini her zaman /admin/login'e yönlendiriyoruz.
+    if (returnUrl.startsWith('/admin')) {
+      router.replace('/admin/login');
+      return;
+    }
+
     if (searchParams.get('auto') === 'google') {
       handleGoogleLogin();
     } else if (searchParams.get('auto') === 'close_popup') {
@@ -39,7 +47,7 @@ export default function LoginPage() {
       }
       window.close();
     }
-  }, [searchParams]);
+  }, [searchParams, returnUrl, router]);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
