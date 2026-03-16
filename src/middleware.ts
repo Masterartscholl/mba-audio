@@ -63,11 +63,12 @@ export async function middleware(request: NextRequest) {
             const isLoginRoute = pathname === '/login'
             const isSignupRoute = pathname === '/signup'
 
-            if (isAdminRoute && !user) {
-                return NextResponse.redirect(new URL(`/login?returnUrl=${encodeURIComponent('/admin')}`, request.url))
-            }
+            // ÖNEMLİ NOT:
+            // Admin paneli, tamamen ayrı bir Supabase client (supabaseAdmin) ve ayrı storageKey
+            // kullanıyor. Buradaki server-side Supabase client ise müşteri oturumunu temsil ediyor.
+            // Bu yüzden admin tarafını middleware ile korumuyoruz; koruma işini AdminGuard + AdminAuthContext yapıyor.
 
-            if ((isLoginRoute || isSignupRoute) && user) {
+            if (!isAdminRoute && (isLoginRoute || isSignupRoute) && user) {
                 const returnUrl = request.nextUrl.searchParams.get('returnUrl') || '/'
                 return NextResponse.redirect(new URL(returnUrl, request.url))
             }
