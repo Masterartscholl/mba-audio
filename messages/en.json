@@ -38,11 +38,12 @@
         "passwordMatchError": "New passwords do not match!",
         "profileTitle": "Profile Information",
         "legalLinks": "Legal Links",
-        "legalLinksDesc": "URLs for Privacy Policy, Distance Selling, Delivery & Return and Terms & Conditions shown on the checkout page. Leave empty to hide the link.",
+        "legalLinksDesc": "URLs for Privacy Policy, Distance Selling, Delivery & Return, Explicit Consent Statement and Terms & Conditions shown on the checkout page. Leave empty to hide the link.",
         "linkPrivacyPolicy": "Privacy Policy URL",
         "linkDistanceSelling": "Distance Selling Contract URL",
         "linkDeliveryReturn": "Delivery and Return Terms URL",
-        "linkTermsConditions": "Terms and Conditions URL"
+        "linkTermsConditions": "Terms and Conditions URL",
+        "linkExplicitConsent": "Explicit Consent Statement URL"
     },
     "Analytics": {
         "title": "Analytics & Reports",
@@ -274,6 +275,7 @@
         "termsOfUse": "Terms of Use",
         "distanceSellingContract": "Distance Selling Contract",
         "deliveryReturn": "Delivery and Return Terms",
+        "explicitConsentStatement": "Explicit Consent Statement",
         "termsAndConditions": "Terms and Conditions",
         "billingErrorTcIdRequired": "Enter 11-digit Turkish ID number",
         "billingErrorTcIdInvalid": "Enter a valid Turkish ID number",

@@ -22,6 +22,7 @@ type Settings = {
     link_distance_selling: string;
     link_delivery_return: string;
     link_terms_conditions: string;
+    link_explicit_consent: string;
 };
 
 export default function SettingsPage() {
@@ -46,7 +47,8 @@ export default function SettingsPage() {
         link_privacy_policy: '',
         link_distance_selling: '',
         link_delivery_return: '',
-        link_terms_conditions: ''
+        link_terms_conditions: '',
+        link_explicit_consent: ''
     });
 
     // Profile State
@@ -118,7 +120,8 @@ export default function SettingsPage() {
                     link_privacy_policy: data.link_privacy_policy ?? '',
                     link_distance_selling: data.link_distance_selling ?? '',
                     link_delivery_return: data.link_delivery_return ?? '',
-                    link_terms_conditions: data.link_terms_conditions ?? ''
+                    link_terms_conditions: data.link_terms_conditions ?? '',
+                    link_explicit_consent: data.link_explicit_consent ?? ''
                 });
             }
         } catch (err: any) {
@@ -375,6 +378,16 @@ export default function SettingsPage() {
                                         type="url"
                                         value={settings.link_terms_conditions}
                                         onChange={(e) => setSettings({ ...settings, link_terms_conditions: e.target.value })}
+                                        placeholder="https://..."
+                                        className="w-full bg-admin-bg border border-admin-border rounded-xl px-4 py-3.5 text-admin-text focus:outline-none focus:border-admin-primary/50 transition-all font-medium"
+                                    />
+                                </div>
+                                <div className="space-y-2">
+                                    <label className="text-xs uppercase font-bold text-admin-text-muted tracking-wider">{t('linkExplicitConsent')}</label>
+                                    <input
+                                        type="url"
+                                        value={settings.link_explicit_consent}
+                                        onChange={(e) => setSettings({ ...settings, link_explicit_consent: e.target.value })}
                                         placeholder="https://..."
                                         className="w-full bg-admin-bg border border-admin-border rounded-xl px-4 py-3.5 text-admin-text focus:outline-none focus:border-admin-primary/50 transition-all font-medium"
                                     />

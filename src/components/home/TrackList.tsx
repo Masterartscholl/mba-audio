@@ -4,14 +4,37 @@ import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { useTranslations } from 'next-intl';
 import { supabase } from '@/lib/supabase';
 import { useSearch } from '@/context/SearchContext';
-import { useAuth } from '@/hooks/useAuth';
 import { TrackRow } from './TrackRow';
 import { SkeletonLoader } from '../admin/SkeletonLoader';
 
 type SortOption = 'relevance' | 'newest' | 'priceLow' | 'priceHigh';
+type Filters = {
+    categoryId?: string | number | null;
+    genres?: number[];
+    modeId?: string | number | null;
+    priceRange?: [number, number];
+    priceBounds?: [number, number];
+    bpmRange?: [number, number];
+};
+
+interface TrackItem {
+    id: number;
+    title: string;
+    artist_name?: string | null;
+    preview_url?: string | null;
+    image_url?: string | null;
+    price?: number | null;
+    bpm?: number | null;
+    category_id?: number | null;
+    genre_id?: number | null;
+    status?: string | null;
+    created_at?: string | null;
+    genres?: { name?: string | null; name_en?: string | null } | null;
+    modes?: { name?: string | null; name_en?: string | null } | null;
+}
 
 interface TrackListProps {
-    filters: any;
+    filters: Filters;
     currency: string;
     selectedCategoryName?: string | null;
 }
@@ -21,8 +44,7 @@ interface TrackListProps {
 export const TrackList: React.FC<TrackListProps> = ({ filters, currency, selectedCategoryName }) => {
     const t = useTranslations('App');
     const { query: searchQuery } = useSearch();
-    const { user, loading: authLoading } = useAuth();
-    const [tracks, setTracks] = useState<any[]>([]);
+    const [tracks, setTracks] = useState<TrackItem[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
     const [totalCount, setTotalCount] = useState(0);
@@ -47,9 +69,11 @@ export const TrackList: React.FC<TrackListProps> = ({ filters, currency, selecte
                 const cached = localStorage.getItem('mba_tracks_cache');
                 if (cached) {
                     try {
-                        const parsed = JSON.parse(cached);
-                        setTracks(parsed);
-                        setTotalCount(parsed.length);
+                        const parsed = JSON.parse(cached) as TrackItem[];
+                        if (Array.isArray(parsed)) {
+                            setTracks(parsed);
+                            setTotalCount(parsed.length);
+                        }
                         setLoading(false);
                     } catch (e) {
                         console.warn('Tracks cache parse error', e);
@@ -89,8 +113,9 @@ export const TrackList: React.FC<TrackListProps> = ({ filters, currency, selecte
             if (catId != null) {
                 q = q.eq('category_id', catId);
             }
-            if (filters.genres?.length > 0) {
-                q = q.in('genre_id', filters.genres);
+            const genres = filters.genres ?? [];
+            if (genres.length > 0) {
+                q = q.in('genre_id', genres);
             }
             if (filters.modeId) {
                 q = q.eq('mode_id', filters.modeId);
@@ -142,9 +167,10 @@ export const TrackList: React.FC<TrackListProps> = ({ filters, currency, selecte
                     .order('created_at', { ascending: false })
                     .range(0, fetchLimit);
                 if (fallback.data) {
+                    const fallbackRows = fallback.data as unknown as TrackItem[];
                     const trimmedInner = searchQuery.trim().toLowerCase();
                     const filtered = trimmedInner
-                        ? fallback.data.filter((track: any) => {
+                        ? fallbackRows.filter((track: TrackItem) => {
                             const genreName = track.genres?.name ? String(track.genres.name).toLowerCase() : '';
                             const genreNameEn = track.genres?.name_en ? String(track.genres.name_en).toLowerCase() : '';
                             const moodName = track.modes?.name ? String(track.modes.name).toLowerCase() : '';
@@ -158,15 +184,16 @@ export const TrackList: React.FC<TrackListProps> = ({ filters, currency, selecte
                                 moodName.includes(trimmedInner) ||
                                 moodNameEn.includes(trimmedInner);
                         })
-                        : fallback.data;
+                        : fallbackRows;
 
                     setTracks(filtered);
                     setTotalCount(filtered.length);
                 }
             } else if (data) {
+                const rows = data as unknown as TrackItem[];
                 const trimmedInner = searchQuery.trim().toLowerCase();
                 const filtered = trimmedInner
-                    ? data.filter((track: any) => {
+                    ? rows.filter((track: TrackItem) => {
                         const genreName = track.genres?.name ? String(track.genres.name).toLowerCase() : '';
                         const genreNameEn = track.genres?.name_en ? String(track.genres.name_en).toLowerCase() : '';
                         const moodName = track.modes?.name ? String(track.modes.name).toLowerCase() : '';
@@ -180,7 +207,7 @@ export const TrackList: React.FC<TrackListProps> = ({ filters, currency, selecte
                             moodName.includes(trimmedInner) ||
                             moodNameEn.includes(trimmedInner);
                     })
-                    : data;
+                    : rows;
 
                 setTracks(filtered);
                 setTotalCount(filtered.length);
@@ -309,7 +336,7 @@ export const TrackList: React.FC<TrackListProps> = ({ filters, currency, selecte
             )}
 
 
-            <div className="h-40 lg:h-32 shrink-0" />
+            <div className="h-6 lg:h-32 shrink-0" />
         </div>
     );
 };

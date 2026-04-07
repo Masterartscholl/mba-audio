@@ -38,11 +38,12 @@
         "passwordMatchError": "Yeni şifreler eşleşmiyor!",
         "profileTitle": "Profil Bilgileri",
         "legalLinks": "Yasal Linkler",
-        "legalLinksDesc": "Ödeme sayfasında gösterilecek Gizlilik Politikası, Mesafeli Satış, Teslimat & İade ve Şartlar & Koşullar sayfalarının URL'leri. Boş bırakılırsa ilgili link gösterilmez.",
+        "legalLinksDesc": "Ödeme sayfasında gösterilecek Gizlilik Politikası, Mesafeli Satış, Teslimat & İade, Açık Rıza Beyanı ve Şartlar & Koşullar sayfalarının URL'leri. Boş bırakılırsa ilgili link gösterilmez.",
         "linkPrivacyPolicy": "Gizlilik Politikası URL",
         "linkDistanceSelling": "Mesafeli Satış Sözleşmesi URL",
         "linkDeliveryReturn": "Teslimat ve İade Şartları URL",
-        "linkTermsConditions": "Şartlar ve Koşullar URL"
+        "linkTermsConditions": "Şartlar ve Koşullar URL",
+        "linkExplicitConsent": "Açık Rıza Beyanı URL"
     },
     "Analytics": {
         "title": "Analiz & Raporlar",
@@ -275,6 +276,7 @@
         "termsOfUse": "Kullanım Koşulları",
         "distanceSellingContract": "Mesafeli Satış Sözleşmesi",
         "deliveryReturn": "Teslimat ve İade Şartları",
+        "explicitConsentStatement": "Açık Rıza Beyanı",
         "termsAndConditions": "Şartlar ve Koşullar",
         "billingErrorTcIdRequired": "11 haneli TC kimlik numarası girin",
         "billingErrorTcIdInvalid": "Geçerli bir TC kimlik numarası girin",

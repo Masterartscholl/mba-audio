@@ -17,7 +17,8 @@ const DEFAULT_LINKS = {
     link_privacy_policy: 'https://www.muzikburada.net/services-7',
     link_distance_selling: 'https://www.muzikburada.net/mesafeli-sat%C4%B1%C5%9F-s%C3%B6zle%C5%9Fmesi',
     link_delivery_return: 'https://www.muzikburada.net/teslimat-ve-iade',
-    link_terms_conditions: 'https://www.muzikburada.net/%C5%9Fartlar-ve-ko%C5%9Fullar'
+    link_terms_conditions: 'https://www.muzikburada.net/%C5%9Fartlar-ve-ko%C5%9Fullar',
+    link_explicit_consent: 'https://www.muzikburada.net/acik-riza-beyani'
 };
 
 export default function CheckoutPage() {
@@ -54,14 +55,15 @@ export default function CheckoutPage() {
         };
         fetchPurchased();
 
-        fetch('/api/settings/links')
+        fetch('/api/settings/links', { cache: 'no-store' })
             .then((res) => res.ok ? res.json() : {})
             .then((data: Record<string, string | null>) => {
                 setLegalLinks({
                     link_privacy_policy: (data.link_privacy_policy && data.link_privacy_policy.trim()) ? data.link_privacy_policy.trim() : DEFAULT_LINKS.link_privacy_policy,
                     link_distance_selling: (data.link_distance_selling && data.link_distance_selling.trim()) ? data.link_distance_selling.trim() : DEFAULT_LINKS.link_distance_selling,
                     link_delivery_return: (data.link_delivery_return && data.link_delivery_return.trim()) ? data.link_delivery_return.trim() : DEFAULT_LINKS.link_delivery_return,
-                    link_terms_conditions: (data.link_terms_conditions && data.link_terms_conditions.trim()) ? data.link_terms_conditions.trim() : DEFAULT_LINKS.link_terms_conditions
+                    link_terms_conditions: (data.link_terms_conditions && data.link_terms_conditions.trim()) ? data.link_terms_conditions.trim() : DEFAULT_LINKS.link_terms_conditions,
+                    link_explicit_consent: (data.link_explicit_consent && data.link_explicit_consent.trim()) ? data.link_explicit_consent.trim() : DEFAULT_LINKS.link_explicit_consent
                 });
             })
             .catch(() => { });
@@ -470,6 +472,8 @@ export default function CheckoutPage() {
                                 <a href={legalLinks.link_privacy_policy} target="_blank" rel="noopener noreferrer" className="underline text-app-primary hover:opacity-90 font-bold transition-colors">{t('privacyPolicy')}</a>
                                 {t('termsAcceptComma')}
                                 <a href={legalLinks.link_delivery_return} target="_blank" rel="noopener noreferrer" className="underline text-app-primary hover:opacity-90 font-bold transition-colors">{t('deliveryReturn')}</a>
+                                {t('termsAcceptComma')}
+                                <a href={legalLinks.link_explicit_consent} target="_blank" rel="noopener noreferrer" className="underline text-app-primary hover:opacity-90 font-bold transition-colors">{t('explicitConsentStatement')}</a>
                                 {t('termsAcceptAnd')}
                                 <a href={legalLinks.link_terms_conditions} target="_blank" rel="noopener noreferrer" className="underline text-app-primary hover:opacity-90 font-bold transition-colors">{t('termsAndConditions')}</a>
                                 {t('termsAcceptAfter')}

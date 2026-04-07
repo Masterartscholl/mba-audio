@@ -45,7 +45,7 @@ export const GlobalPlayer: React.FC = () => {
     const fav = isFavorite(currentTrack.id);
 
     return (
-        <div className="fixed bottom-0 left-0 right-0 bg-app-bg/95 backdrop-blur-xl border-t border-app-border z-[100] animate-in slide-in-from-bottom duration-500 pb-safe">
+        <div className="relative lg:fixed lg:bottom-0 lg:left-0 lg:right-0 bg-app-bg/95 backdrop-blur-xl border-t border-app-border z-[100] animate-in slide-in-from-bottom duration-500 pb-safe">
             {/* Mobile Progress Bar (Top of player) */}
             <div className="block lg:hidden absolute top-0 left-0 right-0 h-1 bg-app-border">
                 <div
@@ -66,10 +66,10 @@ export const GlobalPlayer: React.FC = () => {
                 />
             </div>
 
-            <div className="px-4 py-2 lg:px-8 lg:py-0 h-16 lg:h-24 flex items-center justify-between gap-3 lg:gap-0">
+            <div className="px-3 py-2 lg:px-8 lg:py-0 h-16 lg:h-24 grid grid-cols-[minmax(0,1fr)_auto] items-center gap-2 lg:flex lg:items-center lg:justify-between lg:gap-0">
                 {/* Track Info */}
-                <div className="flex items-center gap-3 lg:gap-4 flex-1 lg:w-1/4 lg:flex-none min-w-0">
-                    <div className="w-10 h-10 lg:w-14 lg:h-14 rounded-lg lg:rounded-xl bg-app-card overflow-hidden shadow-2xl flex-shrink-0 relative">
+                <div className="flex items-center gap-2.5 lg:gap-4 min-w-0 lg:flex-1 lg:w-1/4 lg:flex-none">
+                    <div className="w-9 h-9 lg:w-14 lg:h-14 rounded-lg lg:rounded-xl bg-app-card overflow-hidden shadow-2xl flex-shrink-0 relative">
                         <img
                             src={currentTrack.image_url || "https://images.unsplash.com/photo-1614613535308-eb5fbd3d2c17?w=300&h=300&fit=crop"}
                             alt={currentTrack.title}
@@ -77,14 +77,14 @@ export const GlobalPlayer: React.FC = () => {
                         />
                         {/* Mobile Favorite Button Overlay or next to it? Let's put it next for clarity on Desktop, maybe overlay on mobile? kept separate for now */}
                     </div>
-                    <div className="min-w-0 flex-1">
+                    <div className="min-w-0 flex-1 max-w-[52vw] lg:max-w-none">
                         <h4 className="text-app-text font-black text-xs lg:text-sm uppercase truncate tracking-tight">{currentTrack.title}</h4>
                         <p className="text-app-text-muted text-[10px] font-bold uppercase truncate tracking-widest leading-none mt-0.5 lg:mt-1">{currentTrack.artist_name || 'Unknown Artist'}</p>
                     </div>
                     {/* Mobile Favorite Button */}
                     <button
                         onClick={handleFavorite}
-                        className={`lg:hidden shrink-0 transition-colors ${fav ? 'text-app-primary' : 'text-app-text-muted'}`}
+                        className={`lg:hidden shrink-0 transition-colors mr-1 ${fav ? 'text-app-primary' : 'text-app-text-muted'}`}
                     >
                         <svg className="w-5 h-5" fill={fav ? 'currentColor' : 'none'} stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" /></svg>
                     </button>
@@ -100,11 +100,11 @@ export const GlobalPlayer: React.FC = () => {
                 </div>
 
                 {/* Controls - Mobile: Play/Pause only. Desktop: Full controls */}
-                <div className="flex items-center lg:flex-1 lg:flex-col lg:items-center gap-0 lg:gap-2 justify-end lg:justify-center lg:max-w-2xl lg:px-12">
+                <div className="flex items-center justify-end lg:flex-1 lg:flex-col lg:items-center gap-0 lg:gap-2 lg:justify-center lg:max-w-2xl lg:px-12">
                     {/* Mobile Play Button */}
                     <button
                         onClick={togglePlay}
-                        className="lg:hidden w-10 h-10 rounded-full bg-app-primary flex items-center justify-center text-app-primary-foreground shadow-lg shadow-app-primary/20 shrink-0 ml-2"
+                        className="lg:hidden w-9 h-9 rounded-full bg-app-primary flex items-center justify-center text-app-primary-foreground shadow-lg shadow-app-primary/20 shrink-0"
                     >
                         {isPlaying ? (
                             <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z" /></svg>
@@ -221,7 +221,7 @@ export const GlobalPlayer: React.FC = () => {
                 {showQueue && queue.length > 0 && (
                     <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-80 max-h-64 overflow-y-auto custom-scrollbar bg-app-card border border-app-border rounded-xl shadow-2xl z-[101] p-2">
                         <p className="text-[10px] font-black text-app-text-muted uppercase tracking-widest px-2 py-1 sticky top-0 bg-app-card">Kuyruk ({queue.length})</p>
-                        {queue.map((t, i) => (
+                        {queue.map((t) => (
                             <div
                                 key={t.id}
                                 className={`px-3 py-2 rounded-lg text-left text-sm ${currentTrack?.id === t.id ? 'bg-app-primary/20 text-app-primary' : 'text-app-text hover:bg-app-surface'}`}
