@@ -139,12 +139,21 @@ export default function SettingsPage() {
 
         setSaving(true);
 
-        // Update database
-        const { error } = await supabase
-            .from('settings')
-            .upsert({ id: 1, ...settings, updated_at: new Date().toISOString() });
+        // Update database. If the new explicit-consent column does not exist yet,
+        // retry without it so other settings can still be saved.
+        const payload = { id: 1, ...settings, updated_at: new Date().toISOString() };
+        const { error } = await supabase.from('settings').upsert(payload);
 
-        if (error) {
+        if (error?.message?.includes('link_explicit_consent')) {
+            const { link_explicit_consent, ...fallbackPayload } = payload;
+            const { error: retryError } = await supabase.from('settings').upsert(fallbackPayload);
+            if (retryError) {
+                toast.error(t('error') + ': ' + retryError.message);
+            } else {
+                toast.success(t('success'));
+                toast.warning("Açık Rıza Beyanı kolonu veritabanında eksik. SQL ile ekleyin: alter table settings add column if not exists link_explicit_consent text;");
+            }
+        } else if (error) {
             toast.error(t('error') + ': ' + error.message);
         } else {
             toast.success(t('success'));

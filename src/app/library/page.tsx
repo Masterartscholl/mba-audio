@@ -125,8 +125,8 @@ export default function LibraryPage() {
             <Sidebar filters={filters} onFilterChange={setFilters} />
             <div className="flex-1 flex flex-col min-w-0">
                 <Header onOpenMobileSidebar={() => setIsMobileSidebarOpen(true)} />
-                <main className="flex-1 flex flex-col overflow-hidden">
-                    <div className="flex-1 overflow-y-auto custom-scrollbar flex flex-col">
+                <main className="flex-1 flex flex-col lg:overflow-hidden">
+                    <div className="flex-1 lg:overflow-y-auto custom-scrollbar flex flex-col">
                         <div className="px-4 lg:px-10 py-6 lg:py-10 flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">
                             <div>
                                 <h2 className="text-2xl lg:text-4xl font-black text-app-text tracking-tighter uppercase leading-none">{t('myLibraryTitle')}</h2>

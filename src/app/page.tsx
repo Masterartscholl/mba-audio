@@ -62,7 +62,7 @@ export default function Home() {
           onCategoryNameChange={setSelectedCategoryName}
         />
 
-        <main className="flex-1 flex flex-col overflow-hidden">
+        <main className="flex-1 flex flex-col lg:overflow-hidden">
           <TrackList filters={filters} currency={currency} selectedCategoryName={selectedCategoryName} />
         </main>
       </div>

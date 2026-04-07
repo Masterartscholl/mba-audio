@@ -22,11 +22,22 @@ export async function GET() {
         if (!supabase) {
             return NextResponse.json({ error: 'Configuration missing' }, { status: 500 });
         }
-        const { data, error } = await supabase
+        let { data, error } = await supabase
             .from('settings')
             .select('link_privacy_policy, link_distance_selling, link_delivery_return, link_terms_conditions, link_explicit_consent')
             .eq('id', 1)
             .maybeSingle();
+
+        // Backward compatibility for databases that don't have link_explicit_consent yet.
+        if (error?.message?.includes('link_explicit_consent')) {
+            const fallback = await supabase
+                .from('settings')
+                .select('link_privacy_policy, link_distance_selling, link_delivery_return, link_terms_conditions')
+                .eq('id', 1)
+                .maybeSingle();
+            data = fallback.data ? { ...fallback.data, link_explicit_consent: null } : null;
+            error = fallback.error;
+        }
 
         if (error) {
             return NextResponse.json({ error: error.message }, { status: 500 });
