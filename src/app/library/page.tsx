@@ -163,7 +163,7 @@ export default function LibraryPage() {
                                 </div>
                             )}
                         </div>
-                        <div className="h-6 lg:h-32 shrink-0" />
+                        <div className="h-20 lg:h-32 shrink-0" />
                     </div>
                 </main>
             </div>
