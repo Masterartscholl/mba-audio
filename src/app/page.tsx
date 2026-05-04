@@ -49,7 +49,7 @@ export default function Home() {
   };
 
   return (
-    <div className="flex flex-col h-screen overflow-hidden lg:flex-row lg:h-screen lg:overflow-hidden bg-app-bg selection:bg-[#3b82f6]/30">
+    <div className="flex flex-col min-h-screen lg:flex-row lg:h-screen lg:overflow-hidden bg-app-bg selection:bg-[#3b82f6]/30">
       {/* Left Sidebar */}
       <Sidebar filters={filters} onFilterChange={setFilters} />
 

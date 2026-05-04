@@ -260,7 +260,7 @@ export const TrackList: React.FC<TrackListProps> = ({ filters, currency, selecte
     const totalPages = Math.ceil(totalCount / itemsPerPage);
 
     return (
-        <div className="flex-1 overflow-y-auto custom-scrollbar flex flex-col">
+        <div className="flex-1 lg:overflow-y-auto custom-scrollbar flex flex-col">
             <div className="px-4 lg:px-10 py-6 lg:py-10 flex flex-col lg:flex-row lg:items-end justify-between gap-4">
                 <div>
                     <h2 className="text-2xl lg:text-4xl font-black text-app-text tracking-tighter uppercase leading-none">{headingTitle}</h2>
