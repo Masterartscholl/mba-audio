@@ -219,7 +219,7 @@ export const Header: React.FC<HeaderProps> = ({ onOpenMobileSidebar }) => {
 
                                         {/* Dropdown / Drawer */}
                                         <div className="
-                                            fixed inset-x-0 top-0 p-6 bg-app-bg border-b border-app-border shadow-2xl z-[200] animate-in slide-in-from-top duration-300
+                                            vv-top fixed inset-x-0 top-0 p-6 bg-app-bg border-b border-app-border shadow-2xl z-[200] animate-in slide-in-from-top duration-300
                                             lg:absolute lg:inset-auto lg:right-0 lg:top-full lg:mt-2 lg:p-0 lg:min-w-[240px] lg:rounded-2xl lg:bg-app-card lg:border lg:shadow-xl lg:animate-in lg:fade-in lg:zoom-in-95
                                         ">
                                             {/* Mobile Header with Close Button */}

@@ -57,7 +57,7 @@ export const CartDrawer: React.FC = () => {
 
             {/* Drawer */}
             <div
-                className={`fixed top-0 right-0 h-full w-full max-w-md bg-app-bg border-l border-app-border shadow-2xl z-[120] flex flex-col transition-transform duration-300 ease-out ${isOpen ? 'translate-x-0' : 'translate-x-full'}`}
+                className={`vv-frame fixed top-0 right-0 h-full w-full max-w-md bg-app-bg border-l border-app-border shadow-2xl z-[120] flex flex-col transition-transform duration-300 ease-out ${isOpen ? 'translate-x-0' : 'translate-x-full'}`}
                 role="dialog"
                 aria-label={t('cart')}
             >

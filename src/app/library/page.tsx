@@ -181,7 +181,7 @@ export default function LibraryPage() {
                         }}
                         aria-label="Close menu"
                     />
-                    <div className="absolute left-0 top-0 h-full w-full max-w-sm sm:w-4/5 sm:max-w-xs bg-app-bg shadow-2xl border-r border-app-border">
+                    <div className="vv-frame absolute left-0 top-0 h-full w-full max-w-sm sm:w-4/5 sm:max-w-xs bg-app-bg shadow-2xl border-r border-app-border">
                         <SidebarMobileDrawer
                             filters={filters}
                             onFilterChange={setFilters}

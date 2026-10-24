@@ -8,6 +8,7 @@ import { AuthRefreshSync } from "@/components/AuthRefreshSync";
 import { ProfileCompleteGuard } from "@/components/ProfileCompleteGuard";
 import { MaintenanceGuard } from "@/components/MaintenanceGuard";
 import { CustomerGuard } from "@/components/CustomerGuard";
+import { VisibleViewportSync } from "@/components/VisibleViewportSync";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -75,6 +76,7 @@ export default async function RootLayout({
                       <Suspense fallback={null}>
                         <AuthRefreshSync />
                       </Suspense>
+                      <VisibleViewportSync />
                       <ProfileCompleteGuard />
                       <MaintenanceGuard />
                       <CustomerGuard />

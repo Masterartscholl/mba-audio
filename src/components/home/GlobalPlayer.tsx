@@ -45,7 +45,7 @@ export const GlobalPlayer: React.FC = () => {
     const fav = isFavorite(currentTrack.id);
 
     return (
-        <div className="fixed bottom-0 left-0 right-0 bg-app-bg/95 backdrop-blur-xl border-t border-app-border z-[100] animate-in slide-in-from-bottom duration-500 pb-safe">
+        <div className="vv-bottom fixed bottom-0 left-0 right-0 bg-app-bg/95 backdrop-blur-xl border-t border-app-border z-[100] animate-in slide-in-from-bottom duration-500 pb-safe">
             {/* Mobile Progress Bar (Top of player) */}
             <div className="block lg:hidden absolute top-0 left-0 right-0 h-1 bg-app-border">
                 <div

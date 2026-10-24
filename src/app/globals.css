@@ -115,6 +115,22 @@ select option {
   background: transparent;
 }
 
+/* Wix iframe (mobil): fixed öğeleri iframe'in tamamına değil, kullanıcının görebildiği alana oturt.
+   --vv-* değişkenlerini src/utils/visibleViewport.ts yazar; yoksa (masaüstü, iframe dışı)
+   fallback değerler eski davranışı korur. */
+@media (max-width: 1023px) {
+  .vv-bottom {
+    bottom: var(--vv-bottom, 0px);
+  }
+  .vv-top {
+    top: var(--vv-top, 0px);
+  }
+  .vv-frame {
+    top: var(--vv-top, 0px);
+    height: var(--vv-height, 100%);
+  }
+}
+
 /* ========== RANGE SLIDER ========== */
 
 .slider {
